@@ -1,0 +1,71 @@
+/* Outer container styling to cover full screen with footer at the bottom */
+.mainContainer{
+  min-height: 100vh;
+  background-color:#fe5a1d;
+  padding: 2%;
+}
+.headerMain{
+  margin-top: 40px;
+}
+
+  .payment-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    background-color: #fe5a1d;
+    flex-grow: 1;
+    color: white;
+
+  }
+  
+  /* Header for the payment section */
+  .payment-container h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: white;
+  }
+  
+  /* Payment details styling */
+  .payment-details {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #3c3c3c;
+  }
+  
+  /* Card element styling */
+  .card-element {
+    font-size: 16px;
+  }
+  
+  /* Submit button styling */
+  .payment-button {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 3px;
+    padding-inline: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: background-color 0.3s;
+    margin-left: 160px;
+  }
+  
+  .payment-button:hover {
+    background-color: rgba(255, 255, 255, 0.6)!important;
+    transform: translateY(-2px);
+}s
+  
+  .payment-button:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
+  
+
+  .payment-success {
+    margin-top: 20px;
+    color: green;
+  }

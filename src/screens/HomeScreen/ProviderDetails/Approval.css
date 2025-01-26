@@ -1,0 +1,63 @@
+.account-approval-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f7f7;
+}
+
+.approval-content {
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem;
+    background-color: lightyellow;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.approval-icon-container img{
+    height: 100px;
+    width: 100px;
+}
+
+.heading {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #4caf50; /* Green to emphasize approval */
+    padding-bottom: 15px;
+}
+
+.description {
+    font-size: 18px;
+    color: black;
+    padding-bottom: 15px;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.approve-button {
+    background-color: #FF5740 !important;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.approve-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.approve-button:hover:not(:disabled) {
+    background-color: #e68900 !important;
+    transform: translateY(-2px);
+}
+

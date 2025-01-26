@@ -1,0 +1,17 @@
+/* Main screen container styling */
+.provider-home-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin-right: 3%;
+  margin-left: 3%;
+  margin-top: 1%;
+}
+
+.pro-main-content {
+  flex: 1; /* Takes up remaining height for main content */
+  padding: 20px;
+  overflow-y: auto; /* Enables scroll if content overflows */
+}
+
+/* Footer can stay fixed at the bottom */

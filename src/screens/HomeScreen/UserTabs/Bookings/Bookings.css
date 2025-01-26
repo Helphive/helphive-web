@@ -1,0 +1,24 @@
+.bu-bookingPage {
+  width: 100vw;
+  min-height: 100vh;
+  /* Use 'background' for gradient */
+  background: linear-gradient(45deg, #FF8C00, #FF4F00), 
+              linear-gradient(135deg, #FF8C00, #FF4F00);
+  padding-top: 2%;
+  padding-right: 4%;
+  padding-left: 4%;
+}
+.bu-tabsContainer{
+  margin-top: 50px;
+  color: white;
+  background-color:transparent;
+  padding-block: 5px;
+  border-radius: 50px;
+}
+.loaderDiv{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}

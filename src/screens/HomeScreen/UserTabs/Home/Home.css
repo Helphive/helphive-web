@@ -1,0 +1,52 @@
+.userHome {
+  width: 100%;
+  margin-top: 5%;
+  /* margin-left: 3%; */
+}
+.userHero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 3%;
+}
+.cleaner {
+  width: 40%;
+}
+.userHero div h1 {
+  font-size: 5vw;
+  color: white;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.userHero div p {
+  font-size: 18px;
+  width: 80%;
+  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.671);
+}
+.userHero div button {
+  background-color: white;
+  color: #fe5a1d;
+  border: 2px solid #fe5a1d;
+  padding: 8px 16px;
+  font-size: 16px;
+
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.userHero div button:hover {
+  background-color: #fe5a1d;
+  color: white;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.mc-step-buttons{
+  /* border: 1px solid white; */
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 20%;
+}

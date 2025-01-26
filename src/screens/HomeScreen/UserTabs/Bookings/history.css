@@ -1,0 +1,55 @@
+.h-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .h-header {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+    padding-top: 20px;
+  }
+  
+  .h-no-bookings {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    padding: 40px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .h-booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .h-booking-item {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #FFB74D;
+  }
+  
+  .h-booking-item h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .h-booking-item p {
+    font-size: 1rem;
+    color: #555;
+    margin: 5px 0;
+  }
+  
+  .h-booking-item p strong {
+    color: #333;
+  }
+  

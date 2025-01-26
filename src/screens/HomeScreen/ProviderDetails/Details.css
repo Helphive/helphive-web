@@ -1,0 +1,195 @@
+@import url("https://fonts.googleapis.com/css2?family=Lobster&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
+.detailsScreen {
+  background-color: #fe5a1d;
+  font-family: "Open Sans", sans-serif;
+  /* margin-top: -8px;
+  margin-left: -8px; */
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+.left {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  /* border: 1px solid red; */
+}
+.left img {
+  width: 30%;
+  opacity: 70%;
+  position: absolute;
+  top: 0px;
+  
+}
+.left h1{
+    font-size: 2.5rem;
+    margin-left: 50px;
+    margin-top: 210px;
+}
+.detailsForm {
+  display: flex;
+ margin-top: 50px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 60%;
+ 
+  gap: 10px;
+}
+.rightForm {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  width: 45%;
+}
+.leftForm {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  width: 45%;
+ 
+}
+.detailsForm .rightForm input[type="text"] {
+  background: none;
+  outline: none;
+  border: none;
+  border-bottom: 2px solid white;
+  width: 100%;
+  color: white;
+  font-size: 16px;
+  height: 35px;
+}
+::placeholder {
+  color: #cecece;
+  font-size: 16px;
+  padding-bottom: 2px;
+}
+.detailsForm div {
+  display: flex;
+  gap: 20px;
+}
+.detailsForm div input[type="text"] {
+  width: 150px;
+}
+
+.fileDivs {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  width: 320px;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+  padding: 4px;
+}
+
+input[type="file"] {
+  display: none; /* Hide the default file input */
+}
+
+.custom-file-upload {
+  display: inline-block;
+  background-color: white; /* Gradient start color */
+  color: #fe5a1d;
+  font-size: 12px;
+  /* font-weight: bold; */
+  padding: 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-file-upload:hover {
+  background-color: #fe5a1d; 
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  color: white;
+}
+
+.custom-file-upload:active {
+  background-color: #351c75; /* Gradient active color */
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+  transform: scale(0.98);
+}
+.selectType {
+  display: flex;
+  flex-direction: column;
+}
+.selectType p {
+  color: white;
+}
+.types {
+  margin-top: -30px;
+  color: bisque;
+}
+.types div {
+  display: flex;
+  flex-direction: row-reverse;
+}
+.types div label {
+  font-size: 14px;
+}
+.types div input[type="checkbox"] {
+  appearance: none; /* Remove default checkbox styling */
+  -webkit-appearance: none; /* For Safari */
+  width: 20px;
+  height: 20px;
+  border: 2px solid white; /* Border color */
+  border-radius: 4px; /* Slightly rounded corners */
+  outline: none;
+  cursor: pointer;
+  background-color:#feb31d;
+  transition: all 0.3s ease-in-out;
+}
+
+.types div input[type="checkbox"]:hover {
+  border-color: #b91372; /* Change border on hover */
+  background-color: #f7f7f7; /* Light background on hover */
+}
+
+.types div input[type="checkbox"]:checked {
+  background-color: #fe5a1d; 
+  border-color: WHITE;
+  position: relative;
+}
+
+.types div input[type="checkbox"]:checked::after {
+  content: "✔";
+  font-size: 14px;
+  color: white;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.detailsForm button {
+    width: 50%;
+    padding: 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    outline: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin-top: -80px;
+}
+.detailsForm button:hover{
+       border-color  : rgba(255, 255, 255, 0.5);
+         background-color: rgba(255, 255, 255, 0.4);
+  }
+

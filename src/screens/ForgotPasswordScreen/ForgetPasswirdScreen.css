@@ -1,0 +1,108 @@
+.forgetpassword-screen {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    min-height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-image: url('../../assets/h1.png');
+    background-size: cover;
+    background-position: center;
+    padding-right: 305px;
+}
+.forgot-password-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    background-color: lightyellow;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    position: relative;
+  }
+  .forgot-password-container img {
+    height: 100px;
+    width: 100px;
+    padding-bottom: 5px;
+  }
+  
+  /* Back button styling */
+  .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #FF5740;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .back-button:hover {
+    background-color: lightyellow;
+    transform: translateY(-2px);
+  }
+  
+  /* Heading and paragraph styling */
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    color: #666;
+  }
+  
+  /* Input styling */
+  .email-input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  
+  .email-input:focus {
+    border-color:green;
+    outline: none;
+  }
+  
+  .email-input.error {
+    border-color: #e74c3c;
+  }
+  
+  /* Error message styling */
+  .error-message {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Reset password button styling */
+  .reset-password-button {
+    background-color: #FF5740;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .reset-password-button:disabled {
+    background-color: #9e9e9e;
+    cursor: not-allowed;
+  }
+  
+  .reset-password-button:hover:not(:disabled) {
+    background-color: #e68900;
+    transform: translateY(-2px);
+  }
+  

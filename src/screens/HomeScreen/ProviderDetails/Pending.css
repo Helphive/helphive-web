@@ -1,0 +1,69 @@
+/* Main container styling */
+.pending-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f7f7;
+}
+
+/* Content styling */
+.pending-content {
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem;
+    background-color: lightyellow;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo styling */
+.pending-content img {
+    height: 100px;
+    width: 100px;
+}
+
+/* Title styling */
+.pending-content h2 {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: yellowgreen;
+    padding-bottom: 15px;
+}
+
+/* Message styling */
+.pending-content p {
+    font-size: 18px;
+    color: black;
+    padding-bottom: 15px;
+}
+
+/* Button container styling */
+.pending-button-container {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Logout button styling */
+.logout-button {
+    background-color: #FF5740;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+    background-color: #e68900;
+    transform: translateY(-2px);
+}
+
+.logout-button:active {
+    transform: translateY(2px);
+}

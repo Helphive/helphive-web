@@ -1,0 +1,318 @@
+@import url("https://fonts.googleapis.com/css2?family=Lobster&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
+.home {
+  font-family: "Open Sans", sans-serif;
+  }
+  .landing{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 3%;
+    background-color: #fe5a1d;
+    min-height: 100vh;
+    border-radius: 12px;
+  }  
+  .landing div{
+    display: flex;
+    flex-direction: column;
+    
+  }
+  .landing div h1{
+    display: flex;
+    flex-direction: column;
+    font-size: 4.5vw;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .landing div p{
+    font-size: 1.5vw;
+    font-weight: 300;
+    color: #000000;
+  }
+  .landing img{
+    width: 50%;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: #f5f5f5;
+  }
+  
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .header-title {
+    font-weight: bold;
+  }
+  
+  .icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .banner .vector {
+    position: absolute;
+    width: 100%;
+  }
+  
+  .content {
+    padding: 1rem;
+    min-height: 100vh;
+    margin-top: 10%;
+   
+    
+  }
+
+  
+  .user-card, .availability-section {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .provider-info{
+    background-color: #fe5a1d;
+  }
+  .user-profile {
+    position: relative;
+  }
+  
+  .verified-icon {
+    /* position: ; */
+    width: 10px;
+    display: none;
+    border-radius: 50%;
+  }
+  
+  .job-types {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .job-type {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .job-type.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .job-type.active {
+    border: 2px solid #4caf50;
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 14px;
+  }
+  
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: -3px;
+    background-color: white;
+    transition: 0.4s;
+  }
+  
+  input:checked + .slider {
+    background-color: #4caf50;
+  }
+  
+  .snackbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    z-index: 1000;
+  }
+
+  .map-container {
+    width: 60%;  /* Adjust the width to be smaller */
+    height: 400px; /* Adjust the height to be smaller */
+    margin-right: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  /* Container for map and provider info */
+.content {
+    display: flex; /* Use flexbox to align map and provider info horizontally */
+    flex-direction: column; /* Keep them side by side */
+    justify-content: space-between; /* Space out the map and provider info */
+    padding: 20px;
+    gap: 100px; /* Space between map and provider info */
+  }
+  
+  /* Map Container Styling */
+  .map-container {
+    width: 60%;  /* Adjust the width to be smaller */
+    height: 400px; /* Adjust the height to be smaller */
+    border-radius: 8px;
+    overflow: hidden;
+    margin-left: 20px;
+
+  }
+  
+  /* Provider Info Box Styling */
+  .provider-info {
+    width: 100%; /* Make the provider info smaller */
+    height: auto;
+    background-color: #f5f5f5; /* Add a background color for the provider info */
+    padding: 20px;
+    border-radius: 8px; /* Rounded corners for the provider info */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Add some shadow for better visual */
+  }
+  
+  /* Adjust the header inside the provider info box */
+  .user-card {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    
+    margin-bottom: 20px;
+  }
+ .user-info{
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  justify-content: start;
+  gap: 20px;
+  width: 100%;
+ }
+  /* Adjust user profile image size */
+  .user-profile img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    margin-bottom: 20px;
+  }
+  
+  /* Adjust other elements within the provider info box */
+  .user-details h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+  
+  .user-details p {
+    font-size: 14px;
+  }
+  
+  .user-rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .user-rating img {
+    width: 20px;
+    margin-right: 5px;
+  }
+  
+  .availability-section {
+    margin-top: 20px;
+  }
+  .job-types-section{
+    margin-top: 40px;
+  }
+  
+  /* Ensure job-type boxes have a fixed size and contain the image */
+.job-types {
+    width: 100%; /* Adjust to fit the size of the box */ /* Adjust to fit the size of the box */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    border: 1px solid #ccc; /* Add border for better visibility */
+    padding: 20px 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px; /* Optional: rounded corners */
+    box-sizing: border-box; /* Ensures padding doesn't affect size */
+    overflow: hidden; /* Ensures image doesn't overflow the box */
+  }
+  .jobButtonDiv{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .jobButtonDiv button{
+    background-color: #fe5a1d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }  
+  /* Adjust the size of the images inside job-type boxes */
+  .service-icon {
+     /* Adjust this value to make the image larger or smaller */
+    /* Adjust this value to make the image larger or smaller */
+    object-fit: cover; /* Ensures the image fills the box while maintaining aspect ratio */
+    margin-bottom: 10px; /* Space between image and text */
+    border-radius: 4px; /* Optional: rounded corners for images */
+  }
+  
+  
+  /* Optionally adjust the image size for different screen sizes */
+  @media (max-width: 768px) {
+    .job-type {
+      width: 100px;
+      height: 130px;
+    }
+  
+    .job-type .service-icon {
+      width: 60px;
+      height: 60px;
+    }
+  }
+  
+  @media (min-width: 769px) {
+    .job-type {
+      width: 120px;
+      height: 150px;
+    }
+  
+    .job-type .service-icon {
+      width: 80px;
+      height: 80px;
+    }
+  }
+  

@@ -1,0 +1,107 @@
+/* ProviderHeader.css */
+
+.pro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #FF5740;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    /* border-bottom: 1px solid #ddd; */
+    
+  }
+  
+  /* .pro-logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+  } */
+  .pro-header-left {
+    display: flex;
+    align-items: center;
+  }
+
+
+  .pro-bee {
+    width: 50px; /* Set desired width */
+    height: auto; /* Maintain aspect ratio */
+    max-width: 100%; /* Ensure it doesn't exceed the container's width */
+    max-height: 100px; /* Set a maximum height */
+    display: block; /* Ensure it behaves as a block element */
+    margin: 0 auto; /* Center it horizontally if needed */
+  }
+  .pro-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+  }
+  .pro-logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+  }
+  .pro-brand-name {
+    font-size: 28px;
+    color: white; 
+    font-weight: bold;
+  }
+  .pro-band-sub{
+    color: white;
+    padding-top: 7px;
+    padding-left: 5px;
+  }
+
+  .pro-nav {
+    display: flex;
+    gap: 15px;
+    margin-right: 20px;
+  }
+  
+  .pro-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    text-align: center;
+    font-size: 18px;
+  }
+  
+  .pro-label {
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .active-label {
+    color: black;
+    /* font-weight: bold; */
+  }
+
+  .pro-tab:hover .pro-label, .pro-tab:hover .active-label {
+    color: black /* Color on hover */
+  }
+  
+  .pro-arrow-icon {
+    cursor: pointer;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.pro-arrow-icon .icon {
+    width: 24px;
+    height: 24px;
+    color: black;
+    transition: color 0.3s;
+}
+
+/* Hover effect */
+.pro-arrow-icon .icon:hover {
+  color: white; /* Adjust color on hover */
+  transform: translateY(-2px);
+}
+.log{
+  cursor: pointer;
+}
+  

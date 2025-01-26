@@ -1,0 +1,246 @@
+/* General Styles */
+
+  
+  /* Order Details Container */
+  .order-details-container {
+    padding: 20px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    max-width: 900px;
+    margin: auto;
+    margin-top: 10%;
+  }
+  
+  .order-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    color: white;
+  }
+  
+  .order-header .back-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+  
+  .order-header .back-button img {
+    width: 24px;
+  }
+
+  .order-header .order-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+  
+  /* Order Status */
+  .order-status {
+    background-color: #ffb84d;
+    color: #333;
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+  
+  /* Service Details */
+  .service-details {
+    margin-bottom: 20px;
+  }
+  
+  .service-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .service-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00b894;
+  }
+  
+  .booking-id {
+    font-size: 1.1rem;
+    color: #b3b3b3;
+  }
+  
+  /* Date and Location */
+  .date-location-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .date-info, .location-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .date-info .icon, .location-info .icon {
+    width: 20px;
+    margin-right: 10px;
+  }
+  .icon{
+    background-color: white;
+    padding: 4px;
+    border-radius: 50%;
+  }
+  
+  .date-text, .location-text {
+    font-size: 1rem;
+    color: #b3b3b3;
+  }
+  
+  /* User Info */
+  .user-info-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .user-profile {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 20px;
+    
+  }
+  
+  .default-profile {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    background-color: #4d4d4d;
+    color: #fff;
+    margin-right: 20px;
+  }
+  
+.user-details{
+    display: flex;
+    flex-direction: column;
+    margin-top: 40px;
+    align-items: start;
+    justify-content: center;
+    
+}
+  
+  .user-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #00b894;
+  }
+  
+  .user-email {
+    font-size: 1rem;
+    color: #b3b3b3;
+    margin-top: -20px;
+
+  }
+  
+  /* Price Details */
+  .price-details-container {
+    margin-bottom: 20px;
+  }
+  
+  .price-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #ffb84d;
+    margin-bottom: 10px;
+  }
+  
+  .price-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .price-label {
+    font-size: 1.1rem;
+    color: #b3b3b3;
+  }
+  
+  .price-value {
+    font-size: 1.1rem;
+    color: #fff;
+  }
+  
+  .total-receivable {
+    font-weight: bold;
+  }
+  
+  .price-value.total-receivable {
+    color: #00b894;
+  }
+  
+  /* Actions */
+  .actions-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  button {
+    font-size: 1rem;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+  }
+  
+  .start-job-button {
+    background-color: #00b894;
+    color: #fff;
+  }
+  
+  .start-job-button:hover {
+    background-color: #019c73;
+  }
+  
+  .cancel-booking-button {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+  
+  .cancel-booking-button:hover {
+    background-color: #c0392b;
+  }
+  
+  .complete-job-button {
+    background-color: #3498db;
+    color: #fff;
+  }
+  
+  .complete-job-button:hover {
+    background-color: #2980b9;
+  }
+  
+  /* Snackbar */
+  .snackbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ff4747;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    z-index: 100;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  

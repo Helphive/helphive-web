@@ -1,0 +1,139 @@
+.serviceCardsContainer {
+  margin-top: 10%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* gap: 10px; */
+}
+.serviceCardsContainer h1 {
+  font-size: 6vw;
+  color: white;
+  font-weight: 400;
+}
+.serviceCardsContainer p {
+  font-size: 25px;
+  color: rgba(255, 255, 255, 0.671);
+}
+.serviceCardsContainer div {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 20px;
+}
+.service {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  width: 30%;
+  /* border: 2px solid #adb5bd; */
+  border-radius: 20px;
+  cursor: pointer;
+  /* Make sure your card has a background for the shadow to be visible */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.service:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.service h4 {
+  font-size: 22px;
+  margin: auto;
+  color: white;
+}
+.service p {
+  font-size: 18px;
+  text-align: center;
+  /* color: white; */
+}
+.service h5 {
+  font-size: 1.25rem;
+  margin: auto;
+  margin-top: -20px;
+  padding: 2px;
+  color: white;
+  font-weight: 400;
+}
+.service img {
+  width: 100%;
+  height: 250px;
+  border-radius: 18px;
+}
+.selectPrice {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+.min,
+.max {
+  color: #fe5a1d;
+  font-size: 20px;
+  margin-right: 20px;
+  background-color: white;
+  padding: 15px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+.max {
+  margin-left: 20px;
+  margin-right: 0;
+}
+.dealPrice {
+  width: 90px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+}
+.dealPrice p {
+  text-align: center;
+  margin-top: 20px;
+  padding: 4px;
+}
+.dealPrice p:not(:first-of-type) {
+  color: white;
+  font-weight: 500;
+}
+.pricePrompt {
+  width: 100%;
+  color: white;
+  margin-top: 60px;
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 400;
+}
+.stepButtons {
+  margin-top: 20px;
+}
+.stepButtons button {
+  background-color: white;
+  color: black;
+  font-size: 18px;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+.s1-selectedService {
+  background-color: rgb(142, 13, 13);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+.s1-selectedService h4 {
+  color: white;
+}
+.s1-selectedService h5 {
+  color: white;
+}
+.s1-selectedService p {
+  color: white;
+}
