@@ -1,0 +1,15 @@
+{
+    "projects": {
+        "default": "helphive"
+    },
+    "targets": {
+        "helphive": {
+            "hosting": {
+                "helphivenow": [
+                    "helphivenow"
+                ]
+            }
+        }
+    },
+    "etags": {}
+}
