@@ -41,12 +41,19 @@ const serviceIcons: Record<number, React.ReactNode> = {
     3: <LinenIcon />,
 };
 
+// Helper to normalize selectedJobTypes to number[]
+function normalizeJobTypes(jobTypes: number[] | { id: number; name: string; _id?: string }[] | undefined): number[] {
+    if (!jobTypes || jobTypes.length === 0) return [];
+    if (typeof jobTypes[0] === 'number') return jobTypes as number[];
+    return (jobTypes as { id: number }[]).map((jt) => jt.id);
+}
+
 export default function ProviderDashboard() {
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectCurrentUser);
 
     const [isAvailable, setIsAvailable] = useState(user?.isProviderAvailable || false);
-    const [selectedJobTypes, setSelectedJobTypes] = useState<number[]>(user?.selectedJobTypes || []);
+    const [selectedJobTypes, setSelectedJobTypes] = useState<number[]>(normalizeJobTypes(user?.selectedJobTypes));
     const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
         user?.currentLocation
             ? { lat: user.currentLocation.latitude, lng: user.currentLocation.longitude }
@@ -104,7 +111,7 @@ export default function ProviderDashboard() {
         } catch {
             // Revert on error
             setIsAvailable(user?.isProviderAvailable || false);
-            setSelectedJobTypes(user?.selectedJobTypes || []);
+            setSelectedJobTypes(normalizeJobTypes(user?.selectedJobTypes));
         }
     };
 
