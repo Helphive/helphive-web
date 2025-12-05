@@ -30,10 +30,9 @@ jobs:
 
             - name: Create .env File
               run: |
-                  echo "VITE_PUBLIC_GCLOUD_BUCKET_HELPHIVE_USERS=${{ vars.VITE_PUBLIC_GCLOUD_BUCKET_HELPHIVE_USERS }}" >> .env
                   echo "VITE_API_URL=${{ vars.VITE_API_URL }}" >> .env
-                  echo "VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}" >> .env
                   echo "VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}" >> .env
+                  echo "VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}" >> .env
 
             - run: npm run build
 

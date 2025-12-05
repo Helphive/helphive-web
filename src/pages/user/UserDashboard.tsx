@@ -11,7 +11,6 @@ import {
     Chip,
     CircularProgress,
     Alert,
-    TextField,
     Slider,
     Stack,
 } from '@mui/material';
@@ -21,6 +20,7 @@ import {
     AccessTime as TimeIcon,
     LocationOn as LocationIcon,
 } from '@mui/icons-material';
+import PlacesAutocomplete from '@/components/PlacesAutocomplete';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -351,14 +351,11 @@ export default function UserDashboard() {
                                         />
                                     </Grid>
                                     <Grid size={{ xs: 12 }}>
-                                        <TextField
-                                            fullWidth
-                                            label="Address"
+                                        <PlacesAutocomplete
                                             value={formData.address}
-                                            onChange={(e) =>
-                                                dispatch(setFormData({ address: e.target.value }))
+                                            onChange={(address, lat, lng) =>
+                                                dispatch(setFormData({ address, latitude: lat, longitude: lng }))
                                             }
-                                            placeholder="Enter the service location"
                                         />
                                     </Grid>
                                 </Grid>
