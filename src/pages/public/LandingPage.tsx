@@ -20,7 +20,6 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Link,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {
@@ -42,7 +41,7 @@ import {
 import { useTheme as useAppTheme } from '@/theme/ThemeContext';
 import { SERVICES } from '@/types';
 
-const ANDROID_AAB_URL = 'https://drive.google.com/file/d/1uwjunKiCUo3GBNYvnC3NGbLaUzBY7f4a/view?usp=sharing';
+const ANDROID_APK_URL = 'https://drive.google.com/file/d/1Q3tWgW9ZcbC62uUw6ghG1c3p1t4XWYDZ/view?usp=sharing';
 const APP_STORE_URL = 'https://apps.apple.com/app/helphive'; // Placeholder - update when available
 
 const serviceIcons: Record<number, React.ReactNode> = {
@@ -186,6 +185,7 @@ export default function LandingPage() {
                                         width: '100%',
                                         height: '100%',
                                         objectFit: 'contain',
+                                        filter: mode === 'dark' ? 'brightness(0.9) saturate(0.9)' : 'none',
                                     }}
                                 />
                             </Box>
@@ -451,7 +451,7 @@ export default function LandingPage() {
                 </DialogTitle>
                 <DialogContent>
                     <Typography color="text.secondary" sx={{ mb: 3 }}>
-                        The app is not yet available on Google Play Store. Follow these steps to install it manually:
+                        The app is not yet available on Google Play Store. Follow these simple steps to install it:
                     </Typography>
                     <List>
                         <ListItem>
@@ -459,12 +459,8 @@ export default function LandingPage() {
                                 <DownloadIcon color="primary" />
                             </ListItemIcon>
                             <ListItemText
-                                primary="Step 1: Download the AAB file"
-                                secondary={
-                                    <>
-                                        Click the button below to download the app bundle file from Google Drive.
-                                    </>
-                                }
+                                primary="Step 1: Download the APK file"
+                                secondary="Click the button below to download the APK file from Google Drive."
                             />
                         </ListItem>
                         <ListItem>
@@ -473,7 +469,7 @@ export default function LandingPage() {
                             </ListItemIcon>
                             <ListItemText
                                 primary="Step 2: Enable installation from unknown sources"
-                                secondary="Go to Settings → Security → Enable 'Install unknown apps' for your browser or file manager."
+                                secondary="When prompted, allow your browser or file manager to install apps from unknown sources."
                             />
                         </ListItem>
                         <ListItem>
@@ -481,20 +477,8 @@ export default function LandingPage() {
                                 <FolderIcon color="primary" />
                             </ListItemIcon>
                             <ListItemText
-                                primary="Step 3: Install using Bundletool or Split APKs Installer"
-                                secondary={
-                                    <>
-                                        AAB files require a tool to install. We recommend using{' '}
-                                        <Link
-                                            href="https://play.google.com/store/apps/details?id=com.aefyr.sai"
-                                            target="_blank"
-                                            rel="noopener"
-                                        >
-                                            SAI (Split APKs Installer)
-                                        </Link>
-                                        {' '}from Play Store to easily install AAB files.
-                                    </>
-                                }
+                                primary="Step 3: Open the downloaded file"
+                                secondary="Tap the downloaded APK file to start the installation process."
                             />
                         </ListItem>
                         <ListItem>
@@ -515,9 +499,9 @@ export default function LandingPage() {
                     <Button
                         variant="contained"
                         startIcon={<DownloadIcon />}
-                        onClick={() => window.open(ANDROID_AAB_URL, '_blank')}
+                        onClick={() => window.open(ANDROID_APK_URL, '_blank')}
                     >
-                        Download AAB File
+                        Download APK
                     </Button>
                 </DialogActions>
             </Dialog>
