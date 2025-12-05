@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -11,6 +12,15 @@ import {
     IconButton,
     useTheme,
     Stack,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Link,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {
@@ -23,9 +33,17 @@ import {
     TrackChanges as TrackingIcon,
     DarkMode as DarkModeIcon,
     LightMode as LightModeIcon,
+    Download as DownloadIcon,
+    PhoneAndroid as PhoneIcon,
+    Settings as SettingsIcon,
+    FolderOpen as FolderIcon,
+    CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { useTheme as useAppTheme } from '@/theme/ThemeContext';
 import { SERVICES } from '@/types';
+
+const ANDROID_AAB_URL = 'https://drive.google.com/file/d/1uwjunKiCUo3GBNYvnC3NGbLaUzBY7f4a/view?usp=sharing';
+const APP_STORE_URL = 'https://apps.apple.com/app/helphive'; // Placeholder - update when available
 
 const serviceIcons: Record<number, React.ReactNode> = {
     1: <CleaningIcon sx={{ fontSize: 48 }} />,
@@ -60,6 +78,15 @@ export default function LandingPage() {
     const navigate = useNavigate();
     const theme = useTheme();
     const { mode, toggleTheme } = useAppTheme();
+    const [androidDialogOpen, setAndroidDialogOpen] = useState(false);
+
+    const handleAndroidClick = () => {
+        setAndroidDialogOpen(true);
+    };
+
+    const handleAppStoreClick = () => {
+        window.open(APP_STORE_URL, '_blank');
+    };
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -267,6 +294,84 @@ export default function LandingPage() {
                 </Container>
             </Box>
 
+            {/* Download Mobile App Section */}
+            <Box sx={{ py: { xs: 8, md: 12 } }}>
+                <Container maxWidth="lg">
+                    <Grid container spacing={6} alignItems="center">
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Box
+                                    component="img"
+                                    src="/download-mobile-app.png"
+                                    alt="HelpHive Mobile App"
+                                    sx={{
+                                        maxWidth: '100%',
+                                        height: 'auto',
+                                        maxHeight: 500,
+                                        borderRadius: 4,
+                                    }}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Typography
+                                variant="h3"
+                                fontWeight={700}
+                                sx={{ mb: 2 }}
+                            >
+                                Get the Mobile App
+                            </Typography>
+                            <Typography
+                                variant="h6"
+                                color="text.secondary"
+                                sx={{ mb: 4, fontWeight: 400 }}
+                            >
+                                Download HelpHive on your phone for the best experience.
+                                Book services, track orders, and manage your account on the go.
+                            </Typography>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                {/* App Store Button */}
+                                <Box
+                                    component="img"
+                                    src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                                    alt="Download on the App Store"
+                                    onClick={handleAppStoreClick}
+                                    sx={{
+                                        height: 50,
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s',
+                                        '&:hover': {
+                                            transform: 'scale(1.05)',
+                                        },
+                                    }}
+                                />
+                                {/* Play Store Button */}
+                                <Box
+                                    component="img"
+                                    src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                                    alt="Get it on Google Play"
+                                    onClick={handleAndroidClick}
+                                    sx={{
+                                        height: 50,
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s',
+                                        '&:hover': {
+                                            transform: 'scale(1.05)',
+                                        },
+                                    }}
+                                />
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
+
             {/* CTA Section */}
             <Box sx={{ py: { xs: 8, md: 12 } }}>
                 <Container maxWidth="md">
@@ -328,6 +433,94 @@ export default function LandingPage() {
                     </Typography>
                 </Container>
             </Box>
+
+            {/* Android Installation Dialog */}
+            <Dialog
+                open={androidDialogOpen}
+                onClose={() => setAndroidDialogOpen(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle sx={{ pb: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <PhoneIcon color="primary" />
+                        <Typography variant="h6" fontWeight={600}>
+                            Install HelpHive for Android
+                        </Typography>
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <Typography color="text.secondary" sx={{ mb: 3 }}>
+                        The app is not yet available on Google Play Store. Follow these steps to install it manually:
+                    </Typography>
+                    <List>
+                        <ListItem>
+                            <ListItemIcon>
+                                <DownloadIcon color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="Step 1: Download the AAB file"
+                                secondary={
+                                    <>
+                                        Click the button below to download the app bundle file from Google Drive.
+                                    </>
+                                }
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemIcon>
+                                <SettingsIcon color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="Step 2: Enable installation from unknown sources"
+                                secondary="Go to Settings → Security → Enable 'Install unknown apps' for your browser or file manager."
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemIcon>
+                                <FolderIcon color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="Step 3: Install using Bundletool or Split APKs Installer"
+                                secondary={
+                                    <>
+                                        AAB files require a tool to install. We recommend using{' '}
+                                        <Link
+                                            href="https://play.google.com/store/apps/details?id=com.aefyr.sai"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            SAI (Split APKs Installer)
+                                        </Link>
+                                        {' '}from Play Store to easily install AAB files.
+                                    </>
+                                }
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemIcon>
+                                <CheckIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="Step 4: Open and enjoy!"
+                                secondary="Once installed, open HelpHive and sign in with your account."
+                            />
+                        </ListItem>
+                    </List>
+                </DialogContent>
+                <DialogActions sx={{ p: 3, pt: 0 }}>
+                    <Button onClick={() => setAndroidDialogOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<DownloadIcon />}
+                        onClick={() => window.open(ANDROID_AAB_URL, '_blank')}
+                    >
+                        Download AAB File
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
