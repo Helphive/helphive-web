@@ -308,7 +308,7 @@ export default function LandingPage() {
                             >
                                 <Box
                                     component="img"
-                                    src="/download-mobile-app.png"
+                                    src="/images/download-mobile-app.png"
                                     alt="HelpHive Mobile App"
                                     sx={{
                                         maxWidth: '100%',
