@@ -1,0 +1,12 @@
+{
+    "projects": {
+        "default": "helphivenow"
+    },
+    "targets": {
+        "helphivenow": {
+            "hosting": {
+                "helphivenow": ["helphivenow"]
+            }
+        }
+    }
+}
