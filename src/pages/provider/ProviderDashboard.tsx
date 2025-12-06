@@ -272,8 +272,9 @@ export default function ProviderDashboard() {
                                     bgcolor: 'grey.100',
                                 }}
                             >
-                                {location ? (
+                                {location && location.lat && location.lng ? (
                                     <MapContainer
+                                        key={`${location.lat}-${location.lng}`}
                                         center={[location.lat, location.lng]}
                                         zoom={15}
                                         style={{ height: '100%', width: '100%' }}
@@ -286,6 +287,20 @@ export default function ProviderDashboard() {
                                             <Popup>Your current location</Popup>
                                         </Marker>
                                     </MapContainer>
+                                ) : locationError ? (
+                                    <Box
+                                        sx={{
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'text.secondary',
+                                        }}
+                                    >
+                                        <LocationOn sx={{ fontSize: 48, mb: 1, opacity: 0.5 }} />
+                                        <Typography variant="body2">Location unavailable</Typography>
+                                    </Box>
                                 ) : (
                                     <Box
                                         sx={{

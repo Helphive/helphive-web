@@ -24,6 +24,7 @@ import ProviderDashboard from '@/pages/provider/ProviderDashboard';
 import ProviderOnboarding from '@/pages/provider/ProviderOnboarding';
 import AccountPending from '@/pages/provider/AccountPending';
 import AccountRejected from '@/pages/provider/AccountRejected';
+import AccountApproved from '@/pages/provider/AccountApproved';
 import AvailableOrders from '@/pages/provider/AvailableOrders';
 import OrderDetails from '@/pages/provider/OrderDetails';
 import MyOrders from '@/pages/provider/MyOrders';
@@ -70,7 +71,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
-// Provider Dashboard Route - only for approved providers
+// Provider Dashboard Route - only for approved providers who have seen the approval screen
 function ApprovedProviderRoute({ children }: { children: React.ReactNode }) {
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
     const user = useAppSelector(selectCurrentUser);
@@ -92,6 +93,11 @@ function ApprovedProviderRoute({ children }: { children: React.ReactNode }) {
     }
     if (user?.providerStatus !== 'approved') {
         return <Navigate to="/provider/onboarding" replace />;
+    }
+
+    // If approved but haven't seen the welcome screen yet, show it
+    if (!user?.providerAccountApproval) {
+        return <Navigate to="/provider/approved" replace />;
     }
 
     return <>{children}</>;
@@ -221,6 +227,14 @@ function App() {
                         <OnboardingRoute>
                             <AccountRejected />
                         </OnboardingRoute>
+                    }
+                />
+                <Route
+                    path="/provider/approved"
+                    element={
+                        <ProtectedRoute>
+                            <AccountApproved />
+                        </ProtectedRoute>
                     }
                 />
 

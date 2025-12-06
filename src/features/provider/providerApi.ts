@@ -50,6 +50,13 @@ export const providerApi = apiSlice.injectEndpoints({
             query: () => '/auth/provider/account-approval-screen',
             providesTags: ['Provider'],
         }),
+        markApprovalScreenSeen: builder.mutation<{ message: string }, void>({
+            query: () => ({
+                url: '/auth/provider/account-approval-screen',
+                method: 'GET', // Backend uses GET to mark as seen
+            }),
+            invalidatesTags: ['User'],
+        }),
         updateProviderAvailability: builder.mutation<void, UpdateAvailabilityRequest>({
             query: (body) => ({
                 url: '/auth/provider/update-provider-availability',
@@ -113,6 +120,7 @@ export const providerApi = apiSlice.injectEndpoints({
 export const {
     useRequestProviderAccountMutation,
     useGetAccountApprovalScreenQuery,
+    useMarkApprovalScreenSeenMutation,
     useUpdateProviderAvailabilityMutation,
     useGetAvailableBookingsQuery,
     useGetProviderBookingByIdMutation,

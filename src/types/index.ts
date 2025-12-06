@@ -10,6 +10,7 @@ export interface User {
     verified?: boolean;
     roles: Record<string, boolean> | string[] | string;
     providerStatus?: 'pending' | 'approved' | 'rejected' | 'none';
+    providerAccountApproval?: boolean; // true if user has seen the approval welcome screen
     stripeConnectedAccountId?: string;
     availableBalance?: number;
     isProviderAvailable?: boolean;
