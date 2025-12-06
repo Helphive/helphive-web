@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -27,6 +27,8 @@ import {
 } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { useRequestProviderAccountMutation } from '@/features/provider/providerApi';
+import { useAppSelector } from '@/store/hooks';
+import { selectCurrentUser } from '@/features/auth/authSlice';
 import { SERVICES } from '@/types';
 
 interface OnboardingFormData {
@@ -44,6 +46,7 @@ const steps = ['Personal Info', 'Documents', 'Services'];
 
 export default function ProviderOnboarding() {
     const navigate = useNavigate();
+    const user = useAppSelector(selectCurrentUser);
     const [activeStep, setActiveStep] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -65,7 +68,18 @@ export default function ProviderOnboarding() {
         handleSubmit,
         formState: { errors },
         getValues,
+        setValue,
     } = useForm<OnboardingFormData>();
+
+    // Pre-fill form with user data
+    useEffect(() => {
+        if (user) {
+            if (user.firstName) setValue('firstName', user.firstName);
+            if (user.lastName) setValue('lastName', user.lastName);
+            if (user.email) setValue('email', user.email);
+            if (user.phone) setValue('phone', user.phone);
+        }
+    }, [user, setValue]);
 
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -241,6 +255,16 @@ export default function ProviderOnboarding() {
                                                 })}
                                                 error={!!errors.email}
                                                 helperText={errors.email?.message}
+                                                slotProps={{
+                                                    input: {
+                                                        readOnly: true,
+                                                    },
+                                                }}
+                                                sx={{
+                                                    '& .MuiInputBase-input': {
+                                                        bgcolor: 'action.hover',
+                                                    },
+                                                }}
                                             />
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 6 }}>

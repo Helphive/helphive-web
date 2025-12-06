@@ -2,16 +2,22 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Card, CardContent, Button } from '@mui/material';
 import { HourglassTop, Refresh } from '@mui/icons-material';
 import { useGetAccountApprovalScreenQuery } from '@/features/provider/providerApi';
+import { useAppDispatch } from '@/store/hooks';
+import { updateUser } from '@/features/auth/authSlice';
 
 export default function AccountPending() {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { refetch, isFetching } = useGetAccountApprovalScreenQuery();
 
     const handleRefresh = async () => {
         const result = await refetch();
         if (result.data?.status === 'approved') {
+            // Update user state so routing works correctly
+            dispatch(updateUser({ providerStatus: 'approved' }));
             navigate('/provider');
         } else if (result.data?.status === 'rejected') {
+            dispatch(updateUser({ providerStatus: 'rejected' }));
             navigate('/provider/rejected');
         }
     };

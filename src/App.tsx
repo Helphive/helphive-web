@@ -70,8 +70,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
-// Provider Route wrapper - checks if user is a provider
-function ProviderRoute({ children }: { children: React.ReactNode }) {
+// Provider Dashboard Route - only for approved providers
+function ApprovedProviderRoute({ children }: { children: React.ReactNode }) {
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
     const user = useAppSelector(selectCurrentUser);
 
@@ -81,6 +81,38 @@ function ProviderRoute({ children }: { children: React.ReactNode }) {
 
     if (!hasRole(user?.roles, 'Provider')) {
         return <Navigate to="/user" replace />;
+    }
+
+    // Redirect based on provider status
+    if (user?.providerStatus === 'pending') {
+        return <Navigate to="/provider/pending" replace />;
+    }
+    if (user?.providerStatus === 'rejected') {
+        return <Navigate to="/provider/rejected" replace />;
+    }
+    if (user?.providerStatus !== 'approved') {
+        return <Navigate to="/provider/onboarding" replace />;
+    }
+
+    return <>{children}</>;
+}
+
+// Provider Onboarding Route - only for non-approved providers
+function OnboardingRoute({ children }: { children: React.ReactNode }) {
+    const isAuthenticated = useAppSelector(selectIsAuthenticated);
+    const user = useAppSelector(selectCurrentUser);
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (!hasRole(user?.roles, 'Provider')) {
+        return <Navigate to="/user" replace />;
+    }
+
+    // If already approved, redirect to dashboard
+    if (user?.providerStatus === 'approved') {
+        return <Navigate to="/provider" replace />;
     }
 
     return <>{children}</>;
@@ -149,13 +181,13 @@ function App() {
                     <Route path="payment" element={<BookingPayment />} />
                 </Route>
 
-                {/* Provider routes */}
+                {/* Provider routes - only for approved providers */}
                 <Route
                     path="/provider"
                     element={
-                        <ProviderRoute>
+                        <ApprovedProviderRoute>
                             <DashboardLayout userType="provider" />
-                        </ProviderRoute>
+                        </ApprovedProviderRoute>
                     }
                 >
                     <Route index element={<ProviderDashboard />} />
@@ -166,29 +198,29 @@ function App() {
                     <Route path="earnings" element={<Earnings />} />
                 </Route>
 
-                {/* Provider onboarding routes (without dashboard layout) */}
+                {/* Provider onboarding routes (without dashboard layout) - only for non-approved */}
                 <Route
                     path="/provider/onboarding"
                     element={
-                        <ProviderRoute>
+                        <OnboardingRoute>
                             <ProviderOnboarding />
-                        </ProviderRoute>
+                        </OnboardingRoute>
                     }
                 />
                 <Route
                     path="/provider/pending"
                     element={
-                        <ProviderRoute>
+                        <OnboardingRoute>
                             <AccountPending />
-                        </ProviderRoute>
+                        </OnboardingRoute>
                     }
                 />
                 <Route
                     path="/provider/rejected"
                     element={
-                        <ProviderRoute>
+                        <OnboardingRoute>
                             <AccountRejected />
-                        </ProviderRoute>
+                        </OnboardingRoute>
                     }
                 />
 
