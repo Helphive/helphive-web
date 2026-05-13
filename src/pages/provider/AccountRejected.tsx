@@ -43,7 +43,7 @@ export default function AccountRejected() {
                     <Button
                         variant="contained"
                         startIcon={<Email />}
-                        href="mailto:support@helphivenow.com"
+                        href="mailto:support@helphive.projects.himaiz.com"
                         sx={{ px: 4 }}
                     >
                         Contact Support
