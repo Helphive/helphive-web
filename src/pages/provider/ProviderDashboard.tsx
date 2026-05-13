@@ -42,7 +42,9 @@ const serviceIcons: Record<number, React.ReactNode> = {
 };
 
 // Helper to normalize selectedJobTypes to number[]
-function normalizeJobTypes(jobTypes: number[] | { id: number; name: string; _id?: string }[] | undefined): number[] {
+function normalizeJobTypes(
+    jobTypes: number[] | { id: number; name: string; _id?: string }[] | undefined
+): number[] {
     if (!jobTypes || jobTypes.length === 0) return [];
     if (typeof jobTypes[0] === 'number') return jobTypes as number[];
     return (jobTypes as { id: number }[]).map((jt) => jt.id);
@@ -53,7 +55,9 @@ export default function ProviderDashboard() {
     const user = useAppSelector(selectCurrentUser);
 
     const [isAvailable, setIsAvailable] = useState(user?.isProviderAvailable || false);
-    const [selectedJobTypes, setSelectedJobTypes] = useState<number[]>(normalizeJobTypes(user?.selectedJobTypes));
+    const [selectedJobTypes, setSelectedJobTypes] = useState<number[]>(
+        normalizeJobTypes(user?.selectedJobTypes)
+    );
     const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
         user?.currentLocation
             ? { lat: user.currentLocation.latitude, lng: user.currentLocation.longitude }
@@ -73,7 +77,9 @@ export default function ProviderDashboard() {
                     });
                 },
                 () => {
-                    setLocationError('Unable to get your location. Please enable location services.');
+                    setLocationError(
+                        'Unable to get your location. Please enable location services.'
+                    );
                 }
             );
         }
@@ -147,7 +153,7 @@ export default function ProviderDashboard() {
                             </Typography>
                             {user?.rating && (
                                 <Chip
-                                    label={`⭐ ${user.rating.toFixed(1)} Rating`}
+                                    label={`★ ${user.rating.toFixed(1)} Rating`}
                                     color="primary"
                                     variant="outlined"
                                 />
@@ -175,7 +181,9 @@ export default function ProviderDashboard() {
                                     control={
                                         <Switch
                                             checked={isAvailable}
-                                            onChange={(e) => handleAvailabilityChange(e.target.checked)}
+                                            onChange={(e) =>
+                                                handleAvailabilityChange(e.target.checked)
+                                            }
                                             disabled={isLoading}
                                             color="success"
                                         />
@@ -299,7 +307,9 @@ export default function ProviderDashboard() {
                                         }}
                                     >
                                         <LocationOn sx={{ fontSize: 48, mb: 1, opacity: 0.5 }} />
-                                        <Typography variant="body2">Location unavailable</Typography>
+                                        <Typography variant="body2">
+                                            Location unavailable
+                                        </Typography>
                                     </Box>
                                 ) : (
                                     <Box

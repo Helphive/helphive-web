@@ -92,7 +92,8 @@ function BookingCard({ booking, onClick }: { booking: Booking; onClick: () => vo
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <TimeIcon fontSize="small" color="action" />
                         <Typography variant="body2" color="text.secondary">
-                            {booking.hours || 0} hour{(booking.hours || 0) > 1 ? 's' : ''} @ £{booking.rate || 0}/hr
+                            {booking.hours || 0} hour{(booking.hours || 0) > 1 ? 's' : ''} @ £
+                            {booking.rate || 0}/hr
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -354,7 +355,13 @@ export default function UserDashboard() {
                                         <PlacesAutocomplete
                                             value={formData.address}
                                             onChange={(address, lat, lng) =>
-                                                dispatch(setFormData({ address, latitude: lat, longitude: lng }))
+                                                dispatch(
+                                                    setFormData({
+                                                        address,
+                                                        latitude: lat,
+                                                        longitude: lng,
+                                                    })
+                                                )
                                             }
                                         />
                                     </Grid>
@@ -399,7 +406,11 @@ export default function UserDashboard() {
                                             <Typography variant="h6" fontWeight={600}>
                                                 Total
                                             </Typography>
-                                            <Typography variant="h6" fontWeight={600} color="primary">
+                                            <Typography
+                                                variant="h6"
+                                                fontWeight={600}
+                                                color="primary"
+                                            >
                                                 £{(formData.rate * formData.hours).toFixed(2)}
                                             </Typography>
                                         </Box>
@@ -437,9 +448,7 @@ export default function UserDashboard() {
                                     <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={booking._id}>
                                         <BookingCard
                                             booking={booking}
-                                            onClick={() =>
-                                                navigate(`/user/booking/${booking._id}`)
-                                            }
+                                            onClick={() => navigate(`/user/booking/${booking._id}`)}
                                         />
                                     </Grid>
                                 ))}
@@ -467,9 +476,7 @@ export default function UserDashboard() {
                                     <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={booking._id}>
                                         <BookingCard
                                             booking={booking}
-                                            onClick={() =>
-                                                navigate(`/user/booking/${booking._id}`)
-                                            }
+                                            onClick={() => navigate(`/user/booking/${booking._id}`)}
                                         />
                                     </Grid>
                                 ))}

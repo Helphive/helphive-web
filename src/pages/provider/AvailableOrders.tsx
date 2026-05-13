@@ -77,7 +77,7 @@ function OrderCard({ booking, onClick }: { booking: Booking; onClick: () => void
                         Total Earnings
                     </Typography>
                     <Typography variant="h6" color="primary" fontWeight={600}>
-                        £{(((booking.rate || 0) * (booking.hours || 0)) * 0.95).toFixed(2)}
+                        £{((booking.rate || 0) * (booking.hours || 0) * 0.95).toFixed(2)}
                     </Typography>
                 </Box>
             </CardContent>
@@ -91,7 +91,14 @@ export default function AvailableOrders() {
 
     return (
         <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 4,
+                }}
+            >
                 <Box>
                     <Typography variant="h4" fontWeight={700}>
                         Available Orders

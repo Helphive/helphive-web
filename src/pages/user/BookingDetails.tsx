@@ -124,7 +124,14 @@ export default function BookingDetails() {
                 Back to Dashboard
             </Button>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 4,
+                }}
+            >
                 <Typography variant="h4" fontWeight={700}>
                     Booking Details
                 </Typography>
@@ -135,7 +142,14 @@ export default function BookingDetails() {
                 />
             </Box>
 
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, maxWidth: 1000 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 4,
+                    maxWidth: 1000,
+                }}
+            >
                 {/* Main Details */}
                 <Box sx={{ flex: 2, minWidth: 0 }}>
                     <Card sx={{ mb: 3 }}>
@@ -179,7 +193,8 @@ export default function BookingDetails() {
                                         </Typography>
                                         <Typography>
                                             {dayjs(booking.startTime).format('h:mm A')} •{' '}
-                                            {booking.hours || 0} hour{(booking.hours || 0) > 1 ? 's' : ''}
+                                            {booking.hours || 0} hour
+                                            {(booking.hours || 0) > 1 ? 's' : ''}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -218,7 +233,7 @@ export default function BookingDetails() {
                                         </Typography>
                                         {provider.rating && (
                                             <Typography variant="body2" color="text.secondary">
-                                                ⭐ {provider.rating.toFixed(1)} rating
+                                                ★ {provider.rating.toFixed(1)} rating
                                             </Typography>
                                         )}
                                     </Box>
@@ -272,11 +287,15 @@ export default function BookingDetails() {
 
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                                 <Typography color="text.secondary">Subtotal</Typography>
-                                <Typography>£{((booking.rate || 0) * (booking.hours || 0)).toFixed(2)}</Typography>
+                                <Typography>
+                                    £{((booking.rate || 0) * (booking.hours || 0)).toFixed(2)}
+                                </Typography>
                             </Box>
 
                             {booking.platformFee != null && (
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                <Box
+                                    sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
+                                >
                                     <Typography color="text.secondary">Platform Fee</Typography>
                                     <Typography>£{booking.platformFee.toFixed(2)}</Typography>
                                 </Box>
@@ -295,7 +314,9 @@ export default function BookingDetails() {
 
                             <Chip
                                 label={booking.paymentStatus === 'completed' ? 'Paid' : 'Pending'}
-                                color={booking.paymentStatus === 'completed' ? 'success' : 'warning'}
+                                color={
+                                    booking.paymentStatus === 'completed' ? 'success' : 'warning'
+                                }
                                 sx={{ mt: 2 }}
                             />
                         </CardContent>

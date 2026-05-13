@@ -65,9 +65,7 @@ export default function LoginPage() {
                 <Typography variant="h4" fontWeight={700} color="primary" sx={{ mb: 1 }}>
                     Welcome Back
                 </Typography>
-                <Typography color="text.secondary">
-                    Sign in to continue to HelpHive
-                </Typography>
+                <Typography color="text.secondary">Sign in to continue to HelpHive</Typography>
             </Box>
 
             {error && (

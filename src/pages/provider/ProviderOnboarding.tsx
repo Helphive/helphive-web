@@ -18,13 +18,7 @@ import {
     StepLabel,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import {
-    CloudUpload,
-    Person,
-    Description,
-    Badge,
-    CheckCircle,
-} from '@mui/icons-material';
+import { CloudUpload, Person, Description, Badge, CheckCircle } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { useRequestProviderAccountMutation } from '@/features/provider/providerApi';
 import { useAppSelector } from '@/store/hooks';
@@ -279,16 +273,32 @@ export default function ProviderOnboarding() {
                                             />
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 6 }}>
-                                            <TextField fullWidth label="Country" {...register('country')} />
+                                            <TextField
+                                                fullWidth
+                                                label="Country"
+                                                {...register('country')}
+                                            />
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 6 }}>
-                                            <TextField fullWidth label="State/County" {...register('state')} />
+                                            <TextField
+                                                fullWidth
+                                                label="State/County"
+                                                {...register('state')}
+                                            />
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 6 }}>
-                                            <TextField fullWidth label="City" {...register('city')} />
+                                            <TextField
+                                                fullWidth
+                                                label="City"
+                                                {...register('city')}
+                                            />
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 6 }}>
-                                            <TextField fullWidth label="Street Address" {...register('street')} />
+                                            <TextField
+                                                fullWidth
+                                                label="Street Address"
+                                                {...register('street')}
+                                            />
                                         </Grid>
                                     </Grid>
                                 </Box>
@@ -320,7 +330,9 @@ export default function ProviderOnboarding() {
                                                         bgcolor: 'primary.main',
                                                     }}
                                                 >
-                                                    {!profilePreview && <Person sx={{ fontSize: 48 }} />}
+                                                    {!profilePreview && (
+                                                        <Person sx={{ fontSize: 48 }} />
+                                                    )}
                                                 </Avatar>
                                             </IconButton>
                                         </label>
@@ -339,7 +351,9 @@ export default function ProviderOnboarding() {
                                                     textAlign: 'center',
                                                     borderStyle: 'dashed',
                                                     cursor: 'pointer',
-                                                    borderColor: idDocument ? 'success.main' : 'divider',
+                                                    borderColor: idDocument
+                                                        ? 'success.main'
+                                                        : 'divider',
                                                 }}
                                                 component="label"
                                             >
@@ -347,12 +361,22 @@ export default function ProviderOnboarding() {
                                                     type="file"
                                                     accept="image/*,.pdf"
                                                     hidden
-                                                    onChange={(e) => setIdDocument(e.target.files?.[0] || null)}
+                                                    onChange={(e) =>
+                                                        setIdDocument(e.target.files?.[0] || null)
+                                                    }
                                                 />
                                                 {idDocument ? (
-                                                    <CheckCircle color="success" sx={{ fontSize: 40 }} />
+                                                    <CheckCircle
+                                                        color="success"
+                                                        sx={{ fontSize: 40 }}
+                                                    />
                                                 ) : (
-                                                    <Badge sx={{ fontSize: 40, color: 'text.secondary' }} />
+                                                    <Badge
+                                                        sx={{
+                                                            fontSize: 40,
+                                                            color: 'text.secondary',
+                                                        }}
+                                                    />
                                                 )}
                                                 <Typography sx={{ mt: 1 }}>
                                                     {idDocument ? idDocument.name : 'ID Document *'}
@@ -369,7 +393,9 @@ export default function ProviderOnboarding() {
                                                     textAlign: 'center',
                                                     borderStyle: 'dashed',
                                                     cursor: 'pointer',
-                                                    borderColor: dbsDocument ? 'success.main' : 'divider',
+                                                    borderColor: dbsDocument
+                                                        ? 'success.main'
+                                                        : 'divider',
                                                 }}
                                                 component="label"
                                             >
@@ -377,15 +403,27 @@ export default function ProviderOnboarding() {
                                                     type="file"
                                                     accept="image/*,.pdf"
                                                     hidden
-                                                    onChange={(e) => setDbsDocument(e.target.files?.[0] || null)}
+                                                    onChange={(e) =>
+                                                        setDbsDocument(e.target.files?.[0] || null)
+                                                    }
                                                 />
                                                 {dbsDocument ? (
-                                                    <CheckCircle color="success" sx={{ fontSize: 40 }} />
+                                                    <CheckCircle
+                                                        color="success"
+                                                        sx={{ fontSize: 40 }}
+                                                    />
                                                 ) : (
-                                                    <Description sx={{ fontSize: 40, color: 'text.secondary' }} />
+                                                    <Description
+                                                        sx={{
+                                                            fontSize: 40,
+                                                            color: 'text.secondary',
+                                                        }}
+                                                    />
                                                 )}
                                                 <Typography sx={{ mt: 1 }}>
-                                                    {dbsDocument ? dbsDocument.name : 'DBS Certificate *'}
+                                                    {dbsDocument
+                                                        ? dbsDocument.name
+                                                        : 'DBS Certificate *'}
                                                 </Typography>
                                             </Card>
                                         </Grid>
@@ -399,7 +437,9 @@ export default function ProviderOnboarding() {
                                                     textAlign: 'center',
                                                     borderStyle: 'dashed',
                                                     cursor: 'pointer',
-                                                    borderColor: resume ? 'success.main' : 'divider',
+                                                    borderColor: resume
+                                                        ? 'success.main'
+                                                        : 'divider',
                                                 }}
                                                 component="label"
                                             >
@@ -407,12 +447,22 @@ export default function ProviderOnboarding() {
                                                     type="file"
                                                     accept=".pdf,.doc,.docx"
                                                     hidden
-                                                    onChange={(e) => setResume(e.target.files?.[0] || null)}
+                                                    onChange={(e) =>
+                                                        setResume(e.target.files?.[0] || null)
+                                                    }
                                                 />
                                                 {resume ? (
-                                                    <CheckCircle color="success" sx={{ fontSize: 40 }} />
+                                                    <CheckCircle
+                                                        color="success"
+                                                        sx={{ fontSize: 40 }}
+                                                    />
                                                 ) : (
-                                                    <CloudUpload sx={{ fontSize: 40, color: 'text.secondary' }} />
+                                                    <CloudUpload
+                                                        sx={{
+                                                            fontSize: 40,
+                                                            color: 'text.secondary',
+                                                        }}
+                                                    />
                                                 )}
                                                 <Typography sx={{ mt: 1 }}>
                                                     {resume ? resume.name : 'Upload Resume/CV *'}
@@ -442,7 +492,9 @@ export default function ProviderOnboarding() {
                                                     onChange={() => {
                                                         setSelectedServices((prev) =>
                                                             prev.includes(service.id)
-                                                                ? prev.filter((id) => id !== service.id)
+                                                                ? prev.filter(
+                                                                      (id) => id !== service.id
+                                                                  )
                                                                 : [...prev, service.id]
                                                         );
                                                     }}
@@ -450,13 +502,22 @@ export default function ProviderOnboarding() {
                                             }
                                             label={
                                                 <Box>
-                                                    <Typography fontWeight={500}>{service.name}</Typography>
-                                                    <Typography variant="body2" color="text.secondary">
+                                                    <Typography fontWeight={500}>
+                                                        {service.name}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                    >
                                                         {service.description}
                                                     </Typography>
                                                 </Box>
                                             }
-                                            sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'flex-start',
+                                                mb: 2,
+                                            }}
                                         />
                                     ))}
                                 </Box>

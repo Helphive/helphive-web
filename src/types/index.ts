@@ -30,13 +30,23 @@ export interface Service {
 }
 
 export const SERVICES: Service[] = [
-    { id: 1, name: 'Public Area Attendant', description: 'Cleaning and maintenance of public spaces' },
+    {
+        id: 1,
+        name: 'Public Area Attendant',
+        description: 'Cleaning and maintenance of public spaces',
+    },
     { id: 2, name: 'Room Attendant', description: 'Hotel room cleaning and preparation' },
     { id: 3, name: 'Linen Porter', description: 'Linen handling and distribution' },
 ];
 
 // Booking types
-export type BookingStatus = 'pending' | 'paid' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+export type BookingStatus =
+    | 'pending'
+    | 'paid'
+    | 'accepted'
+    | 'in_progress'
+    | 'completed'
+    | 'cancelled';
 
 export interface Booking {
     _id: string;

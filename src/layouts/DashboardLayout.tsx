@@ -22,6 +22,7 @@ import {
     BottomNavigationAction,
     Paper,
     Container,
+    Stack,
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -31,10 +32,7 @@ import {
     AccountBalanceWallet as EarningsIcon,
     Person as ProfileIcon,
     Logout as LogoutIcon,
-    DarkMode as DarkModeIcon,
-    LightMode as LightModeIcon,
 } from '@mui/icons-material';
-import { useTheme as useAppTheme } from '@/theme/ThemeContext';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectCurrentUser, logout } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/features/auth/authApi';
@@ -60,7 +58,6 @@ const providerNavItems = [
 
 export default function DashboardLayout({ userType }: DashboardLayoutProps) {
     const theme = useTheme();
-    const { mode, toggleTheme } = useAppTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch();
@@ -95,15 +92,10 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
     };
 
     const drawer = (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Toolbar sx={{ justifyContent: 'center', py: 2, gap: 1 }}>
-                <Box
-                    component="img"
-                    src="/logo.png"
-                    alt="HelpHive"
-                    sx={{ height: 36 }}
-                />
-                <Typography variant="h5" fontWeight={700} color="primary">
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF' }}>
+            <Toolbar sx={{ justifyContent: 'center', py: 2.5, gap: 1 }}>
+                <Box component="img" src="/logo.png" alt="HelpHive" sx={{ height: 36 }} />
+                <Typography variant="h5" fontWeight={800} color="text.primary">
                     HelpHive
                 </Typography>
             </Toolbar>
@@ -119,9 +111,12 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                             }}
                             sx={{
                                 borderRadius: 2,
+                                minHeight: 48,
+                                color: 'text.secondary',
                                 '&.Mui-selected': {
                                     bgcolor: 'primary.main',
                                     color: 'white',
+                                    boxShadow: '0 12px 24px rgba(255, 87, 64, 0.22)',
                                     '&:hover': {
                                         bgcolor: 'primary.dark',
                                     },
@@ -140,14 +135,6 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
             <Divider />
             <List sx={{ px: 2, py: 2 }}>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={toggleTheme} sx={{ borderRadius: 2 }}>
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-                        </ListItemIcon>
-                        <ListItemText primary={mode === 'dark' ? 'Light Mode' : 'Dark Mode'} />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding sx={{ mt: 1 }}>
                     <ListItemButton
                         onClick={handleLogout}
                         sx={{ borderRadius: 2, color: 'error.main' }}
@@ -163,7 +150,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
     );
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
             {/* App Bar */}
             <AppBar
                 position="fixed"
@@ -174,19 +161,24 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                     bgcolor: 'background.paper',
                     borderBottom: '1px solid',
                     borderColor: 'divider',
+                    backdropFilter: 'blur(18px)',
                 }}
             >
                 <Toolbar>
                     {isMobile && (
-                        <IconButton
-                            edge="start"
-                            onClick={() => setDrawerOpen(true)}
-                            sx={{ mr: 2 }}
-                        >
+                        <IconButton edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 2 }}>
                             <MenuIcon />
                         </IconButton>
                     )}
-                    <Box sx={{ flex: 1 }} />
+                    <Stack sx={{ flex: 1 }}>
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ display: { xs: 'none', sm: 'block' } }}
+                        >
+                            {userType === 'provider' ? 'Provider workspace' : 'Customer workspace'}
+                        </Typography>
+                    </Stack>
                     <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
                         <Avatar
                             src={user?.profile}
@@ -208,10 +200,6 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                             </Typography>
                         </MenuItem>
                         <Divider />
-                        <MenuItem onClick={toggleTheme}>
-                            {mode === 'dark' ? <LightModeIcon sx={{ mr: 1 }} /> : <DarkModeIcon sx={{ mr: 1 }} />}
-                            {mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                        </MenuItem>
                         <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
                             <LogoutIcon sx={{ mr: 1 }} />
                             Logout
@@ -232,6 +220,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                             boxSizing: 'border-box',
                             borderRight: '1px solid',
                             borderColor: 'divider',
+                            bgcolor: '#FFFFFF',
                         },
                     }}
                 >
@@ -250,6 +239,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                     '& .MuiDrawer-paper': {
                         width: DRAWER_WIDTH,
                         boxSizing: 'border-box',
+                        bgcolor: '#FFFFFF',
                     },
                 }}
             >
@@ -268,7 +258,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                 }}
             >
                 <Toolbar />
-                <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 } }}>
+                <Container maxWidth="xl" sx={{ py: { xs: 2.5, sm: 4 }, px: { xs: 2, sm: 3 } }}>
                     <Outlet />
                 </Container>
             </Box>
@@ -282,8 +272,10 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                         left: 0,
                         right: 0,
                         zIndex: 1000,
+                        borderTop: '1px solid',
+                        borderColor: 'divider',
                     }}
-                    elevation={3}
+                    elevation={0}
                 >
                     <BottomNavigation
                         value={getCurrentNavIndex()}

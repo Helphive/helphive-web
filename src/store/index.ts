@@ -9,8 +9,7 @@ export const store = configureStore({
         auth: authReducer,
         booking: bookingReducer,
     },
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(apiSlice.middleware),
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(apiSlice.middleware),
     devTools: import.meta.env.DEV,
 });
 

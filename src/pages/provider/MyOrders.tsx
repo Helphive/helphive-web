@@ -76,7 +76,7 @@ function OrderCard({ booking, onClick }: { booking: Booking; onClick: () => void
                     </Box>
                 </Stack>
                 <Typography variant="h6" color="primary" sx={{ mt: 2 }}>
-                    £{(((booking.rate || 0) * (booking.hours || 0)) * 0.95).toFixed(2)}
+                    £{((booking.rate || 0) * (booking.hours || 0) * 0.95).toFixed(2)}
                 </Typography>
             </CardContent>
         </Card>
@@ -87,12 +87,20 @@ export default function MyOrders() {
     const navigate = useNavigate();
     const { data: orders, isLoading, refetch } = useGetMyOrdersQuery();
 
-    const activeOrders = orders?.filter((o) => ['accepted', 'in_progress'].includes(o.status || '')) || [];
+    const activeOrders =
+        orders?.filter((o) => ['accepted', 'in_progress'].includes(o.status || '')) || [];
     const completedOrders = orders?.filter((o) => (o.status || '') === 'completed') || [];
 
     return (
         <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 4,
+                }}
+            >
                 <Box>
                     <Typography variant="h4" fontWeight={700}>
                         My Orders

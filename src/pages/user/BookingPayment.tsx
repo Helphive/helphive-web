@@ -14,7 +14,11 @@ import { CheckCircle } from '@mui/icons-material';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { selectBookingFormData, selectPaymentInfo, resetBookingForm } from '@/features/booking/bookingSlice';
+import {
+    selectBookingFormData,
+    selectPaymentInfo,
+    resetBookingForm,
+} from '@/features/booking/bookingSlice';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -132,7 +136,14 @@ export default function BookingPayment() {
                 Complete Payment
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, maxWidth: 900 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 4,
+                    maxWidth: 900,
+                }}
+            >
                 {/* Order Summary */}
                 <Card sx={{ flex: 1, minWidth: 0 }}>
                     <CardContent>

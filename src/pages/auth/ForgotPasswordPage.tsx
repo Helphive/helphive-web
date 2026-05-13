@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import {
-    Box,
-    Typography,
-    TextField,
-    Button,
-    Alert,
-    CircularProgress,
-} from '@mui/material';
+import { Box, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { CheckCircle, ArrowBack } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { useGetPasswordResetMutation } from '@/features/auth/authApi';
@@ -68,12 +61,7 @@ export default function ForgotPasswordPage() {
 
     return (
         <Box>
-            <Button
-                component={RouterLink}
-                to="/login"
-                startIcon={<ArrowBack />}
-                sx={{ mb: 3 }}
-            >
+            <Button component={RouterLink} to="/login" startIcon={<ArrowBack />} sx={{ mb: 3 }}>
                 Back to Login
             </Button>
 
@@ -117,11 +105,7 @@ export default function ForgotPasswordPage() {
                     disabled={isLoading}
                     sx={{ py: 1.5 }}
                 >
-                    {isLoading ? (
-                        <CircularProgress size={24} color="inherit" />
-                    ) : (
-                        'Send Reset Link'
-                    )}
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
                 </Button>
             </form>
         </Box>

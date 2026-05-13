@@ -65,7 +65,11 @@ export default function OrderDetails() {
     if (error || !booking) {
         return (
             <Box>
-                <Button startIcon={<ArrowBack />} onClick={() => navigate('/provider/orders')} sx={{ mb: 3 }}>
+                <Button
+                    startIcon={<ArrowBack />}
+                    onClick={() => navigate('/provider/orders')}
+                    sx={{ mb: 3 }}
+                >
                     Back to Orders
                 </Button>
                 <Alert severity="error">{error || 'Order not found'}</Alert>
@@ -80,7 +84,11 @@ export default function OrderDetails() {
 
     return (
         <Box>
-            <Button startIcon={<ArrowBack />} onClick={() => navigate('/provider/orders')} sx={{ mb: 3 }}>
+            <Button
+                startIcon={<ArrowBack />}
+                onClick={() => navigate('/provider/orders')}
+                sx={{ mb: 3 }}
+            >
                 Back to Orders
             </Button>
 
@@ -88,7 +96,14 @@ export default function OrderDetails() {
                 Order Details
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, maxWidth: 1000 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 4,
+                    maxWidth: 1000,
+                }}
+            >
                 <Box sx={{ flex: 2, minWidth: 0 }}>
                     {/* Service Info */}
                     <Card sx={{ mb: 3 }}>
@@ -126,8 +141,9 @@ export default function OrderDetails() {
                                             Time & Duration
                                         </Typography>
                                         <Typography>
-                                            {dayjs(booking.startTime).format('h:mm A')} • {booking.hours || 0}{' '}
-                                            hour{(booking.hours || 0) > 1 ? 's' : ''}
+                                            {dayjs(booking.startTime).format('h:mm A')} •{' '}
+                                            {booking.hours || 0} hour
+                                            {(booking.hours || 0) > 1 ? 's' : ''}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -215,7 +231,11 @@ export default function OrderDetails() {
                         disabled={isAccepting}
                         sx={{ py: 1.5 }}
                     >
-                        {isAccepting ? <CircularProgress size={24} color="inherit" /> : 'Accept Order'}
+                        {isAccepting ? (
+                            <CircularProgress size={24} color="inherit" />
+                        ) : (
+                            'Accept Order'
+                        )}
                     </Button>
                 </Box>
             </Box>

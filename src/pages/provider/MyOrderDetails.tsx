@@ -24,7 +24,10 @@ import {
     useGetProviderBookingByIdMutation,
     useStartBookingMutation,
 } from '@/features/provider/providerApi';
-import { useCompleteBookingMutation, useCancelBookingMutation } from '@/features/booking/bookingApi';
+import {
+    useCompleteBookingMutation,
+    useCancelBookingMutation,
+} from '@/features/booking/bookingApi';
 import type { Booking, User } from '@/types';
 
 export default function MyOrderDetails() {
@@ -137,7 +140,14 @@ export default function MyOrderDetails() {
                 Back to My Orders
             </Button>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 4,
+                }}
+            >
                 <Typography variant="h4" fontWeight={700}>
                     Order Details
                 </Typography>
@@ -148,7 +158,14 @@ export default function MyOrderDetails() {
                 />
             </Box>
 
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, maxWidth: 1000 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 4,
+                    maxWidth: 1000,
+                }}
+            >
                 <Box sx={{ flex: 2, minWidth: 0 }}>
                     {/* Service Info */}
                     <Card sx={{ mb: 3 }}>
@@ -186,8 +203,9 @@ export default function MyOrderDetails() {
                                             Time & Duration
                                         </Typography>
                                         <Typography>
-                                            {dayjs(booking.startTime).format('h:mm A')} • {booking.hours || 0}{' '}
-                                            hour{(booking.hours || 0) > 1 ? 's' : ''}
+                                            {dayjs(booking.startTime).format('h:mm A')} •{' '}
+                                            {booking.hours || 0} hour
+                                            {(booking.hours || 0) > 1 ? 's' : ''}
                                         </Typography>
                                     </Box>
                                 </Box>

@@ -3,7 +3,7 @@ import { TextField, CircularProgress, InputAdornment } from '@mui/material';
 import { LocationOn } from '@mui/icons-material';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 
-const libraries: ('places')[] = ['places'];
+const libraries: 'places'[] = ['places'];
 
 interface PlacesAutocompleteProps {
     value: string;

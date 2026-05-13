@@ -90,9 +90,7 @@ export default function ProviderSignupPage() {
                 <Typography variant="h4" fontWeight={700} color="primary" sx={{ mb: 1 }}>
                     Become a Provider
                 </Typography>
-                <Typography color="text.secondary">
-                    Join HelpHive and start earning
-                </Typography>
+                <Typography color="text.secondary">Join HelpHive and start earning</Typography>
             </Box>
 
             {error && (

@@ -189,7 +189,11 @@ export default function Earnings() {
 
             {/* Action Buttons */}
             <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
-                <Button variant="outlined" startIcon={<OpenInNew />} onClick={handleWithdrawMethods}>
+                <Button
+                    variant="outlined"
+                    startIcon={<OpenInNew />}
+                    onClick={handleWithdrawMethods}
+                >
                     Withdraw Methods
                 </Button>
                 <Button
@@ -294,11 +298,7 @@ export default function Earnings() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setPayoutDialogOpen(false)}>Cancel</Button>
-                    <Button
-                        variant="contained"
-                        onClick={handlePayout}
-                        disabled={isCreatingPayout}
-                    >
+                    <Button variant="contained" onClick={handlePayout} disabled={isCreatingPayout}>
                         {isCreatingPayout ? <CircularProgress size={24} /> : 'Withdraw'}
                     </Button>
                 </DialogActions>

@@ -42,19 +42,21 @@ function hasRole(roles: unknown, role: string): boolean {
         // Check for exact match first
         if (role in rolesObj) return rolesObj[role] === true;
         // Check case-insensitive
-        const key = Object.keys(rolesObj).find(k => k.toLowerCase() === roleLower);
+        const key = Object.keys(rolesObj).find((k) => k.toLowerCase() === roleLower);
         return key ? rolesObj[key] === true : false;
     }
 
     // Handle array format: ["User", "Provider"]
     if (Array.isArray(roles)) {
-        return roles.some(r => typeof r === 'string' && r.toLowerCase() === roleLower);
+        return roles.some((r) => typeof r === 'string' && r.toLowerCase() === roleLower);
     }
 
     // Handle string format: "Provider" or "User,Provider"
     if (typeof roles === 'string') {
-        return roles.toLowerCase() === roleLower ||
-               roles.split(',').some(r => r.trim().toLowerCase() === roleLower);
+        return (
+            roles.toLowerCase() === roleLower ||
+            roles.split(',').some((r) => r.trim().toLowerCase() === roleLower)
+        );
     }
 
     return false;

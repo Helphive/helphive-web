@@ -90,9 +90,7 @@ export default function SignupPage() {
                 <Typography variant="h4" fontWeight={700} color="primary" sx={{ mb: 1 }}>
                     Create Account
                 </Typography>
-                <Typography color="text.secondary">
-                    Sign up to book hospitality services
-                </Typography>
+                <Typography color="text.secondary">Sign up to book hospitality services</Typography>
             </Box>
 
             {error && (

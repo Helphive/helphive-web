@@ -73,7 +73,11 @@ export default function AccountApproved() {
                         disabled={isLoading}
                         sx={{ px: 6 }}
                     >
-                        {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Begin Your Journey'}
+                        {isLoading ? (
+                            <CircularProgress size={24} color="inherit" />
+                        ) : (
+                            'Begin Your Journey'
+                        )}
                     </Button>
                 </CardContent>
             </Card>
