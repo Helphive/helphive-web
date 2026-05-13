@@ -2,7 +2,9 @@ import { createApi, fetchBaseQuery, BaseQueryFn } from '@reduxjs/toolkit/query/r
 import type { RootState } from '../index';
 import { setCredentials, logout } from '@/features/auth/authSlice';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL =
+    import.meta.env.VITE_API_URL ||
+    (import.meta.env.DEV ? 'http://localhost:8080' : 'https://api.helphive.projects.himaiz.com');
 
 const baseQuery = fetchBaseQuery({
     baseUrl: API_URL,
