@@ -140,25 +140,25 @@ export default function LandingPage() {
     };
 
     const storeBadgeButtonSx = {
-        width: { xs: '100%', sm: 202 },
-        height: 60,
+        width: 'auto',
+        height: { xs: 48, sm: 52 },
         p: 0,
-        borderRadius: 2,
+        borderRadius: 1,
         bgcolor: 'transparent',
         border: 0,
         minHeight: 0,
-        boxShadow: '0 16px 34px rgba(16, 24, 40, 0.18)',
-        overflow: 'hidden',
+        boxShadow: 'none',
+        overflow: 'visible',
+        flexShrink: 0,
         '&:hover': {
             bgcolor: 'transparent',
             transform: 'translateY(-2px)',
-            boxShadow: '0 20px 42px rgba(16, 24, 40, 0.22)',
+            filter: 'drop-shadow(0 16px 26px rgba(16, 24, 40, 0.18))',
         },
         '& img': {
             display: 'block',
-            width: '100%',
+            width: 'auto',
             height: '100%',
-            objectFit: 'contain',
         },
         transition: 'transform 160ms ease, box-shadow 160ms ease',
     } as const;
@@ -290,6 +290,7 @@ export default function LandingPage() {
                                         component="img"
                                         src="/images/badge-app-store.svg"
                                         alt="Download on the App Store"
+                                        sx={{ height: { xs: 50, sm: 54 } }}
                                     />
                                 </Button>
                             </Stack>
@@ -444,24 +445,51 @@ export default function LandingPage() {
 
             <Box
                 component="section"
-                sx={{ bgcolor: '#101828', color: '#FFFFFF', py: { xs: 7, md: 10 } }}
+                sx={{
+                    position: 'relative',
+                    bgcolor: '#FFF7F5',
+                    py: { xs: 7, md: 10 },
+                    overflow: 'hidden',
+                    borderTop: '1px solid',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        inset: 0,
+                        background:
+                            'linear-gradient(135deg, rgba(255, 87, 64, 0.12), rgba(255, 255, 255, 0) 48%), radial-gradient(circle at 88% 14%, rgba(254, 200, 75, 0.22), transparent 30%)',
+                    },
+                }}
             >
-                <Container maxWidth="lg">
+                <Container maxWidth="xl" sx={{ position: 'relative' }}>
                     <Grid container spacing={5} alignItems="center">
-                        <Grid size={{ xs: 12, md: 7 }}>
-                            <Typography variant="h3" color="inherit">
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Chip
+                                icon={<PhoneIcon />}
+                                label="Mobile access"
+                                sx={{
+                                    bgcolor: '#FFFFFF',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    mb: 2.5,
+                                }}
+                            />
+                            <Typography variant="h3" color="text.primary">
                                 Take HelpHive with you.
                             </Typography>
-                            <Typography sx={{ color: '#D0D5DD', mt: 1.5, maxWidth: 620 }}>
+                            <Typography
+                                color="text.secondary"
+                                sx={{ mt: 1.5, maxWidth: 620, fontSize: '1.05rem' }}
+                            >
                                 The Android APK is available directly from the official HelpHive
                                 GitHub release. Install it on your device to book, track, and manage
                                 work on the go.
                             </Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 5 }}>
                             <Stack
-                                direction={{ xs: 'column', sm: 'row', md: 'column' }}
+                                direction={{ xs: 'column', sm: 'row' }}
                                 spacing={1.5}
+                                sx={{ mt: 3 }}
                             >
                                 <Button
                                     variant="contained"
@@ -474,16 +502,74 @@ export default function LandingPage() {
                                 <Button
                                     variant="outlined"
                                     size="large"
-                                    sx={{
-                                        color: '#FFFFFF',
-                                        borderColor: 'rgba(255,255,255,0.24)',
-                                        bgcolor: 'transparent',
-                                    }}
                                     onClick={() => navigate('/login')}
                                 >
                                     Open web app
                                 </Button>
                             </Stack>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Card
+                                sx={{
+                                    bgcolor: '#FFFFFF',
+                                    boxShadow: '0 28px 70px rgba(16, 24, 40, 0.12)',
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+                                    <Grid container spacing={3} alignItems="center">
+                                        <Grid size={{ xs: 12, sm: 5 }}>
+                                            <Box
+                                                sx={{
+                                                    position: 'relative',
+                                                    minHeight: 230,
+                                                    display: 'grid',
+                                                    placeItems: 'center',
+                                                    bgcolor: '#F9FAFB',
+                                                    borderRadius: 2,
+                                                    border: '1px solid',
+                                                    borderColor: 'divider',
+                                                }}
+                                            >
+                                                <Box
+                                                    component="img"
+                                                    src="/images/download-mobile-app.png"
+                                                    alt="HelpHive Android app preview"
+                                                    sx={{
+                                                        height: 230,
+                                                        maxWidth: '86%',
+                                                        objectFit: 'contain',
+                                                        filter: 'drop-shadow(0 18px 22px rgba(16, 24, 40, 0.18))',
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, sm: 7 }}>
+                                            <Stack spacing={1.5}>
+                                                <Stack direction="row" spacing={1.25}>
+                                                    <CheckIcon color="success" />
+                                                    <Typography fontWeight={750}>
+                                                        Install from the official GitHub release.
+                                                    </Typography>
+                                                </Stack>
+                                                <Stack direction="row" spacing={1.25}>
+                                                    <CheckIcon color="success" />
+                                                    <Typography fontWeight={750}>
+                                                        Retry the APK download from the instruction
+                                                        dialog.
+                                                    </Typography>
+                                                </Stack>
+                                                <Stack direction="row" spacing={1.25}>
+                                                    <CheckIcon color="success" />
+                                                    <Typography fontWeight={750}>
+                                                        Continue bookings and provider work on web.
+                                                    </Typography>
+                                                </Stack>
+                                            </Stack>
+                                        </Grid>
+                                    </Grid>
+                                </CardContent>
+                            </Card>
                         </Grid>
                     </Grid>
                 </Container>
