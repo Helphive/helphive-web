@@ -20,9 +20,12 @@ import {
     ListItemText,
     Chip,
     Divider,
+    Alert,
+    Snackbar,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {
+    Android as AndroidIcon,
     CleaningServices as CleaningIcon,
     Hotel as HotelIcon,
     LocalLaundryService as LinenIcon,
@@ -37,6 +40,10 @@ import {
     CheckCircle as CheckIcon,
     ArrowForward as ArrowForwardIcon,
     StarRounded as StarIcon,
+    Replay as ReplayIcon,
+    Groups as TeamsIcon,
+    SupportAgent as SupportIcon,
+    Payments as PaymentsIcon,
 } from '@mui/icons-material';
 import { SERVICES } from '@/types';
 
@@ -72,9 +79,89 @@ const features = [
     },
 ];
 
+const outcomes = [
+    {
+        title: 'For operations teams',
+        description:
+            'Fill short-notice hospitality shifts with a focused marketplace built around real job categories.',
+        icon: <TeamsIcon />,
+    },
+    {
+        title: 'For providers',
+        description:
+            'Keep upcoming work, completed jobs, and earnings in one place without chasing message threads.',
+        icon: <PaymentsIcon />,
+    },
+    {
+        title: 'For support',
+        description:
+            'Clear booking statuses and structured records make it easier to resolve issues quickly.',
+        icon: <SupportIcon />,
+    },
+];
+
+type ToastState = {
+    open: boolean;
+    message: string;
+    severity: 'success' | 'info' | 'warning';
+};
+
 export default function LandingPage() {
     const navigate = useNavigate();
     const [androidDialogOpen, setAndroidDialogOpen] = useState(false);
+    const [toast, setToast] = useState<ToastState>({
+        open: false,
+        message: '',
+        severity: 'info',
+    });
+
+    const showToast = (message: string, severity: ToastState['severity'] = 'info') => {
+        setToast({ open: true, message, severity });
+    };
+
+    const triggerAndroidDownload = () => {
+        const link = document.createElement('a');
+        link.href = ANDROID_APK_URL;
+        link.download = 'helphive-universal.apk';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    };
+
+    const handleAndroidDownload = () => {
+        triggerAndroidDownload();
+        setAndroidDialogOpen(true);
+        showToast('Android download started. Check your downloads when it finishes.', 'success');
+    };
+
+    const handleIosUnavailable = () => {
+        showToast('iOS is unavailable for now. Android and web access are ready.', 'warning');
+    };
+
+    const storeBadgeButtonSx = {
+        width: { xs: '100%', sm: 202 },
+        height: 60,
+        p: 0,
+        borderRadius: 2,
+        bgcolor: 'transparent',
+        border: 0,
+        minHeight: 0,
+        boxShadow: '0 16px 34px rgba(16, 24, 40, 0.18)',
+        overflow: 'hidden',
+        '&:hover': {
+            bgcolor: 'transparent',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 20px 42px rgba(16, 24, 40, 0.22)',
+        },
+        '& img': {
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+        },
+        transition: 'transform 160ms ease, box-shadow 160ms ease',
+    } as const;
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', overflow: 'hidden' }}>
@@ -176,6 +263,34 @@ export default function LandingPage() {
                                     onClick={() => navigate('/provider-signup')}
                                 >
                                     Become a provider
+                                </Button>
+                            </Stack>
+                            <Stack
+                                direction={{ xs: 'column', sm: 'row' }}
+                                spacing={1.5}
+                                sx={{ mt: 3 }}
+                            >
+                                <Button
+                                    aria-label="Get HelpHive on Android"
+                                    onClick={handleAndroidDownload}
+                                    sx={storeBadgeButtonSx}
+                                >
+                                    <Box
+                                        component="img"
+                                        src="/images/badge-android.svg"
+                                        alt="Get it on Android"
+                                    />
+                                </Button>
+                                <Button
+                                    aria-label="Download HelpHive on the App Store"
+                                    onClick={handleIosUnavailable}
+                                    sx={storeBadgeButtonSx}
+                                >
+                                    <Box
+                                        component="img"
+                                        src="/images/badge-app-store.svg"
+                                        alt="Download on the App Store"
+                                    />
                                 </Button>
                             </Stack>
                         </Grid>
@@ -352,7 +467,7 @@ export default function LandingPage() {
                                     variant="contained"
                                     size="large"
                                     startIcon={<DownloadIcon />}
-                                    onClick={() => setAndroidDialogOpen(true)}
+                                    onClick={handleAndroidDownload}
                                 >
                                     Download Android APK
                                 </Button>
@@ -374,11 +489,128 @@ export default function LandingPage() {
                 </Container>
             </Box>
 
+            <Box component="section" sx={{ bgcolor: '#FFFFFF', py: { xs: 7, md: 10 } }}>
+                <Container maxWidth="xl">
+                    <Grid container spacing={4} alignItems="flex-start">
+                        <Grid size={{ xs: 12, md: 5 }}>
+                            <Typography variant="h3">More than a booking form.</Typography>
+                            <Typography color="text.secondary" sx={{ mt: 1.5, maxWidth: 560 }}>
+                                HelpHive keeps the important parts of hospitality work connected:
+                                requests, people, status, payments, and support.
+                            </Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 7 }}>
+                            <Grid container spacing={2}>
+                                {outcomes.map((item) => (
+                                    <Grid size={{ xs: 12, sm: 4 }} key={item.title}>
+                                        <Card sx={{ height: '100%' }}>
+                                            <CardContent sx={{ p: 3 }}>
+                                                <Box
+                                                    sx={{
+                                                        width: 44,
+                                                        height: 44,
+                                                        borderRadius: 2,
+                                                        bgcolor: 'primary.main',
+                                                        color: '#FFFFFF',
+                                                        display: 'grid',
+                                                        placeItems: 'center',
+                                                        mb: 2,
+                                                    }}
+                                                >
+                                                    {item.icon}
+                                                </Box>
+                                                <Typography variant="h6" sx={{ mb: 1 }}>
+                                                    {item.title}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {item.description}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
+
             <Box
                 component="footer"
-                sx={{ bgcolor: '#FFFFFF', borderTop: '1px solid', borderColor: 'divider', py: 4 }}
+                sx={{
+                    bgcolor: '#101828',
+                    color: '#FFFFFF',
+                    borderTop: '1px solid',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    py: { xs: 5, md: 6 },
+                }}
             >
                 <Container maxWidth="xl">
+                    <Grid container spacing={4} sx={{ mb: 4 }}>
+                        <Grid size={{ xs: 12, md: 5 }}>
+                            <Stack direction="row" spacing={1.25} alignItems="center">
+                                <Box
+                                    component="img"
+                                    src="/logo.png"
+                                    alt="HelpHive"
+                                    sx={{ height: 40, bgcolor: '#FFFFFF', borderRadius: 1, p: 0.5 }}
+                                />
+                                <Typography fontWeight={850} fontSize={20}>
+                                    HelpHive
+                                </Typography>
+                            </Stack>
+                            <Typography sx={{ color: '#D0D5DD', mt: 2, maxWidth: 460 }}>
+                                Hospitality staffing for room attendants, public area attendants,
+                                and linen porters. Built for teams that need clarity from request
+                                to completion.
+                            </Typography>
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                            <Typography fontWeight={850} sx={{ mb: 1.5 }}>
+                                Platform
+                            </Typography>
+                            <Stack spacing={1}>
+                                <Typography sx={{ color: '#D0D5DD' }}>Book services</Typography>
+                                <Typography sx={{ color: '#D0D5DD' }}>Provider work</Typography>
+                                <Typography sx={{ color: '#D0D5DD' }}>Mobile app</Typography>
+                            </Stack>
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                            <Typography fontWeight={850} sx={{ mb: 1.5 }}>
+                                Services
+                            </Typography>
+                            <Stack spacing={1}>
+                                <Typography sx={{ color: '#D0D5DD' }}>Room attendants</Typography>
+                                <Typography sx={{ color: '#D0D5DD' }}>Public areas</Typography>
+                                <Typography sx={{ color: '#D0D5DD' }}>Linen porters</Typography>
+                            </Stack>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
+                            <Typography fontWeight={850} sx={{ mb: 1.5 }}>
+                                Get the app
+                            </Typography>
+                            <Stack spacing={1.25} alignItems="flex-start">
+                                <Button
+                                    size="small"
+                                    startIcon={<AndroidIcon />}
+                                    onClick={handleAndroidDownload}
+                                    sx={{
+                                        color: '#FFFFFF',
+                                        borderColor: 'rgba(255,255,255,0.2)',
+                                        bgcolor: 'rgba(255,255,255,0.08)',
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.14)' },
+                                    }}
+                                    variant="outlined"
+                                >
+                                    Android APK
+                                </Button>
+                                <Typography variant="body2" sx={{ color: '#98A2B3' }}>
+                                    iOS is unavailable for now.
+                                </Typography>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                    <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)', mb: 3 }} />
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
                         <Stack direction="row" spacing={1.25} alignItems="center" sx={{ flex: 1 }}>
                             <Box
@@ -387,9 +619,11 @@ export default function LandingPage() {
                                 alt="HelpHive"
                                 sx={{ height: 36 }}
                             />
-                            <Typography fontWeight={800}>HelpHive</Typography>
+                            <Typography fontWeight={800} color="inherit">
+                                HelpHive
+                            </Typography>
                         </Stack>
-                        <Typography color="text.secondary">
+                        <Typography sx={{ color: '#98A2B3' }}>
                             © {new Date().getFullYear()} HelpHive. All rights reserved.
                         </Typography>
                     </Stack>
@@ -457,13 +691,38 @@ export default function LandingPage() {
                     <Button onClick={() => setAndroidDialogOpen(false)}>Cancel</Button>
                     <Button
                         variant="contained"
-                        startIcon={<DownloadIcon />}
-                        onClick={() => window.open(ANDROID_APK_URL, '_blank')}
+                        startIcon={<ReplayIcon />}
+                        onClick={() => {
+                            triggerAndroidDownload();
+                            showToast('Retrying the Android download.', 'info');
+                        }}
                     >
-                        Download APK
+                        Retry download
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <Snackbar
+                open={toast.open}
+                autoHideDuration={4200}
+                onClose={() => setToast((current) => ({ ...current, open: false }))}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    variant="filled"
+                    severity={toast.severity}
+                    onClose={() => setToast((current) => ({ ...current, open: false }))}
+                    sx={{
+                        width: '100%',
+                        borderRadius: 2,
+                        alignItems: 'center',
+                        boxShadow: '0 18px 48px rgba(16, 24, 40, 0.22)',
+                        '& .MuiAlert-message': { fontWeight: 750 },
+                    }}
+                >
+                    {toast.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
