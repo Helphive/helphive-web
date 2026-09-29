@@ -1,5 +1,5 @@
 import { apiSlice } from '@/store/api/apiSlice';
-import type { Booking } from '@/types';
+import type { Booking, BookingReceipt } from '@/types';
 
 interface CreateBookingRequest {
     service: { id: number; name: string };
@@ -70,6 +70,9 @@ export const bookingApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Booking'],
         }),
+        getBookingReceipt: builder.query<{ receipt: BookingReceipt }, string>({
+            query: (bookingId) => `/auth/booking-receipt/${bookingId}`,
+        }),
         approveStartJobRequest: builder.mutation<Booking, { bookingId: string }>({
             query: (body) => ({
                 url: '/auth/user/approve-start-job-request',
@@ -88,4 +91,5 @@ export const {
     useCompleteBookingMutation,
     useCancelBookingMutation,
     useApproveStartJobRequestMutation,
+    useGetBookingReceiptQuery,
 } = bookingApi;

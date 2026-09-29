@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -84,6 +85,7 @@ function CheckoutForm({ onSuccess }: { onSuccess: () => void }) {
 }
 
 export default function BookingPayment() {
+    useDocumentTitle('Payment');
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const formData = useAppSelector(selectBookingFormData);
@@ -158,7 +160,7 @@ export default function BookingPayment() {
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                             <Typography color="text.secondary">Hourly Rate</Typography>
-                            <Typography>£{formData.rate}</Typography>
+                            <Typography>${formData.rate}</Typography>
                         </Box>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
@@ -170,12 +172,12 @@ export default function BookingPayment() {
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                             <Typography color="text.secondary">Subtotal</Typography>
-                            <Typography>£{total.toFixed(2)}</Typography>
+                            <Typography>${total.toFixed(2)}</Typography>
                         </Box>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                             <Typography color="text.secondary">Platform Fee (5%)</Typography>
-                            <Typography>£{platformFee.toFixed(2)}</Typography>
+                            <Typography>${platformFee.toFixed(2)}</Typography>
                         </Box>
 
                         <Divider sx={{ my: 2 }} />
@@ -185,7 +187,7 @@ export default function BookingPayment() {
                                 Total
                             </Typography>
                             <Typography variant="h6" fontWeight={600} color="primary">
-                                £{(total + platformFee).toFixed(2)}
+                                ${(total + platformFee).toFixed(2)}
                             </Typography>
                         </Box>
                     </CardContent>

@@ -35,6 +35,8 @@ export default tseslint.config(
             ...reactHooks.configs.recommended.rules,
             'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
             'react/prop-types': 'off',
+            // Apostrophes in JSX text are harmless; escaping them hurts readability.
+            'react/no-unescaped-entities': 'off',
             '@typescript-eslint/no-unused-vars': [
                 'error',
                 { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

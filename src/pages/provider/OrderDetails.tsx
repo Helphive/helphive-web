@@ -1,244 +1,126 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-    Box,
-    Typography,
-    Card,
-    CardContent,
-    Button,
-    CircularProgress,
-    Alert,
-    Stack,
-    Divider,
-    Avatar,
-} from '@mui/material';
-import { ArrowBack, CalendarMonth, AccessTime, LocationOn } from '@mui/icons-material';
-import dayjs from 'dayjs';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Card, CardContent, Divider, Typography } from '@mui/material';
 import {
     useGetProviderBookingByIdMutation,
     useAcceptBookingMutation,
 } from '@/features/provider/providerApi';
-import type { Booking, User } from '@/types';
+import BookingDetailView from '@/components/common/BookingDetailView';
+import { PriceRow } from '@/components/common/InfoRow';
+import PageHeader from '@/components/common/PageHeader';
+import { DetailSkeleton, ErrorState } from '@/components/common/PageStates';
+import ConfirmDialog from '@/components/feedback/ConfirmDialog';
+import { useSnackbar } from '@/components/feedback/snackbarContext';
+import { useBookingLoader } from '@/hooks/useBookingLoader';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { PLATFORM_FEE_RATE, formatMoney, getDisplayStatus, getErrorMessage } from '@/utils/format';
 
+// Details of an open (unassigned) order with the accept action.
 export default function OrderDetails() {
     const { bookingId } = useParams<{ bookingId: string }>();
     const navigate = useNavigate();
+    const snackbar = useSnackbar();
+    useDocumentTitle('Available order');
 
-    const [booking, setBooking] = useState<Booking | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    const [getBooking, { isLoading }] = useGetProviderBookingByIdMutation();
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [getBooking] = useGetProviderBookingByIdMutation();
     const [acceptBooking, { isLoading: isAccepting }] = useAcceptBookingMutation();
+    const { booking, error, loading, reload } = useBookingLoader(bookingId, getBooking);
 
+    // Already-assigned bookings live under My Orders.
+    const assigned = !!booking?.providerId;
     useEffect(() => {
-        if (bookingId) {
-            fetchBooking();
-        }
-    }, [bookingId]);
-
-    const fetchBooking = async () => {
-        try {
-            const result = await getBooking({ bookingId: bookingId! }).unwrap();
-            setBooking(result.booking);
-        } catch {
-            setError('Failed to load order details');
-        }
-    };
+        if (assigned && bookingId) navigate(`/provider/my-orders/${bookingId}`, { replace: true });
+    }, [assigned, bookingId, navigate]);
 
     const handleAccept = async () => {
         try {
             await acceptBooking({ bookingId: bookingId! }).unwrap();
-            navigate('/provider/my-orders');
-        } catch {
-            setError('Failed to accept order');
+            snackbar.success('Order accepted');
+            navigate(`/provider/my-orders/${bookingId}`);
+        } catch (err) {
+            setConfirmOpen(false);
+            snackbar.error(getErrorMessage(err, 'Failed to accept order'));
         }
     };
 
-    if (isLoading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
+    if (loading || assigned) return <DetailSkeleton />;
 
     if (error || !booking) {
         return (
-            <Box>
-                <Button
-                    startIcon={<ArrowBack />}
-                    onClick={() => navigate('/provider/orders')}
-                    sx={{ mb: 3 }}
-                >
-                    Back to Orders
-                </Button>
-                <Alert severity="error">{error || 'Order not found'}</Alert>
-            </Box>
+            <ErrorState
+                title="Order details"
+                message={error || 'Order not found'}
+                backTo="/provider/orders"
+                backLabel="Back to available orders"
+                onRetry={reload}
+            />
         );
     }
 
-    const user = booking.userId as User;
+    const status = getDisplayStatus(booking);
     const subtotal = (booking.rate || 0) * (booking.hours || 0);
-    const platformFee = subtotal * 0.05;
-    const earnings = subtotal - platformFee;
+    const platformFee = subtotal * PLATFORM_FEE_RATE;
+    const canAccept = status === 'scheduled';
+
+    const priceCard = (
+        <Card>
+            <CardContent>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
+                    Earnings breakdown
+                </Typography>
+                <PriceRow label="Hourly rate" value={formatMoney(booking.rate)} />
+                <PriceRow label="Hours" value={String(booking.hours || 0)} />
+                <PriceRow label="Subtotal" value={formatMoney(subtotal)} />
+                <PriceRow
+                    label={`Platform fee (${PLATFORM_FEE_RATE * 100}%)`}
+                    value={`-${formatMoney(platformFee)}`}
+                    color="error.main"
+                />
+                <Divider sx={{ my: 1 }} />
+                <PriceRow
+                    label="Your earnings"
+                    value={formatMoney(subtotal - platformFee)}
+                    color="success.main"
+                    strong
+                />
+            </CardContent>
+        </Card>
+    );
 
     return (
-        <Box>
-            <Button
-                startIcon={<ArrowBack />}
-                onClick={() => navigate('/provider/orders')}
-                sx={{ mb: 3 }}
-            >
-                Back to Orders
-            </Button>
-
-            <Typography variant="h4" fontWeight={700} sx={{ mb: 4 }}>
-                Order Details
-            </Typography>
-
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    gap: 4,
-                    maxWidth: 1000,
-                }}
-            >
-                <Box sx={{ flex: 2, minWidth: 0 }}>
-                    {/* Service Info */}
-                    <Card sx={{ mb: 3 }}>
-                        <CardContent>
-                            <Box
-                                sx={{
-                                    bgcolor: 'primary.main',
-                                    color: 'white',
-                                    p: 3,
-                                    borderRadius: 2,
-                                    mb: 3,
-                                }}
-                            >
-                                <Typography variant="h5" fontWeight={600}>
-                                    {booking.service?.name || 'Service'}
-                                </Typography>
-                            </Box>
-
-                            <Stack spacing={2}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <CalendarMonth color="action" />
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Date
-                                        </Typography>
-                                        <Typography>
-                                            {dayjs(booking.startDate).format('MMMM D, YYYY')}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <AccessTime color="action" />
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Time & Duration
-                                        </Typography>
-                                        <Typography>
-                                            {dayjs(booking.startTime).format('h:mm A')} •{' '}
-                                            {booking.hours || 0} hour
-                                            {(booking.hours || 0) > 1 ? 's' : ''}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <LocationOn color="action" />
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Location
-                                        </Typography>
-                                        <Typography>{booking.address}</Typography>
-                                    </Box>
-                                </Box>
-                            </Stack>
-                        </CardContent>
-                    </Card>
-
-                    {/* Customer Info */}
-                    {user && typeof user === 'object' && (
-                        <Card>
-                            <CardContent>
-                                <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                                    Customer
-                                </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main' }}>
-                                        {user.firstName?.[0]}
-                                    </Avatar>
-                                    <Box>
-                                        <Typography variant="h6">
-                                            {user.firstName} {user.lastName}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {user.email}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    )}
-                </Box>
-
-                {/* Earnings & Actions */}
-                <Box sx={{ flex: 1 }}>
-                    <Card sx={{ mb: 3 }}>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                                Earnings Breakdown
-                            </Typography>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography color="text.secondary">Hourly Rate</Typography>
-                                <Typography>£{booking.rate || 0}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography color="text.secondary">Hours</Typography>
-                                <Typography>{booking.hours || 0}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography color="text.secondary">Subtotal</Typography>
-                                <Typography>£{subtotal.toFixed(2)}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography color="text.secondary">Platform Fee (5%)</Typography>
-                                <Typography color="error">-£{platformFee.toFixed(2)}</Typography>
-                            </Box>
-
-                            <Divider sx={{ my: 2 }} />
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Typography variant="h6" fontWeight={600}>
-                                    Your Earnings
-                                </Typography>
-                                <Typography variant="h6" fontWeight={600} color="success.main">
-                                    £{earnings.toFixed(2)}
-                                </Typography>
-                            </Box>
-                        </CardContent>
-                    </Card>
-
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        size="large"
-                        onClick={handleAccept}
-                        disabled={isAccepting}
-                        sx={{ py: 1.5 }}
-                    >
-                        {isAccepting ? (
-                            <CircularProgress size={24} color="inherit" />
-                        ) : (
-                            'Accept Order'
-                        )}
-                    </Button>
-                </Box>
-            </Box>
-        </Box>
+        <>
+            <PageHeader
+                title="Order details"
+                backTo="/provider/orders"
+                backLabel="Back to available orders"
+            />
+            <BookingDetailView
+                booking={booking}
+                counterpart={{ title: 'Customer', person: booking.userId }}
+                priceCard={priceCard}
+                actions={
+                    canAccept ? (
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            size="large"
+                            onClick={() => setConfirmOpen(true)}
+                        >
+                            Accept order
+                        </Button>
+                    ) : undefined
+                }
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                title="Accept this order?"
+                description="You are committing to complete this job at the scheduled time."
+                confirmLabel="Accept order"
+                loading={isAccepting}
+                onConfirm={handleAccept}
+                onClose={() => setConfirmOpen(false)}
+            />
+        </>
     );
 }

@@ -30,12 +30,13 @@ import {
     CalendarMonth as BookingsIcon,
     Work as OrdersIcon,
     AccountBalanceWallet as EarningsIcon,
-    Person as ProfileIcon,
+    Notifications as NotificationsIcon,
     Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectCurrentUser, logout } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/features/auth/authApi';
+import NotificationBell from '@/features/notifications/NotificationBell';
 
 interface DashboardLayoutProps {
     userType: 'user' | 'provider';
@@ -45,8 +46,7 @@ const DRAWER_WIDTH = 260;
 
 const userNavItems = [
     { label: 'Home', icon: <HomeIcon />, path: '/user' },
-    { label: 'Bookings', icon: <BookingsIcon />, path: '/user/bookings' },
-    { label: 'Profile', icon: <ProfileIcon />, path: '/user/profile' },
+    { label: 'Notifications', icon: <NotificationsIcon />, path: '/user/notifications' },
 ];
 
 const providerNavItems = [
@@ -54,7 +54,14 @@ const providerNavItems = [
     { label: 'Available Orders', icon: <OrdersIcon />, path: '/provider/orders' },
     { label: 'My Orders', icon: <BookingsIcon />, path: '/provider/my-orders' },
     { label: 'Earnings', icon: <EarningsIcon />, path: '/provider/earnings' },
+    { label: 'Notifications', icon: <NotificationsIcon />, path: '/provider/notifications' },
 ];
+
+// A nav item is active on its own path and on nested detail pages (except the home root).
+const isActivePath = (pathname: string, itemPath: string, homePath: string) =>
+    itemPath === homePath
+        ? pathname === itemPath
+        : pathname === itemPath || pathname.startsWith(`${itemPath}/`);
 
 export default function DashboardLayout({ userType }: DashboardLayoutProps) {
     const theme = useTheme();
@@ -86,10 +93,9 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
         }
     };
 
-    const getCurrentNavIndex = () => {
-        const index = navItems.findIndex((item) => location.pathname === item.path);
-        return index >= 0 ? index : 0;
-    };
+    const homePath = navItems[0].path;
+    const getCurrentNavIndex = () =>
+        navItems.findIndex((item) => isActivePath(location.pathname, item.path, homePath));
 
     const drawer = (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF' }}>
@@ -104,7 +110,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                 {navItems.map((item) => (
                     <ListItem key={item.path} disablePadding sx={{ mb: 1 }}>
                         <ListItemButton
-                            selected={location.pathname === item.path}
+                            selected={isActivePath(location.pathname, item.path, homePath)}
                             onClick={() => {
                                 navigate(item.path);
                                 setDrawerOpen(false);
@@ -155,6 +161,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
             <AppBar
                 position="fixed"
                 elevation={0}
+                className="no-print"
                 sx={{
                     width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
                     ml: { md: `${DRAWER_WIDTH}px` },
@@ -179,7 +186,11 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                             {userType === 'provider' ? 'Provider workspace' : 'Customer workspace'}
                         </Typography>
                     </Stack>
-                    <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                    <NotificationBell area={userType} />
+                    <IconButton
+                        onClick={(e) => setAnchorEl(e.currentTarget)}
+                        aria-label="Account menu"
+                    >
                         <Avatar
                             src={user?.profile}
                             sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}
@@ -212,6 +223,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
             {!isMobile && (
                 <Drawer
                     variant="permanent"
+                    className="no-print"
                     sx={{
                         width: DRAWER_WIDTH,
                         flexShrink: 0,
@@ -231,6 +243,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
             {/* Side Drawer - Mobile */}
             <Drawer
                 variant="temporary"
+                className="no-print"
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 ModalProps={{ keepMounted: true }}
@@ -249,6 +262,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
             {/* Main Content */}
             <Box
                 component="main"
+                className="print-main"
                 sx={{
                     flexGrow: 1,
                     width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
@@ -257,7 +271,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                     pb: { xs: 8, md: 0 },
                 }}
             >
-                <Toolbar />
+                <Toolbar className="no-print" />
                 <Container maxWidth="xl" sx={{ py: { xs: 2.5, sm: 4 }, px: { xs: 2, sm: 3 } }}>
                     <Outlet />
                 </Container>
@@ -266,6 +280,7 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
             {/* Bottom Navigation - Mobile */}
             {isMobile && (
                 <Paper
+                    className="no-print"
                     sx={{
                         position: 'fixed',
                         bottom: 0,
@@ -283,6 +298,9 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
                             navigate(navItems[newValue].path);
                         }}
                         showLabels
+                        sx={{
+                            '& .MuiBottomNavigationAction-root': { minWidth: 0, px: 0.5 },
+                        }}
                     >
                         {navItems.map((item) => (
                             <BottomNavigationAction

@@ -40,13 +40,25 @@ export const SERVICES: Service[] = [
 ];
 
 // Booking types
-export type BookingStatus =
-    | 'pending'
-    | 'paid'
+// Raw status stored by the backend.
+export type BookingStatus = 'pending' | 'in progress' | 'completed' | 'cancelled';
+
+// Derived by the backend on every booking object.
+export type DisplayStatus =
+    | 'scheduled'
     | 'accepted'
+    | 'awaiting_start_approval'
     | 'in_progress'
     | 'completed'
-    | 'cancelled';
+    | 'cancelled'
+    | 'expired';
+
+export interface BookingPaymentSummary {
+    amount: number;
+    date?: string;
+    status: string;
+    paymentIntentId?: string;
+}
 
 export interface Booking {
     _id: string;
@@ -58,17 +70,19 @@ export interface Booking {
     };
     rate: number;
     hours: number;
-    amount: number;
-    platformFee: number;
+    amount?: number;
+    platformFee?: number;
     startDate: string;
     startTime: string;
     address: string;
     latitude: number;
     longitude: number;
     status: BookingStatus;
+    displayStatus?: DisplayStatus;
+    payments?: BookingPaymentSummary[];
     paymentIntentId?: string;
     clientSecret?: string;
-    paymentStatus: 'pending' | 'completed' | 'refunded';
+    paymentStatus?: 'pending' | 'completed' | 'refunded';
     userApprovalRequested?: boolean;
     startedAt?: string;
     completedAt?: string;
@@ -108,16 +122,17 @@ export interface ProviderApplication {
 export interface Earning {
     _id: string;
     bookingId: string;
-    userId: string;
     amount: number;
     date: string;
-    status: 'pending' | 'available' | 'paid';
-    transferId?: string;
+    status: 'pending' | 'completed' | 'cancelled';
+    completionDate?: string | null;
+    transferId?: string | null;
+    createdAt?: string;
 }
 
 export interface Payout {
     _id: string;
-    userId: string;
+    userId?: string;
     amount: number;
     currency: string;
     payoutId: string;
@@ -126,23 +141,72 @@ export interface Payout {
 }
 
 export interface EarningsData {
-    totalEarnings: number;
     availableBalance: number;
-    pendingBalance: number;
-    monthlyEarnings: { month: string; amount: number }[];
+    earnings?: Earning[];
     payouts: Payout[];
+    // Older API versions returned pre-computed aggregates.
+    totalEarnings?: number;
+    pendingBalance?: number;
+    monthlyEarnings?: { month: string; amount: number }[];
 }
 
 // Notification types
+export type NotificationType =
+    | 'booking_created'
+    | 'booking_accepted'
+    | 'booking_start_requested'
+    | 'booking_started'
+    | 'booking_completed'
+    | 'booking_cancelled'
+    | 'booking_expired'
+    | 'payment_succeeded'
+    | 'payment_refunded'
+    | 'payout_paid'
+    | 'account_approved'
+    | 'account_rejected'
+    | 'general';
+
 export interface Notification {
     _id: string;
-    userId: string;
     title: string;
     message: string;
+    type: NotificationType;
     screen?: string;
     data?: Record<string, unknown>;
+    bookingId?: string | null;
     read: boolean;
     createdAt: string;
+    updatedAt?: string;
+}
+
+export interface BookingReceipt {
+    receiptNumber: string;
+    issuedAt: string;
+    bookingId: string;
+    status: string;
+    service: { id: number; name: string };
+    rate: number;
+    hours: number;
+    subtotal: number;
+    total: number;
+    currency: string;
+    payment: {
+        status: string;
+        amount: number;
+        paidAt: string | null;
+        refundStatus: string | null;
+        refundAmount: number;
+        refundedAt: string | null;
+    } | null;
+    customer: { name: string; email: string };
+    provider: { name: string } | null;
+    address: string;
+    startDate: string;
+    startedAt: string | null;
+    completedAt: string | null;
+    cancelledAt: string | null;
+    cancellationReason: string | null;
+    earning: { amount: number; status: string } | null;
 }
 
 // API response types

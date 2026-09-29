@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
     Box,
     Typography,
@@ -51,6 +52,7 @@ function normalizeJobTypes(
 }
 
 export default function ProviderDashboard() {
+    useDocumentTitle('Home');
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectCurrentUser);
 

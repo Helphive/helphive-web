@@ -67,6 +67,8 @@ export const providerApi = apiSlice.injectEndpoints({
         }),
         getAvailableBookings: builder.query<Booking[], void>({
             query: () => '/auth/provider/get-bookings',
+            transformResponse: (response: { paidBookings?: Booking[] } | Booking[]) =>
+                Array.isArray(response) ? response : (response.paidBookings ?? []),
             providesTags: ['Booking'],
         }),
         getProviderBookingById: builder.mutation<GetBookingByIdResponse, { bookingId: string }>({

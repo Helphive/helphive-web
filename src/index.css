@@ -70,3 +70,40 @@ select:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0px 1000px transparent inset;
     transition: background-color 5000s ease-in-out 0s;
 }
+
+/* Printing (receipts): hide app chrome and use the full page width */
+@media print {
+    @page {
+        margin: 16mm;
+    }
+
+    html,
+    body,
+    #root {
+        height: auto;
+        background: #fff !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .print-main {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+
+    .print-main > .MuiContainer-root {
+        padding: 0 !important;
+        max-width: none !important;
+    }
+
+    .print-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        max-width: none !important;
+        padding: 0 !important;
+    }
+}

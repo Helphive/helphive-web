@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
     Box,
     Typography,
@@ -13,6 +14,7 @@ import {
     DialogActions,
     TextField,
     Chip,
+    IconButton,
     Table,
     TableBody,
     TableCell,
@@ -21,7 +23,7 @@ import {
     TableRow,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { AccountBalanceWallet, OpenInNew, Download } from '@mui/icons-material';
+import { AccountBalanceWallet, OpenInNew, Download, ReceiptLong } from '@mui/icons-material';
 import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -40,9 +42,16 @@ import {
     useLazyGetStripeExpressLoginLinkQuery,
 } from '@/features/provider/providerApi';
 
+import PageHeader from '@/components/common/PageHeader';
+import { useSnackbar } from '@/components/feedback/snackbarContext';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { formatMoney, getErrorMessage } from '@/utils/format';
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function Earnings() {
+    useDocumentTitle('Earnings');
+    const snackbar = useSnackbar();
     const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
     const [payoutAmount, setPayoutAmount] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -87,18 +96,43 @@ export default function Earnings() {
             await createPayout({ amount }).unwrap();
             setPayoutDialogOpen(false);
             setPayoutAmount('');
+            snackbar.success('Payout requested');
             refetch();
-        } catch {
-            setError('Failed to create payout');
+        } catch (err) {
+            const message = getErrorMessage(err, 'Failed to create payout');
+            setError(message);
+            snackbar.error(message);
         }
     };
 
+    // Totals and the monthly chart are derived from the earning rows the API returns.
+    const summary = useMemo(() => {
+        const rows = earningsData?.earnings ?? [];
+        const totalEarnings =
+            earningsData?.totalEarnings ??
+            rows.filter((e) => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
+        const pendingBalance =
+            earningsData?.pendingBalance ??
+            rows.filter((e) => e.status === 'pending').reduce((sum, e) => sum + e.amount, 0);
+        let monthlyEarnings = earningsData?.monthlyEarnings;
+        if (!monthlyEarnings) {
+            const months = Array.from({ length: 6 }, (_, i) => dayjs().subtract(5 - i, 'month'));
+            monthlyEarnings = months.map((m) => ({
+                month: m.format('MMM'),
+                amount: rows
+                    .filter((e) => e.status !== 'cancelled' && dayjs(e.date).isSame(m, 'month'))
+                    .reduce((sum, e) => sum + e.amount, 0),
+            }));
+        }
+        return { totalEarnings, pendingBalance, monthlyEarnings };
+    }, [earningsData]);
+
     const chartData = {
-        labels: earningsData?.monthlyEarnings?.map((e) => e.month) || [],
+        labels: summary.monthlyEarnings.map((e) => e.month),
         datasets: [
             {
-                label: 'Earnings (£)',
-                data: earningsData?.monthlyEarnings?.map((e) => e.amount) || [],
+                label: 'Earnings ($)',
+                data: summary.monthlyEarnings.map((e) => e.amount),
                 backgroundColor: '#FF5740',
                 borderRadius: 8,
             },
@@ -116,7 +150,7 @@ export default function Earnings() {
             y: {
                 beginAtZero: true,
                 ticks: {
-                    callback: (value: number | string) => `£${value}`,
+                    callback: (value: number | string) => `$${value}`,
                 },
             },
         },
@@ -132,9 +166,7 @@ export default function Earnings() {
 
     return (
         <Box>
-            <Typography variant="h4" fontWeight={700} sx={{ mb: 4 }}>
-                Earnings
-            </Typography>
+            <PageHeader title="Earnings" subtitle="Track your income and withdraw funds" />
 
             {error && (
                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
@@ -151,7 +183,7 @@ export default function Earnings() {
                                 Total Earnings
                             </Typography>
                             <Typography variant="h4" fontWeight={700}>
-                                £{(earningsData?.totalEarnings ?? 0).toFixed(2)}
+                                {formatMoney(summary.totalEarnings)}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -166,7 +198,7 @@ export default function Earnings() {
                                 <Typography>Available Balance</Typography>
                             </Box>
                             <Typography variant="h4" fontWeight={700}>
-                                £{(earningsData?.availableBalance ?? 0).toFixed(2)}
+                                {formatMoney(earningsData?.availableBalance)}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -180,7 +212,7 @@ export default function Earnings() {
                                 Pending Balance
                             </Typography>
                             <Typography variant="h4" fontWeight={700}>
-                                £{(earningsData?.pendingBalance ?? 0).toFixed(2)}
+                                {formatMoney(summary.pendingBalance)}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -248,7 +280,7 @@ export default function Earnings() {
                                                         {dayjs(payout.createdAt).format('MMM D')}
                                                     </TableCell>
                                                     <TableCell align="right">
-                                                        £{(payout.amount ?? 0).toFixed(2)}
+                                                        {formatMoney(payout.amount)}
                                                     </TableCell>
                                                     <TableCell align="right">
                                                         <Chip
@@ -278,12 +310,86 @@ export default function Earnings() {
                 </Grid>
             </Grid>
 
+            {/* Earnings by job, each linking to its receipt */}
+            <Card sx={{ mt: 3, maxWidth: 1200 }}>
+                <CardContent>
+                    <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+                        Recent earnings
+                    </Typography>
+                    {earningsData?.earnings && earningsData.earnings.length > 0 ? (
+                        <TableContainer>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell>Job</TableCell>
+                                        <TableCell align="right">Amount</TableCell>
+                                        <TableCell align="right">Status</TableCell>
+                                        <TableCell align="right">Receipt</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {earningsData.earnings.slice(0, 20).map((earning) => (
+                                        <TableRow key={earning._id} hover>
+                                            <TableCell>
+                                                {dayjs(earning.date).format('MMM D, YYYY')}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography
+                                                    component={RouterLink}
+                                                    to={`/provider/my-orders/${earning.bookingId}`}
+                                                    variant="body2"
+                                                    color="primary"
+                                                    sx={{ textDecoration: 'none' }}
+                                                >
+                                                    HH-{earning.bookingId.slice(-8).toUpperCase()}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                {formatMoney(earning.amount)}
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <Chip
+                                                    label={earning.status}
+                                                    size="small"
+                                                    color={
+                                                        earning.status === 'completed'
+                                                            ? 'success'
+                                                            : earning.status === 'cancelled'
+                                                              ? 'error'
+                                                              : 'default'
+                                                    }
+                                                />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <IconButton
+                                                    size="small"
+                                                    component={RouterLink}
+                                                    to={`/provider/orders/${earning.bookingId}/receipt`}
+                                                    aria-label="View receipt"
+                                                >
+                                                    <ReceiptLong fontSize="small" />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    ) : (
+                        <Typography color="text.secondary" textAlign="center">
+                            Earnings from completed jobs will appear here
+                        </Typography>
+                    )}
+                </CardContent>
+            </Card>
+
             {/* Payout Dialog */}
             <Dialog open={payoutDialogOpen} onClose={() => setPayoutDialogOpen(false)}>
                 <DialogTitle>Withdraw Funds</DialogTitle>
                 <DialogContent>
                     <Typography sx={{ mb: 3 }}>
-                        Available balance: £{(earningsData?.availableBalance ?? 0).toFixed(2)}
+                        Available balance: {formatMoney(earningsData?.availableBalance)}
                     </Typography>
                     <TextField
                         fullWidth
@@ -292,7 +398,7 @@ export default function Earnings() {
                         value={payoutAmount}
                         onChange={(e) => setPayoutAmount(e.target.value)}
                         InputProps={{
-                            startAdornment: <Typography sx={{ mr: 1 }}>£</Typography>,
+                            startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
                         }}
                     />
                 </DialogContent>

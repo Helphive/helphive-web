@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -8,18 +8,12 @@ import {
     Button,
     Tabs,
     Tab,
-    Chip,
     CircularProgress,
     Alert,
     Slider,
-    Stack,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import {
-    CalendarMonth as CalendarIcon,
-    AccessTime as TimeIcon,
-    LocationOn as LocationIcon,
-} from '@mui/icons-material';
+import { EventAvailable as EventIcon } from '@mui/icons-material';
 import PlacesAutocomplete from '@/components/PlacesAutocomplete';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -35,81 +29,37 @@ import {
     resetBookingForm,
 } from '@/features/booking/bookingSlice';
 import { useCreateBookingMutation, useGetUserBookingsQuery } from '@/features/booking/bookingApi';
-import { SERVICES, Booking } from '@/types';
+import { SERVICES } from '@/types';
+import { BookingGrid } from '@/components/common/BookingCard';
+import EmptyState from '@/components/common/EmptyState';
+import PageHeader from '@/components/common/PageHeader';
+import TabLabel from '@/components/common/TabLabel';
+import { useSnackbar } from '@/components/feedback/snackbarContext';
+import { useBucketedBookings } from '@/hooks/useBucketedBookings';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { getErrorMessage } from '@/utils/format';
+import { SERVICE_ICONS } from '@/utils/serviceIcons';
 
-const serviceIcons: Record<number, string> = {
-    1: '/icons/sofa.png', // Public Area Attendant
-    2: '/icons/bed.png', // Room Attendant
-    3: '/icons/door.png', // Linen Porter
+const serviceIcons = SERVICE_ICONS;
+
+type TabKey = 'book' | 'active' | 'scheduled' | 'history';
+
+const getBookingLink = (id: string) => `/user/booking/${id}`;
+
+const EMPTY_COPY: Record<Exclude<TabKey, 'book'>, { title: string; description: string }> = {
+    active: {
+        title: 'No active bookings',
+        description: 'Bookings a provider has accepted will show up here.',
+    },
+    scheduled: {
+        title: 'Nothing scheduled',
+        description: 'Bookings waiting for a provider to accept them will show up here.',
+    },
+    history: {
+        title: 'No booking history yet',
+        description: 'Completed, cancelled and expired bookings will show up here.',
+    },
 };
-
-function BookingCard({ booking, onClick }: { booking: Booking; onClick: () => void }) {
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'completed':
-                return 'success';
-            case 'cancelled':
-                return 'error';
-            case 'in_progress':
-                return 'warning';
-            case 'accepted':
-                return 'info';
-            default:
-                return 'default';
-        }
-    };
-
-    return (
-        <Card
-            sx={{
-                cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                },
-            }}
-            onClick={onClick}
-        >
-            <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant="h6" fontWeight={600}>
-                        {booking.service?.name || 'Service'}
-                    </Typography>
-                    <Chip
-                        label={(booking.status || 'pending').replace('_', ' ')}
-                        color={getStatusColor(booking.status || 'pending')}
-                        size="small"
-                    />
-                </Box>
-                <Stack spacing={1}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <CalendarIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                            {dayjs(booking.startDate).format('MMM D, YYYY')}
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <TimeIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                            {booking.hours || 0} hour{(booking.hours || 0) > 1 ? 's' : ''} @ £
-                            {booking.rate || 0}/hr
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LocationIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                            {booking.address}
-                        </Typography>
-                    </Box>
-                </Stack>
-                <Typography variant="h6" color="primary" sx={{ mt: 2 }}>
-                    £{(booking.amount ?? booking.rate * booking.hours).toFixed(2)}
-                </Typography>
-            </CardContent>
-        </Card>
-    );
-}
 
 export default function UserDashboard() {
     const navigate = useNavigate();
@@ -117,7 +67,7 @@ export default function UserDashboard() {
     const user = useAppSelector(selectCurrentUser);
     const formData = useAppSelector(selectBookingFormData);
 
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState<TabKey>('book');
     const [bookingStep, setBookingStep] = useState(1);
     const [date, setDate] = useState<Dayjs | null>(null);
     const [time, setTime] = useState<Dayjs | null>(null);
@@ -125,6 +75,17 @@ export default function UserDashboard() {
 
     const [createBooking, { isLoading: isCreating }] = useCreateBookingMutation();
     const { data: bookingsData, isLoading: isLoadingBookings } = useGetUserBookingsQuery();
+    const snackbar = useSnackbar();
+    useDocumentTitle('Home');
+
+    const allBookings = useMemo(
+        () =>
+            bookingsData
+                ? [...bookingsData.active, ...bookingsData.scheduled, ...bookingsData.history]
+                : undefined,
+        [bookingsData]
+    );
+    const buckets = useBucketedBookings(allBookings);
 
     const handleServiceSelect = (serviceId: number, serviceName: string) => {
         dispatch(setFormData({ serviceId, serviceName }));
@@ -158,8 +119,9 @@ export default function UserDashboard() {
 
             navigate('/user/payment');
         } catch (err) {
-            const error = err as { data?: { message?: string } };
-            setError(error.data?.message || 'Failed to create booking. Please try again.');
+            const message = getErrorMessage(err, 'Failed to create booking. Please try again.');
+            setError(message);
+            snackbar.error(message);
         }
     };
 
@@ -174,25 +136,51 @@ export default function UserDashboard() {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box>
-                <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
-                    Welcome, {user?.firstName}!
-                </Typography>
-                <Typography color="text.secondary" sx={{ mb: 4 }}>
-                    Book hospitality services or manage your bookings
-                </Typography>
+                <PageHeader
+                    title={`Welcome, ${user?.firstName ?? ''}!`}
+                    subtitle="Book hospitality services or manage your bookings"
+                />
 
                 <Tabs
                     value={activeTab}
-                    onChange={(_, v) => setActiveTab(v)}
-                    sx={{ mb: 4, borderBottom: '1px solid', borderColor: 'divider' }}
+                    onChange={(_, v: TabKey) => setActiveTab(v)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
+                    sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider' }}
                 >
-                    <Tab label="Book Service" />
-                    <Tab label="Active Bookings" />
-                    <Tab label="History" />
+                    <Tab value="book" label="Book service" />
+                    <Tab
+                        value="active"
+                        label={
+                            <TabLabel
+                                label="Active"
+                                count={isLoadingBookings ? undefined : buckets.active.length}
+                            />
+                        }
+                    />
+                    <Tab
+                        value="scheduled"
+                        label={
+                            <TabLabel
+                                label="Scheduled"
+                                count={isLoadingBookings ? undefined : buckets.scheduled.length}
+                            />
+                        }
+                    />
+                    <Tab
+                        value="history"
+                        label={
+                            <TabLabel
+                                label="History"
+                                count={isLoadingBookings ? undefined : buckets.history.length}
+                            />
+                        }
+                    />
                 </Tabs>
 
                 {/* Book Service Tab */}
-                {activeTab === 0 && (
+                {activeTab === 'book' && (
                     <Box>
                         {error && (
                             <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
@@ -264,7 +252,7 @@ export default function UserDashboard() {
 
                                 <Box sx={{ mt: 4, maxWidth: 500 }}>
                                     <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                                        Hourly Rate: £{formData.rate}
+                                        Hourly Rate: ${formData.rate}
                                     </Typography>
                                     <Slider
                                         value={formData.rate}
@@ -275,12 +263,12 @@ export default function UserDashboard() {
                                         max={200}
                                         step={5}
                                         marks={[
-                                            { value: 20, label: '£20' },
-                                            { value: 100, label: '£100' },
-                                            { value: 200, label: '£200' },
+                                            { value: 20, label: '$20' },
+                                            { value: 100, label: '$100' },
+                                            { value: 200, label: '$200' },
                                         ]}
                                         valueLabelDisplay="auto"
-                                        valueLabelFormat={(v) => `£${v}`}
+                                        valueLabelFormat={(v) => `$${v}`}
                                     />
                                 </Box>
 
@@ -309,7 +297,7 @@ export default function UserDashboard() {
                                 <Card sx={{ mb: 3, bgcolor: 'primary.main', color: 'white' }}>
                                     <CardContent>
                                         <Typography variant="h6">{formData.serviceName}</Typography>
-                                        <Typography>£{formData.rate}/hour</Typography>
+                                        <Typography>${formData.rate}/hour</Typography>
                                     </CardContent>
                                 </Card>
 
@@ -382,7 +370,7 @@ export default function UserDashboard() {
                                             <Typography color="text.secondary">
                                                 {formData.serviceName}
                                             </Typography>
-                                            <Typography>£{formData.rate}/hr</Typography>
+                                            <Typography>${formData.rate}/hr</Typography>
                                         </Box>
                                         <Box
                                             sx={{
@@ -411,7 +399,7 @@ export default function UserDashboard() {
                                                 fontWeight={600}
                                                 color="primary"
                                             >
-                                                £{(formData.rate * formData.hours).toFixed(2)}
+                                                ${(formData.rate * formData.hours).toFixed(2)}
                                             </Typography>
                                         </Box>
                                     </CardContent>
@@ -435,60 +423,28 @@ export default function UserDashboard() {
                     </Box>
                 )}
 
-                {/* Active Bookings Tab */}
-                {activeTab === 1 && (
-                    <Box>
-                        {isLoadingBookings ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                                <CircularProgress />
-                            </Box>
-                        ) : bookingsData?.active && bookingsData.active.length > 0 ? (
-                            <Grid container spacing={3} sx={{ maxWidth: 1200 }}>
-                                {bookingsData.active.map((booking) => (
-                                    <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={booking._id}>
-                                        <BookingCard
-                                            booking={booking}
-                                            onClick={() => navigate(`/user/booking/${booking._id}`)}
-                                        />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        ) : (
-                            <Box sx={{ textAlign: 'center', py: 8 }}>
-                                <Typography color="text.secondary">
-                                    No active bookings at the moment
-                                </Typography>
-                            </Box>
-                        )}
-                    </Box>
-                )}
-
-                {/* History Tab */}
-                {activeTab === 2 && (
-                    <Box>
-                        {isLoadingBookings ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                                <CircularProgress />
-                            </Box>
-                        ) : bookingsData?.history && bookingsData.history.length > 0 ? (
-                            <Grid container spacing={3} sx={{ maxWidth: 1200 }}>
-                                {bookingsData.history.map((booking) => (
-                                    <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={booking._id}>
-                                        <BookingCard
-                                            booking={booking}
-                                            onClick={() => navigate(`/user/booking/${booking._id}`)}
-                                        />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        ) : (
-                            <Box sx={{ textAlign: 'center', py: 8 }}>
-                                <Typography color="text.secondary">
-                                    No booking history yet
-                                </Typography>
-                            </Box>
-                        )}
-                    </Box>
+                {activeTab !== 'book' && (
+                    <BookingGrid
+                        bookings={buckets[activeTab]}
+                        loading={isLoadingBookings}
+                        role="user"
+                        getLink={getBookingLink}
+                        empty={
+                            <EmptyState
+                                icon={<EventIcon />}
+                                title={EMPTY_COPY[activeTab].title}
+                                description={EMPTY_COPY[activeTab].description}
+                                action={
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => setActiveTab('book')}
+                                    >
+                                        Book a service
+                                    </Button>
+                                }
+                            />
+                        }
+                    />
                 )}
             </Box>
         </LocalizationProvider>

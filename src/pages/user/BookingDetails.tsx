@@ -1,386 +1,176 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-    Box,
-    Typography,
-    Card,
-    CardContent,
-    Button,
-    Chip,
-    CircularProgress,
-    Alert,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Avatar,
-    Divider,
-    Stack,
-} from '@mui/material';
-import {
-    ArrowBack,
-    CalendarMonth,
-    AccessTime,
-    LocationOn,
-    Person,
-    Phone,
-    Email,
-} from '@mui/icons-material';
-import dayjs from 'dayjs';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Button, Card, CardContent, Chip, Divider, TextField, Typography } from '@mui/material';
 import {
     useGetBookingByIdMutation,
     useCancelBookingMutation,
     useApproveStartJobRequestMutation,
 } from '@/features/booking/bookingApi';
-import type { Booking, User } from '@/types';
+import BookingDetailView from '@/components/common/BookingDetailView';
+import { PriceRow } from '@/components/common/InfoRow';
+import PageHeader from '@/components/common/PageHeader';
+import { DetailSkeleton, ErrorState } from '@/components/common/PageStates';
+import ConfirmDialog from '@/components/feedback/ConfirmDialog';
+import { useSnackbar } from '@/components/feedback/snackbarContext';
+import { useBookingLoader, type BookingPayment } from '@/hooks/useBookingLoader';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { formatMoney, getDisplayStatus, getErrorMessage } from '@/utils/format';
+
+function paymentChip(payment: BookingPayment | null) {
+    if (!payment) return null;
+    if (payment.refundStatus) {
+        return <Chip label="Refunded" size="small" color="info" />;
+    }
+    return payment.status === 'completed' ? (
+        <Chip label="Paid" size="small" color="success" />
+    ) : (
+        <Chip label="Payment pending" size="small" color="warning" />
+    );
+}
 
 export default function BookingDetails() {
     const { bookingId } = useParams<{ bookingId: string }>();
-    const navigate = useNavigate();
+    const snackbar = useSnackbar();
+    useDocumentTitle('Booking details');
 
-    const [booking, setBooking] = useState<Booking | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [cancelOpen, setCancelOpen] = useState(false);
+    const [approveOpen, setApproveOpen] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
 
-    const [getBooking, { isLoading }] = useGetBookingByIdMutation();
+    const [getBooking] = useGetBookingByIdMutation();
     const [cancelBooking, { isLoading: isCancelling }] = useCancelBookingMutation();
     const [approveStartJob, { isLoading: isApproving }] = useApproveStartJobRequestMutation();
-
-    useEffect(() => {
-        if (bookingId) {
-            fetchBooking();
-        }
-    }, [bookingId]);
-
-    const fetchBooking = async () => {
-        try {
-            const result = await getBooking({ bookingId: bookingId! }).unwrap();
-            setBooking(result.booking);
-        } catch {
-            setError('Failed to load booking details');
-        }
-    };
+    const { booking, payment, error, loading, reload } = useBookingLoader(bookingId, getBooking);
 
     const handleCancel = async () => {
         try {
-            await cancelBooking({ bookingId: bookingId!, reason: cancelReason }).unwrap();
-            setCancelDialogOpen(false);
-            fetchBooking();
-        } catch {
-            setError('Failed to cancel booking');
+            await cancelBooking({
+                bookingId: bookingId!,
+                reason: cancelReason.trim() || undefined,
+            }).unwrap();
+            setCancelOpen(false);
+            setCancelReason('');
+            snackbar.success('Booking cancelled. Any payment will be refunded.');
+            void reload();
+        } catch (err) {
+            snackbar.error(getErrorMessage(err, 'Failed to cancel booking'));
         }
     };
 
     const handleApproveStart = async () => {
         try {
             await approveStartJob({ bookingId: bookingId! }).unwrap();
-            fetchBooking();
-        } catch {
-            setError('Failed to approve job start');
+            setApproveOpen(false);
+            snackbar.success('Job start approved');
+            void reload();
+        } catch (err) {
+            snackbar.error(getErrorMessage(err, 'Failed to approve job start'));
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'completed':
-                return 'success';
-            case 'cancelled':
-                return 'error';
-            case 'in_progress':
-                return 'warning';
-            case 'accepted':
-                return 'info';
-            default:
-                return 'default';
-        }
-    };
+    if (loading) return <DetailSkeleton />;
 
-    if (error) {
+    if (error || !booking) {
         return (
-            <Box>
-                <Button startIcon={<ArrowBack />} onClick={() => navigate('/user')} sx={{ mb: 3 }}>
-                    Back to Dashboard
+            <ErrorState
+                title="Booking details"
+                message={error || 'Booking not found'}
+                backTo="/user"
+                backLabel="Back to bookings"
+                onRetry={reload}
+            />
+        );
+    }
+
+    const status = getDisplayStatus(booking);
+    const subtotal = (booking.rate || 0) * (booking.hours || 0);
+    const canCancel = ['scheduled', 'accepted', 'awaiting_start_approval'].includes(status);
+
+    const priceCard = (
+        <Card>
+            <CardContent>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
+                    Price breakdown
+                </Typography>
+                <PriceRow label="Hourly rate" value={formatMoney(booking.rate)} />
+                <PriceRow label="Hours" value={String(booking.hours || 0)} />
+                <PriceRow label="Subtotal" value={formatMoney(subtotal)} />
+                <Divider sx={{ my: 1 }} />
+                <PriceRow label="Total" value={formatMoney(payment?.amount ?? subtotal)} strong />
+                {paymentChip(payment)}
+            </CardContent>
+        </Card>
+    );
+
+    const actions = (
+        <>
+            {status === 'awaiting_start_approval' && (
+                <Button
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                    onClick={() => setApproveOpen(true)}
+                >
+                    Approve job start
                 </Button>
-                <Alert severity="error">{error}</Alert>
-            </Box>
-        );
-    }
-
-    if (isLoading || !booking) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    const provider = booking.providerId as User | undefined;
+            )}
+            {canCancel && (
+                <Button
+                    variant="outlined"
+                    color="error"
+                    fullWidth
+                    onClick={() => setCancelOpen(true)}
+                >
+                    Cancel booking
+                </Button>
+            )}
+        </>
+    );
 
     return (
-        <Box>
-            <Button startIcon={<ArrowBack />} onClick={() => navigate('/user')} sx={{ mb: 3 }}>
-                Back to Dashboard
-            </Button>
-
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 4,
+        <>
+            <PageHeader title="Booking details" backTo="/user" backLabel="Back to bookings" />
+            <BookingDetailView
+                booking={booking}
+                counterpart={{
+                    title: 'Provider',
+                    person: booking.providerId,
+                    emptyText: 'No provider has accepted yet',
                 }}
+                priceCard={priceCard}
+                actions={actions}
+                receiptPath={`/user/booking/${booking._id}/receipt`}
+            />
+
+            <ConfirmDialog
+                open={approveOpen}
+                title="Approve job start?"
+                description="The provider has arrived and is ready to begin. Approving marks the job as in progress."
+                confirmLabel="Approve"
+                loading={isApproving}
+                onConfirm={handleApproveStart}
+                onClose={() => setApproveOpen(false)}
+            />
+            <ConfirmDialog
+                open={cancelOpen}
+                title="Cancel this booking?"
+                description="This cannot be undone. If you have already paid, a refund will be issued."
+                confirmLabel="Cancel booking"
+                cancelLabel="Keep booking"
+                confirmColor="error"
+                loading={isCancelling}
+                onConfirm={handleCancel}
+                onClose={() => setCancelOpen(false)}
             >
-                <Typography variant="h4" fontWeight={700}>
-                    Booking Details
-                </Typography>
-                <Chip
-                    label={(booking.status || 'pending').replace('_', ' ')}
-                    color={getStatusColor(booking.status || 'pending')}
-                    size="medium"
+                <TextField
+                    fullWidth
+                    label="Reason (optional)"
+                    multiline
+                    rows={3}
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
                 />
-            </Box>
-
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    gap: 4,
-                    maxWidth: 1000,
-                }}
-            >
-                {/* Main Details */}
-                <Box sx={{ flex: 2, minWidth: 0 }}>
-                    <Card sx={{ mb: 3 }}>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                                Service Details
-                            </Typography>
-
-                            <Box
-                                sx={{
-                                    bgcolor: 'primary.main',
-                                    color: 'white',
-                                    p: 3,
-                                    borderRadius: 2,
-                                    mb: 3,
-                                }}
-                            >
-                                <Typography variant="h5" fontWeight={600}>
-                                    {booking.service?.name || 'Service'}
-                                </Typography>
-                            </Box>
-
-                            <Stack spacing={2}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <CalendarMonth color="action" />
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Date
-                                        </Typography>
-                                        <Typography>
-                                            {dayjs(booking.startDate).format('MMMM D, YYYY')}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <AccessTime color="action" />
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Time & Duration
-                                        </Typography>
-                                        <Typography>
-                                            {dayjs(booking.startTime).format('h:mm A')} •{' '}
-                                            {booking.hours || 0} hour
-                                            {(booking.hours || 0) > 1 ? 's' : ''}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <LocationOn color="action" />
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Location
-                                        </Typography>
-                                        <Typography>{booking.address}</Typography>
-                                    </Box>
-                                </Box>
-                            </Stack>
-                        </CardContent>
-                    </Card>
-
-                    {/* Provider Info */}
-                    {provider && typeof provider === 'object' && (
-                        <Card>
-                            <CardContent>
-                                <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                                    Provider
-                                </Typography>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                                    <Avatar
-                                        src={provider.profile}
-                                        sx={{ width: 64, height: 64, bgcolor: 'primary.main' }}
-                                    >
-                                        {provider.firstName?.[0]}
-                                    </Avatar>
-                                    <Box>
-                                        <Typography variant="h6">
-                                            {provider.firstName} {provider.lastName}
-                                        </Typography>
-                                        {provider.rating && (
-                                            <Typography variant="body2" color="text.secondary">
-                                                ★ {provider.rating.toFixed(1)} rating
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                </Box>
-
-                                <Stack spacing={2}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                        <Email color="action" fontSize="small" />
-                                        <Typography>{provider.email}</Typography>
-                                    </Box>
-                                    {provider.phone && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <Phone color="action" fontSize="small" />
-                                            <Typography>{provider.phone}</Typography>
-                                        </Box>
-                                    )}
-                                </Stack>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {!provider && booking.status === 'paid' && (
-                        <Card>
-                            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-                                <Person sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                                <Typography color="text.secondary">
-                                    Waiting for a provider to accept your booking
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    )}
-                </Box>
-
-                {/* Payment & Actions */}
-                <Box sx={{ flex: 1 }}>
-                    <Card sx={{ mb: 3 }}>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                                Payment Summary
-                            </Typography>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography color="text.secondary">Hourly Rate</Typography>
-                                <Typography>£{booking.rate || 0}</Typography>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography color="text.secondary">Hours</Typography>
-                                <Typography>{booking.hours || 0}</Typography>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography color="text.secondary">Subtotal</Typography>
-                                <Typography>
-                                    £{((booking.rate || 0) * (booking.hours || 0)).toFixed(2)}
-                                </Typography>
-                            </Box>
-
-                            {booking.platformFee != null && (
-                                <Box
-                                    sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
-                                >
-                                    <Typography color="text.secondary">Platform Fee</Typography>
-                                    <Typography>£{booking.platformFee.toFixed(2)}</Typography>
-                                </Box>
-                            )}
-
-                            <Divider sx={{ my: 2 }} />
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Typography variant="h6" fontWeight={600}>
-                                    Total
-                                </Typography>
-                                <Typography variant="h6" fontWeight={600} color="primary">
-                                    £{(booking.amount ?? booking.rate * booking.hours).toFixed(2)}
-                                </Typography>
-                            </Box>
-
-                            <Chip
-                                label={booking.paymentStatus === 'completed' ? 'Paid' : 'Pending'}
-                                color={
-                                    booking.paymentStatus === 'completed' ? 'success' : 'warning'
-                                }
-                                sx={{ mt: 2 }}
-                            />
-                        </CardContent>
-                    </Card>
-
-                    {/* Actions */}
-                    <Stack spacing={2}>
-                        {booking.userApprovalRequested && booking.status === 'accepted' && (
-                            <Button
-                                variant="contained"
-                                fullWidth
-                                onClick={handleApproveStart}
-                                disabled={isApproving}
-                            >
-                                {isApproving ? (
-                                    <CircularProgress size={24} color="inherit" />
-                                ) : (
-                                    'Approve Job Start'
-                                )}
-                            </Button>
-                        )}
-
-                        {['pending', 'paid', 'accepted'].includes(booking.status) && (
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                fullWidth
-                                onClick={() => setCancelDialogOpen(true)}
-                            >
-                                Cancel Booking
-                            </Button>
-                        )}
-                    </Stack>
-                </Box>
-            </Box>
-
-            {/* Cancel Dialog */}
-            <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
-                <DialogTitle>Cancel Booking</DialogTitle>
-                <DialogContent>
-                    <Typography sx={{ mb: 3 }}>
-                        Are you sure you want to cancel this booking? This action cannot be undone.
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        label="Reason for cancellation (optional)"
-                        multiline
-                        rows={3}
-                        value={cancelReason}
-                        onChange={(e) => setCancelReason(e.target.value)}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setCancelDialogOpen(false)}>Keep Booking</Button>
-                    <Button
-                        variant="contained"
-                        color="error"
-                        onClick={handleCancel}
-                        disabled={isCancelling}
-                    >
-                        {isCancelling ? <CircularProgress size={24} /> : 'Cancel Booking'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+            </ConfirmDialog>
+        </>
     );
 }
