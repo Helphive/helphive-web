@@ -18,42 +18,59 @@ const baseQuery = fetchBaseQuery({
     },
 });
 
+// Only one refresh at a time: when the access token expires, parallel requests all get a 401, and refreshing
+// once per request replayed the same single-use refresh token and signed the user out.
+let refreshInFlight: Promise<boolean> | null = null;
+
+const refreshSession = async (
+    api: Parameters<BaseQueryFn>[1],
+    extraOptions: Parameters<BaseQueryFn>[2]
+): Promise<boolean> => {
+    const refreshToken = (api.getState() as RootState).auth.refreshToken;
+    if (!refreshToken) {
+        api.dispatch(logout());
+        return false;
+    }
+
+    const refreshResult = await baseQuery(
+        { url: '/auth/refresh', method: 'POST', body: { refreshToken } },
+        api,
+        extraOptions
+    );
+
+    if (refreshResult?.data) {
+        const data = refreshResult.data as {
+            accessToken: string;
+            refreshToken: string;
+            user: unknown;
+        };
+        api.dispatch(
+            setCredentials({
+                accessToken: data.accessToken,
+                refreshToken: data.refreshToken,
+                user: data.user,
+            })
+        );
+        return true;
+    }
+
+    // Only a definitive rejection ends the session; a network blip keeps the user signed in.
+    const status = refreshResult?.error?.status;
+    if (status === 401 || status === 403) api.dispatch(logout());
+    return false;
+};
+
 const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
 
     if (result?.error?.status === 403 || result?.error?.status === 401) {
-        const refreshToken = (api.getState() as RootState).auth.refreshToken;
-
-        if (refreshToken) {
-            const refreshResult = await baseQuery(
-                {
-                    url: '/auth/refresh',
-                    method: 'POST',
-                    body: { refreshToken },
-                },
-                api,
-                extraOptions
-            );
-
-            if (refreshResult?.data) {
-                const data = refreshResult.data as {
-                    accessToken: string;
-                    refreshToken: string;
-                    user: unknown;
-                };
-                api.dispatch(
-                    setCredentials({
-                        accessToken: data.accessToken,
-                        refreshToken: data.refreshToken,
-                        user: data.user,
-                    })
-                );
-                result = await baseQuery(args, api, extraOptions);
-            } else {
-                api.dispatch(logout());
-            }
-        } else {
-            api.dispatch(logout());
+        if (!refreshInFlight) {
+            refreshInFlight = refreshSession(api, extraOptions).finally(() => {
+                refreshInFlight = null;
+            });
+        }
+        if (await refreshInFlight) {
+            result = await baseQuery(args, api, extraOptions);
         }
     }
 
