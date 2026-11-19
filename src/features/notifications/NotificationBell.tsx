@@ -4,7 +4,6 @@ import {
     Badge,
     Box,
     Button,
-    Divider,
     IconButton,
     List,
     Popover,
@@ -13,7 +12,8 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { Notifications as BellIcon, NotificationsNone as BellEmptyIcon } from '@mui/icons-material';
+import { NotificationsNoneOutlined } from '@mui/icons-material';
+import { color, hairline } from '@/theme/tokens';
 import {
     NOTIFICATIONS_PREVIEW_SIZE,
     useGetNotificationsQuery,
@@ -52,10 +52,11 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                 <IconButton
                     onClick={(e) => setAnchorEl(e.currentTarget)}
                     aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
-                    sx={{ mr: 0.5 }}
+                    aria-haspopup="dialog"
+                    aria-expanded={open}
                 >
                     <Badge badgeContent={unreadCount} color="primary" max={99}>
-                        <BellIcon />
+                        <NotificationsNoneOutlined />
                     </Badge>
                 </IconButton>
             </Tooltip>
@@ -66,14 +67,28 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 slotProps={{
-                    paper: { sx: { width: { xs: 'calc(100vw - 24px)', sm: 380 }, mt: 1 } },
+                    paper: {
+                        role: 'dialog',
+                        'aria-label': 'Recent notifications',
+                        sx: {
+                            width: { xs: 'calc(100vw - 24px)', sm: 380 },
+                            mt: 1,
+                            overflow: 'hidden',
+                        },
+                    },
                 }}
             >
                 <Stack
                     direction="row"
-                    sx={{ px: 2, py: 1.5, justifyContent: 'space-between', alignItems: 'center' }}
+                    sx={{
+                        px: 2.5,
+                        py: 1.5,
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderBottom: hairline,
+                    }}
                 >
-                    <Typography variant="subtitle1" fontWeight={700}>
+                    <Typography variant="h6" component="h2">
                         Notifications
                     </Typography>
                     <Button
@@ -85,12 +100,11 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                         View all
                     </Button>
                 </Stack>
-                <Divider />
                 {isLoading ? (
-                    <Box sx={{ p: 2 }}>
+                    <Box sx={{ p: 2.5 }} role="status" aria-label="Loading notifications">
                         {[0, 1, 2].map((i) => (
-                            <Stack key={i} direction="row" spacing={1.5} sx={{ mb: 2 }}>
-                                <Skeleton variant="circular" width={40} height={40} />
+                            <Stack key={i} direction="row" spacing={1.5} sx={{ mb: i < 2 ? 2 : 0 }}>
+                                <Skeleton variant="rounded" width={32} height={32} />
                                 <Box sx={{ flex: 1 }}>
                                     <Skeleton width="60%" />
                                     <Skeleton width="90%" />
@@ -99,16 +113,19 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                         ))}
                     </Box>
                 ) : isError ? (
-                    <Box sx={{ p: 3, textAlign: 'center' }}>
-                        <Typography color="text.secondary" sx={{ mb: 1 }}>
-                            Could not load notifications
+                    <Box sx={{ p: 3, textAlign: 'center' }} role="alert">
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            Could not load notifications.
                         </Typography>
-                        <Button size="small" onClick={() => refetch()}>
-                            Retry
+                        <Button size="small" variant="outlined" onClick={() => refetch()}>
+                            Try again
                         </Button>
                     </Box>
                 ) : data && data.notifications.length > 0 ? (
-                    <List disablePadding sx={{ maxHeight: 420, overflowY: 'auto' }}>
+                    <List
+                        disablePadding
+                        sx={{ maxHeight: 420, overflowY: 'auto', overflowX: 'hidden' }}
+                    >
                         {data.notifications.slice(0, NOTIFICATIONS_PREVIEW_SIZE).map((n) => (
                             <NotificationItem
                                 key={n._id}
@@ -118,9 +135,14 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                         ))}
                     </List>
                 ) : (
-                    <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-                        <BellEmptyIcon sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography>You are all caught up</Typography>
+                    <Box sx={{ px: 3, py: 4, textAlign: 'center' }}>
+                        <NotificationsNoneOutlined
+                            sx={{ fontSize: 28, color: color.ink300, mb: 1 }}
+                        />
+                        <Typography variant="subtitle2">You are all caught up</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Booking and payment updates will appear here.
+                        </Typography>
                     </Box>
                 )}
             </Popover>

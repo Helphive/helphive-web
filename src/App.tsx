@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@/theme/ThemeContext';
+import { AppSkeleton, ErrorBoundary } from '@/components/ui';
 import SnackbarProvider from '@/components/feedback/SnackbarProvider';
 import { useAppSelector } from '@/store/hooks';
 import { selectIsAuthenticated, selectCurrentUser } from '@/features/auth/authSlice';
@@ -26,6 +26,7 @@ const BookingDetails = lazy(() => import('@/pages/user/BookingDetails'));
 const NotificationsPage = lazy(() => import('@/pages/shared/NotificationsPage'));
 const ReceiptPage = lazy(() => import('@/pages/shared/ReceiptPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const ProfilePage = lazy(() => import('@/pages/shared/ProfilePage'));
 
 // Provider pages
 const ProviderDashboard = lazy(() => import('@/pages/provider/ProviderDashboard'));
@@ -158,132 +159,129 @@ function HomeRedirect() {
     return <Navigate to="/user" replace />;
 }
 
-const PageLoader = () => (
-    <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}
-    >
-        <CircularProgress />
-    </Box>
-);
-
 function App() {
+    const location = useLocation();
     return (
         <ThemeProvider>
             <SnackbarProvider>
-                <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                        {/* Public routes */}
-                        <Route path="/" element={<LandingPage />} />
+                <ErrorBoundary resetKey={location.pathname}>
+                    <Suspense fallback={<AppSkeleton />}>
+                        <Routes>
+                            {/* Public routes */}
+                            <Route path="/" element={<LandingPage />} />
 
-                        {/* Auth routes */}
-                        <Route element={<AuthLayout />}>
-                            <Route path="/login" element={<LoginPage />} />
-                            <Route path="/signup" element={<SignupPage />} />
-                            <Route path="/provider-signup" element={<ProviderSignupPage />} />
-                            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                        </Route>
+                            {/* Auth routes */}
+                            <Route element={<AuthLayout />}>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/signup" element={<SignupPage />} />
+                                <Route path="/provider-signup" element={<ProviderSignupPage />} />
+                                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                            </Route>
 
-                        {/* Home redirect */}
-                        <Route
-                            path="/home"
-                            element={
-                                <ProtectedRoute>
-                                    <HomeRedirect />
-                                </ProtectedRoute>
-                            }
-                        />
-
-                        {/* User routes */}
-                        <Route
-                            path="/user"
-                            element={
-                                <ProtectedRoute>
-                                    <DashboardLayout userType="user" />
-                                </ProtectedRoute>
-                            }
-                        >
-                            <Route index element={<UserDashboard />} />
-                            <Route path="booking/:bookingId" element={<BookingDetails />} />
+                            {/* Home redirect */}
                             <Route
-                                path="booking/:bookingId/receipt"
-                                element={<ReceiptPage area="user" />}
+                                path="/home"
+                                element={
+                                    <ProtectedRoute>
+                                        <HomeRedirect />
+                                    </ProtectedRoute>
+                                }
                             />
-                            <Route path="payment" element={<BookingPayment />} />
-                            <Route
-                                path="notifications"
-                                element={<NotificationsPage area="user" />}
-                            />
-                            <Route path="*" element={<NotFoundPage />} />
-                        </Route>
 
-                        {/* Provider routes - only for approved providers */}
-                        <Route
-                            path="/provider"
-                            element={
-                                <ApprovedProviderRoute>
-                                    <DashboardLayout userType="provider" />
-                                </ApprovedProviderRoute>
-                            }
-                        >
-                            <Route index element={<ProviderDashboard />} />
-                            <Route path="orders" element={<AvailableOrders />} />
-                            <Route path="orders/:bookingId" element={<OrderDetails />} />
-                            <Route path="my-orders" element={<MyOrders />} />
-                            <Route path="my-orders/:bookingId" element={<MyOrderDetails />} />
+                            {/* User routes */}
                             <Route
-                                path="orders/:bookingId/receipt"
-                                element={<ReceiptPage area="provider" />}
-                            />
-                            <Route
-                                path="my-orders/:bookingId/receipt"
-                                element={<ReceiptPage area="provider" />}
-                            />
-                            <Route path="earnings" element={<Earnings />} />
-                            <Route
-                                path="notifications"
-                                element={<NotificationsPage area="provider" />}
-                            />
-                            <Route path="*" element={<NotFoundPage />} />
-                        </Route>
+                                path="/user"
+                                element={
+                                    <ProtectedRoute>
+                                        <DashboardLayout userType="user" />
+                                    </ProtectedRoute>
+                                }
+                            >
+                                <Route index element={<UserDashboard />} />
+                                <Route path="booking/:bookingId" element={<BookingDetails />} />
+                                <Route
+                                    path="booking/:bookingId/receipt"
+                                    element={<ReceiptPage area="user" />}
+                                />
+                                <Route path="payment" element={<BookingPayment />} />
+                                <Route
+                                    path="notifications"
+                                    element={<NotificationsPage area="user" />}
+                                />
+                                <Route path="profile" element={<ProfilePage area="user" />} />
+                                <Route path="*" element={<NotFoundPage />} />
+                            </Route>
 
-                        {/* Provider onboarding routes (without dashboard layout) - only for non-approved */}
-                        <Route
-                            path="/provider/onboarding"
-                            element={
-                                <OnboardingRoute>
-                                    <ProviderOnboarding />
-                                </OnboardingRoute>
-                            }
-                        />
-                        <Route
-                            path="/provider/pending"
-                            element={
-                                <OnboardingRoute>
-                                    <AccountPending />
-                                </OnboardingRoute>
-                            }
-                        />
-                        <Route
-                            path="/provider/rejected"
-                            element={
-                                <OnboardingRoute>
-                                    <AccountRejected />
-                                </OnboardingRoute>
-                            }
-                        />
-                        <Route
-                            path="/provider/approved"
-                            element={
-                                <ProtectedRoute>
-                                    <AccountApproved />
-                                </ProtectedRoute>
-                            }
-                        />
+                            {/* Provider routes - only for approved providers */}
+                            <Route
+                                path="/provider"
+                                element={
+                                    <ApprovedProviderRoute>
+                                        <DashboardLayout userType="provider" />
+                                    </ApprovedProviderRoute>
+                                }
+                            >
+                                <Route index element={<ProviderDashboard />} />
+                                <Route path="orders" element={<AvailableOrders />} />
+                                <Route path="orders/:bookingId" element={<OrderDetails />} />
+                                <Route path="my-orders" element={<MyOrders />} />
+                                <Route path="my-orders/:bookingId" element={<MyOrderDetails />} />
+                                <Route
+                                    path="orders/:bookingId/receipt"
+                                    element={<ReceiptPage area="provider" />}
+                                />
+                                <Route
+                                    path="my-orders/:bookingId/receipt"
+                                    element={<ReceiptPage area="provider" />}
+                                />
+                                <Route path="earnings" element={<Earnings />} />
+                                <Route
+                                    path="notifications"
+                                    element={<NotificationsPage area="provider" />}
+                                />
+                                <Route path="profile" element={<ProfilePage area="provider" />} />
+                                <Route path="*" element={<NotFoundPage />} />
+                            </Route>
 
-                        {/* Catch all */}
-                        <Route path="*" element={<NotFoundPage />} />
-                    </Routes>
-                </Suspense>
+                            {/* Provider onboarding routes (without dashboard layout) - only for non-approved */}
+                            <Route
+                                path="/provider/onboarding"
+                                element={
+                                    <OnboardingRoute>
+                                        <ProviderOnboarding />
+                                    </OnboardingRoute>
+                                }
+                            />
+                            <Route
+                                path="/provider/pending"
+                                element={
+                                    <OnboardingRoute>
+                                        <AccountPending />
+                                    </OnboardingRoute>
+                                }
+                            />
+                            <Route
+                                path="/provider/rejected"
+                                element={
+                                    <OnboardingRoute>
+                                        <AccountRejected />
+                                    </OnboardingRoute>
+                                }
+                            />
+                            <Route
+                                path="/provider/approved"
+                                element={
+                                    <ProtectedRoute>
+                                        <AccountApproved />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            {/* Catch all */}
+                            <Route path="*" element={<NotFoundPage standalone />} />
+                        </Routes>
+                    </Suspense>
+                </ErrorBoundary>
             </SnackbarProvider>
         </ThemeProvider>
     );

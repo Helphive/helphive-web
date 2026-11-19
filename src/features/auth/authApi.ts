@@ -17,6 +17,23 @@ interface ProviderSignupRequest extends SignupRequest {
     phone?: string;
 }
 
+// GET /auth/user-info returns the stored user document plus a few derived fields.
+export interface UserInfoResponse {
+    user: User & {
+        street?: string;
+        city?: string;
+        state?: string;
+        country?: string;
+        createdAt?: string;
+    };
+    email: string;
+    firstName: string;
+    lastName: string;
+    profile?: string;
+    status?: User['providerStatus'];
+    rejectReason?: string;
+}
+
 export const authApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         login: builder.mutation<AuthResponse, LoginRequest>({
@@ -47,11 +64,13 @@ export const authApi = apiSlice.injectEndpoints({
                 body,
             }),
         }),
-        getUserInfo: builder.query<User, void>({
+        getUserInfo: builder.query<UserInfoResponse, void>({
             query: () => '/auth/user-info',
             providesTags: ['User'],
         }),
-        updateProfile: builder.mutation<User, FormData>({
+        // POST /auth/profile (multipart): firstName, lastName, phone, street, city, state, country,
+        // and a `profile` image file. Empty values are ignored by the backend. Responds { message }.
+        updateProfile: builder.mutation<{ message: string }, FormData>({
             query: (formData) => ({
                 url: '/auth/profile',
                 method: 'POST',

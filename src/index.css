@@ -1,3 +1,16 @@
+/* Colour values mirror src/theme/tokens.ts; keep both in sync. */
+:root {
+    --c-coral-500: #ff5740;
+    --c-coral-600: #d93d29;
+    --c-ink-900: #101828;
+    --c-ink-500: #5b6578;
+    --c-ink-300: #c3c9d4;
+    --c-line: #e4e7ec;
+    --c-line-strong: #d0d5dd;
+    --c-canvas: #f5f6f8;
+    --c-surface: #ffffff;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -11,21 +24,21 @@ body,
     width: 100%;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
     font-family:
         'Plus Jakarta Sans',
         -apple-system,
         BlinkMacSystemFont,
         'Segoe UI',
-        Roboto,
-        Oxygen,
-        Ubuntu,
-        Cantarell,
         sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: #f7f8fa;
-    color: #101828;
+    background: var(--c-canvas);
+    color: var(--c-ink-900);
 }
 
 a {
@@ -49,12 +62,12 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--c-line-strong);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #98a2b3;
+    background: var(--c-ink-300);
 }
 
 /* Remove input autofill background */
@@ -69,6 +82,15 @@ select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0px 1000px transparent inset;
     transition: background-color 5000s ease-in-out 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* Printing (receipts): hide app chrome and use the full page width */
@@ -95,7 +117,8 @@ select:-webkit-autofill:focus {
         min-height: 0 !important;
     }
 
-    .print-main > .MuiContainer-root {
+    .print-main > .MuiContainer-root,
+    .print-main .print-container {
         padding: 0 !important;
         max-width: none !important;
     }
