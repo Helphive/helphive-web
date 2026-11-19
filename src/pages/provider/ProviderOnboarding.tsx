@@ -239,7 +239,7 @@ export default function ProviderOnboarding() {
                 title="Application sent"
                 description="Thank you. Your provider application is with our team for review."
                 next={[
-                    'Our team reviews your documents, usually within 1-2 business days.',
+                    'Our team reviews your documents, which can take up to 3 business days.',
                     'We notify you once a decision has been made.',
                     'When you are approved, you can start accepting orders.',
                 ]}

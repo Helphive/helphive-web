@@ -196,7 +196,7 @@ export function ForProviders() {
                         points={[
                             {
                                 title: 'Apply once',
-                                text: 'Add a profile photo, ID document, DBS certificate and CV. Our team reviews applications, usually within 1 to 2 business days.',
+                                text: 'Add a profile photo, ID document, DBS certificate and CV. Our team reviews applications, which can take up to 3 business days.',
                             },
                             {
                                 title: 'Choose your roles',

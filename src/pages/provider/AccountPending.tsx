@@ -40,8 +40,8 @@ export default function AccountPending() {
             title="Application under review"
             description={
                 data?.createdAt
-                    ? `We received your application on ${dayjs(data.createdAt).format('D MMM YYYY')}. Reviews usually take 1-2 business days.`
-                    : 'Your provider application is being reviewed by our team. This usually takes 1-2 business days.'
+                    ? `We received your application on ${dayjs(data.createdAt).format('D MMM YYYY')}. Reviews can take up to 3 business days.`
+                    : 'Your provider application is being reviewed by our team. This can take up to 3 business days.'
             }
             next={[
                 'Our team checks your documents and details.',

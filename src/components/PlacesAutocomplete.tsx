@@ -114,7 +114,6 @@ export default function PlacesAutocomplete({
             onLoad={onLoad}
             onPlaceChanged={onPlaceChanged}
             options={{
-                componentRestrictions: { country: 'gb' },
                 types: ['address'],
             }}
         >
