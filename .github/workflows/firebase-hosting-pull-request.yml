@@ -35,6 +35,7 @@ jobs:
                   echo "VITE_API_URL=${{ vars.VITE_API_URL }}" >> .env
                   echo "VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}" >> .env
                   echo "VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}" >> .env
+                  echo "VITE_GCLOUD_BUCKET_USERS=${{ vars.VITE_GCLOUD_BUCKET_USERS }}" >> .env
 
             - run: npm ci
             - run: npm run build
