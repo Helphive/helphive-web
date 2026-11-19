@@ -73,7 +73,7 @@ function BrandPanel() {
             <Box
                 component="img"
                 src="/images/app/phone-book-service.webp"
-                alt="HelpHive app, Book Service screen: choose services, set quantities and see the price before booking."
+                alt="HelpHive app, Book a service screen: choose the service, the shift and the address, with the total shown before you pay."
                 width={608}
                 height={1249}
                 decoding="async"

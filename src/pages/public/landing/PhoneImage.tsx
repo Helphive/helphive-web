@@ -6,19 +6,19 @@ export type PhoneScreen = 'book-service' | 'booking-details' | 'chat' | 'provide
 const SCREENS: Record<PhoneScreen, { src: string; alt: string }> = {
     'book-service': {
         src: '/images/app/phone-book-service.webp',
-        alt: 'HelpHive app, Book Service screen: choose services, set quantities and see the price before booking.',
+        alt: 'HelpHive app, Book a service screen: choose the service, the shift and the address, with the total shown before you pay.',
     },
     'booking-details': {
         src: '/images/app/phone-booking-details.webp',
-        alt: 'HelpHive app, Reservation Status screen: the assigned provider, booking status and payment details.',
+        alt: 'HelpHive app, booking details screen: status, shift times, the address on a map and the price breakdown.',
     },
     chat: {
         src: '/images/app/phone-chat.webp',
-        alt: 'HelpHive app chat screen: a conversation with a provider.',
+        alt: 'HelpHive app chat screen: a conversation between a customer and a provider.',
     },
     'provider-home': {
         src: '/images/app/phone-provider-home.webp',
-        alt: 'HelpHive provider app home screen: a map of nearby work, an availability switch and the services offered.',
+        alt: 'HelpHive provider home screen: an availability switch, the services offered and a map of the provider location.',
     },
 };
 
