@@ -127,9 +127,10 @@ function CheckoutForm({ total, onSuccess }: { total: number; onSuccess: () => vo
                 {isProcessing ? (
                     'Processing payment'
                 ) : (
-                    <>
+                    // One inline wrapper: as separate children of the button the space after "Pay" collapses.
+                    <span>
                         Pay <Money amount={total} />
-                    </>
+                    </span>
                 )}
             </Button>
             <Box role="status" sx={{ mt: 1.5, minHeight: 20 }}>
