@@ -1,5 +1,5 @@
 export const ANDROID_APK_URL =
-    'https://github.com/Helphive/helphive-app/releases/download/production-07/helphive-universal.apk';
+    'https://github.com/Helphive/helphive-app/releases/latest/download/helphive-universal.apk';
 
 export const IOS_UNAVAILABLE_MESSAGE =
     'iOS is unavailable for now. Android and web access are ready.';
