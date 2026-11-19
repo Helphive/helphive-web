@@ -1,11 +1,11 @@
 import { useRef, useState, type MouseEvent } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Divider, IconButton, Menu, MenuItem } from '@mui/material';
-import { Close, Menu as MenuIcon } from '@mui/icons-material';
 import { Logo } from '@/components/ui';
 import { color, font, layout } from '@/theme/tokens';
 import { HEADER_HEIGHT, NAV_LINKS, sectionGutter } from './constants';
 import { handleHashClick, scrollToSection, useActiveSection, useScrolled } from './motion';
+import { CloseIcon, MenuIcon } from '@/components/ui/icons';
 
 const SECTION_IDS = NAV_LINKS.map((link) => link.href.slice(1));
 
@@ -122,7 +122,7 @@ export default function LandingHeader() {
                             borderRadius: 1,
                         }}
                     >
-                        {open ? <Close /> : <MenuIcon />}
+                        {open ? <CloseIcon /> : <MenuIcon />}
                     </IconButton>
                 </Box>
             </Box>

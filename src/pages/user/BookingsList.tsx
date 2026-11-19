@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import {
-    CalendarTodayOutlined,
-    EventAvailable,
-    LocationOnOutlined,
-    ScheduleOutlined,
-} from '@mui/icons-material';
 import dayjs from 'dayjs';
 import {
     BOOKING_STATUS,
@@ -21,6 +15,7 @@ import {
 import type { Booking } from '@/types';
 import { color, font, hairline } from '@/theme/tokens';
 import { getDisplayStatus, pluralHours, formatDay } from '@/utils/format';
+import { CalendarIcon, LocationIcon, TimeIcon, TodayIcon } from '@/components/ui/icons';
 
 export type ListTab = 'active' | 'scheduled' | 'history';
 
@@ -113,11 +108,11 @@ function BookingRow({ booking, first }: { booking: Booking; first: boolean }) {
                     spacing={{ xs: 0.25, sm: 2 }}
                     sx={{ minWidth: 0 }}
                 >
-                    <Meta icon={<CalendarTodayOutlined />}>{formatDay(start)}</Meta>
-                    <Meta icon={<ScheduleOutlined />}>
+                    <Meta icon={<CalendarIcon weight="bold" />}>{formatDay(start)}</Meta>
+                    <Meta icon={<TimeIcon weight="bold" />}>
                         {start.format('HH:mm')}, {pluralHours(booking.hours)}
                     </Meta>
-                    <Meta icon={<LocationOnOutlined />}>{booking.address}</Meta>
+                    <Meta icon={<LocationIcon weight="bold" />}>{booking.address}</Meta>
                 </Stack>
             </Box>
             <Box sx={{ textAlign: 'right' }}>
@@ -174,7 +169,7 @@ export default function BookingsList({
             {bookings.length === 0 ? (
                 <EmptyState
                     bare
-                    icon={<EventAvailable />}
+                    icon={<TodayIcon />}
                     title={copy.empty}
                     description={copy.emptyHint}
                     action={

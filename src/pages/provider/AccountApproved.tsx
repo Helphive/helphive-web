@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, CircularProgress } from '@mui/material';
-import { CheckCircleOutline } from '@mui/icons-material';
 import { useMarkApprovalScreenSeenMutation } from '@/features/provider/providerApi';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/features/auth/authSlice';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import StatusScreen from './components/StatusScreen';
+import { SuccessIcon } from '@/components/ui/icons';
 
 export default function AccountApproved() {
     useDocumentTitle('Application approved');
@@ -31,7 +31,7 @@ export default function AccountApproved() {
         <StatusScreen
             tone="green"
             statusLabel="Approved"
-            icon={<CheckCircleOutline />}
+            icon={<SuccessIcon />}
             title="You are approved"
             description="Your provider profile has been approved. You can start accepting jobs from hotels and venues today."
             notice={error ? <Alert severity="error">{error}</Alert> : undefined}

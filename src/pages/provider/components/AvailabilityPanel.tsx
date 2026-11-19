@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Avatar, Box, CircularProgress, FormControlLabel, Stack, Switch } from '@mui/material';
-import { Star } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectCurrentUser, updateUser } from '@/features/auth/authSlice';
 import { useUpdateProviderAvailabilityMutation } from '@/features/provider/providerApi';
@@ -11,6 +10,7 @@ import { getErrorMessage } from '@/utils/format';
 import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
 import { color, font } from '@/theme/tokens';
 import type { Coordinates } from '../useProviderLocation';
+import { RatingIcon } from '@/components/ui/icons';
 
 // Normalizes selectedJobTypes to number[].
 function normalizeJobTypes(
@@ -113,7 +113,10 @@ export default function AvailabilityPanel({ location }: { location: Coordinates 
                                         color: color.ink600,
                                     }}
                                 >
-                                    <Star sx={{ fontSize: 14, color: color.amber500 }} />
+                                    <RatingIcon
+                                        weight="fill"
+                                        sx={{ fontSize: 14, color: color.amber500 }}
+                                    />
                                     <span>{user.rating.toFixed(1)} rating</span>
                                 </Stack>
                             )}

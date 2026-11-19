@@ -2,11 +2,11 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Stack, Typography } from '@mui/material';
 import { demoLoginPath } from '@/features/auth/demoAccounts';
 import { HoneycombBackdrop } from './Backdrops';
-import { ArrowForward, Check } from '@mui/icons-material';
 import { color, font, hairline } from '@/theme/tokens';
 import BookingTicket from './BookingTicket';
 import { HEADER_HEIGHT } from './constants';
 import { Section } from './Section';
+import { CheckMarkIcon, ForwardIcon } from '@/components/ui/icons';
 
 const FACTS = ['Verified providers', 'Stripe-powered payments', 'Live job status'];
 
@@ -79,7 +79,7 @@ export default function Hero() {
                                 to="/signup"
                                 variant="contained"
                                 size="large"
-                                endIcon={<ArrowForward />}
+                                endIcon={<ForwardIcon />}
                             >
                                 Book a service
                             </Button>
@@ -140,7 +140,10 @@ export default function Hero() {
                                         color: color.ink700,
                                     }}
                                 >
-                                    <Check sx={{ fontSize: 16, color: color.green700 }} />
+                                    <CheckMarkIcon
+                                        weight="bold"
+                                        sx={{ fontSize: 16, color: color.green700 }}
+                                    />
                                     {fact}
                                 </Box>
                             ))}

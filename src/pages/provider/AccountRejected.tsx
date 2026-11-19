@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@mui/material';
-import { Email, ErrorOutline } from '@mui/icons-material';
 import { useGetAccountApprovalScreenQuery } from '@/features/provider/providerApi';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { Panel } from '@/components/ui';
 import StatusScreen from './components/StatusScreen';
 import { SUPPORT_EMAIL } from './constants';
+import { EmailIcon, ErrorIcon } from '@/components/ui/icons';
 
 export default function AccountRejected() {
     useDocumentTitle('Application not approved');
@@ -16,7 +16,7 @@ export default function AccountRejected() {
         <StatusScreen
             tone="red"
             statusLabel="Not approved"
-            icon={<ErrorOutline />}
+            icon={<ErrorIcon />}
             title="Application not approved"
             description="We could not approve your provider application this time. You can send a new application or ask our team about the decision."
             notice={
@@ -37,7 +37,7 @@ export default function AccountRejected() {
                     </Button>
                     <Button
                         variant="outlined"
-                        startIcon={<Email />}
+                        startIcon={<EmailIcon />}
                         href={`mailto:${SUPPORT_EMAIL}`}
                     >
                         Contact support

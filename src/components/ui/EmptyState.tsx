@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
 import { Box, Typography, type SxProps, type Theme } from '@mui/material';
 import { color, hairline, radius } from '@/theme/tokens';
+import type { AppIconProps } from './icons';
 
 export interface EmptyStateProps {
     icon?: ReactNode;
@@ -57,10 +58,13 @@ export default function EmptyState({
                         display: 'grid',
                         placeItems: 'center',
                         mb: 2,
-                        '& svg': { fontSize: 22 },
+                        '& svg': { fontSize: 24 },
                     }}
                 >
-                    {icon}
+                    {/* The icon is the main visual here, so it takes the duotone weight. */}
+                    {isValidElement(icon)
+                        ? cloneElement(icon as ReactElement<AppIconProps>, { weight: 'duotone' })
+                        : icon}
                 </Box>
             )}
             <Typography variant="h6" component="p">

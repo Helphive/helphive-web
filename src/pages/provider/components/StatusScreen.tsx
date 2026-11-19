@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
 import { Box, Link, Stack, Typography } from '@mui/material';
 import { color, font, radius } from '@/theme/tokens';
 import { PageHeader, Panel, StatusPill, TONE_STYLES, type Tone } from '@/components/ui';
 import { SUPPORT_EMAIL } from '../constants';
 import OnboardingFrame from './OnboardingFrame';
+import type { AppIconProps } from '@/components/ui/icons';
 
 interface StatusScreenProps {
     tone: Tone;
@@ -55,7 +56,9 @@ export default function StatusScreen({
                     '& svg': { fontSize: 26 },
                 }}
             >
-                {icon}
+                {isValidElement(icon)
+                    ? cloneElement(icon as ReactElement<AppIconProps>, { weight: 'duotone' })
+                    : icon}
             </Box>
             <PageHeader
                 title={title}

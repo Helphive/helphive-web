@@ -11,31 +11,31 @@ import {
     Typography,
 } from '@mui/material';
 import {
-    CheckCircleOutline,
-    Download,
-    FolderOpen,
-    Replay,
-    SettingsOutlined,
-} from '@mui/icons-material';
+    DownloadIcon,
+    FolderIcon,
+    RetryIcon,
+    SettingsIcon,
+    SuccessIcon,
+} from '@/components/ui/icons';
 
 const STEPS = [
     {
-        icon: <Download />,
+        icon: <DownloadIcon />,
         primary: 'Download helphive-universal.apk',
         secondary: 'Use the official GitHub release asset.',
     },
     {
-        icon: <SettingsOutlined />,
+        icon: <SettingsIcon />,
         primary: 'Allow the install when Android asks',
         secondary: 'Your browser or file manager may need permission.',
     },
     {
-        icon: <FolderOpen />,
+        icon: <FolderIcon />,
         primary: 'Open the downloaded file',
         secondary: 'Tap the APK and follow the Android installer.',
     },
     {
-        icon: <CheckCircleOutline />,
+        icon: <SuccessIcon />,
         primary: 'Launch HelpHive',
         secondary: 'Sign in and continue from your phone.',
     },
@@ -74,7 +74,7 @@ export default function AndroidInstallDialog({
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2.5 }}>
                 <Button onClick={onClose}>Close</Button>
-                <Button variant="contained" startIcon={<Replay />} onClick={onRetry}>
+                <Button variant="contained" startIcon={<RetryIcon />} onClick={onRetry}>
                     Retry download
                 </Button>
             </DialogActions>

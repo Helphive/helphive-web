@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Avatar, Box, Button, Stack } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material';
 import { color, font, radius } from '@/theme/tokens';
+import { SuccessIcon } from '@/components/ui/icons';
 
 interface DocumentUploadRowProps {
     id: string;
@@ -107,7 +107,7 @@ export default function DocumentUploadRow({
                         '& svg': { fontSize: 24 },
                     }}
                 >
-                    {file ? <CheckCircle /> : icon}
+                    {file ? <SuccessIcon weight="fill" /> : icon}
                 </Box>
             )}
 

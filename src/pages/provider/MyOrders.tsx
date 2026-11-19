@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Button, CircularProgress, Tab, Tabs } from '@mui/material';
-import { AssignmentTurnedIn, Refresh } from '@mui/icons-material';
 import { useGetMyOrdersQuery } from '@/features/provider/providerApi';
 import { EmptyState, ErrorState, ListSkeleton, PageHeader, Panel } from '@/components/ui';
 import TabLabel from '@/components/common/TabLabel';
@@ -10,6 +9,7 @@ import type { Booking } from '@/types';
 import { getDisplayStatus, getErrorMessage } from '@/utils/format';
 import OrderList from './components/OrderList';
 import { startMs } from './orderUtils';
+import { OrdersIcon, RefreshIcon } from '@/components/ui/icons';
 
 type OrderTab = 'upcoming' | 'active' | 'history';
 
@@ -75,7 +75,7 @@ export default function MyOrders() {
     } else if (current.length === 0) {
         body = (
             <EmptyState
-                icon={<AssignmentTurnedIn />}
+                icon={<OrdersIcon />}
                 title={EMPTY_COPY[tab].title}
                 description={EMPTY_COPY[tab].description}
                 action={
@@ -109,7 +109,11 @@ export default function MyOrders() {
                     <Button
                         variant="outlined"
                         startIcon={
-                            isFetching && !isLoading ? <CircularProgress size={16} /> : <Refresh />
+                            isFetching && !isLoading ? (
+                                <CircularProgress size={16} />
+                            ) : (
+                                <RefreshIcon />
+                            )
                         }
                         onClick={() => void refetch()}
                         disabled={isFetching}

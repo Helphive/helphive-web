@@ -1,12 +1,12 @@
 import { Suspense } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Box, Stack, Typography } from '@mui/material';
-import { Check } from '@mui/icons-material';
 import { useAppSelector } from '@/store/hooks';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
 import { ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
 import { HoneycombBackdrop } from '@/pages/public/landing/Backdrops';
 import { color, font, hairline } from '@/theme/tokens';
+import { CheckMarkIcon } from '@/components/ui/icons';
 
 const FACTS = ['Verified providers', 'Stripe-powered payments', 'Live job status'];
 
@@ -65,7 +65,7 @@ function BrandPanel() {
                             color: color.ink700,
                         }}
                     >
-                        <Check sx={{ fontSize: 16, color: color.green700 }} />
+                        <CheckMarkIcon weight="bold" sx={{ fontSize: 16, color: color.green700 }} />
                         <span>{fact}</span>
                     </Stack>
                 ))}

@@ -1,12 +1,5 @@
 import type { ReactNode } from 'react';
 import { Avatar, Box, Button, Stack, Typography } from '@mui/material';
-import {
-    EmailOutlined,
-    PersonOutline,
-    PhoneOutlined,
-    ReceiptLong,
-    Star,
-} from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { Booking, DisplayStatus, User } from '@/types';
@@ -19,6 +12,7 @@ import { ShiftRuler } from '@/components/ui/ShiftRuler';
 import { DataList, DataRow } from '@/components/ui/DataList';
 import { BookingStatusPill } from '@/components/ui/StatusPill';
 import StatusTimeline from './StatusTimeline';
+import { EmailIcon, PersonIcon, PhoneIcon, RatingIcon, ReceiptIcon } from '@/components/ui/icons';
 
 const HERO_TEXT: Record<DisplayStatus, string> = {
     scheduled: 'Waiting for a provider to accept this booking.',
@@ -57,7 +51,10 @@ function CounterpartPanel({ title, person, emptyText }: CounterpartProps) {
                             </Typography>
                             {!!user.rating && (
                                 <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                                    <Star sx={{ fontSize: 14, color: color.amber500 }} />
+                                    <RatingIcon
+                                        weight="fill"
+                                        sx={{ fontSize: 14, color: color.amber500 }}
+                                    />
                                     <Typography variant="caption">
                                         {user.rating.toFixed(1)}
                                     </Typography>
@@ -67,14 +64,14 @@ function CounterpartPanel({ title, person, emptyText }: CounterpartProps) {
                     </Stack>
                     <Stack spacing={1} sx={{ '& svg': { fontSize: 16, color: color.ink500 } }}>
                         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                            <EmailOutlined />
+                            <EmailIcon weight="bold" />
                             <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
                                 {user.email}
                             </Typography>
                         </Stack>
                         {user.phone && (
                             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                                <PhoneOutlined />
+                                <PhoneIcon weight="bold" />
                                 <Typography variant="body2">{user.phone}</Typography>
                             </Stack>
                         )}
@@ -90,7 +87,7 @@ function CounterpartPanel({ title, person, emptyText }: CounterpartProps) {
                             borderColor: color.line,
                         }}
                     >
-                        <PersonOutline />
+                        <PersonIcon />
                     </Avatar>
                     <Typography variant="body2" color="text.secondary">
                         {emptyText ?? 'Not available'}
@@ -212,7 +209,7 @@ export default function BookingDetailView({
                                     to={receiptPath}
                                     variant="outlined"
                                     fullWidth
-                                    startIcon={<ReceiptLong />}
+                                    startIcon={<ReceiptIcon />}
                                 >
                                     View receipt
                                 </Button>

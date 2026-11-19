@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
-import { Logout } from '@mui/icons-material';
 import { useAppDispatch } from '@/store/hooks';
 import { logout } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/features/auth/authApi';
 import { color, hairline, layout } from '@/theme/tokens';
 import { Logo } from '@/components/ui';
+import { LogoutIcon } from '@/components/ui/icons';
 
 /**
  * Page frame for the screens that sit outside the provider shell (onboarding, review status).
@@ -55,7 +55,7 @@ export default function OnboardingFrame({
                 <Logo />
                 <Button
                     variant="text"
-                    startIcon={<Logout />}
+                    startIcon={<LogoutIcon />}
                     onClick={() => void handleLogout()}
                     disabled={isLoading}
                 >

@@ -1,5 +1,25 @@
+import { createElement } from 'react';
 import { alpha, createTheme, type Shadows } from '@mui/material/styles';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
+import {
+    CalendarIcon,
+    CheckboxCheckedIcon,
+    CheckboxIcon,
+    CheckboxIndeterminateIcon,
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    CloseIcon,
+    ErrorIcon,
+    InfoIcon,
+    RadioCheckedIcon,
+    RadioIcon,
+    SuccessIcon,
+    TimeIcon,
+    WarningIcon,
+    type AppIcon,
+    type AppIconProps,
+} from '@/components/ui/icons';
 import { color, focusRing, font, hairline, hairlineStrong, radius, shadow, tokens } from './tokens';
 
 export { color, font, space, radius, hairline, hairlineStrong, shadow, layout } from './tokens';
@@ -23,6 +43,15 @@ export const colors = {
 };
 
 const focusVisible = { '&.Mui-focusVisible': focusRing };
+
+// MUI draws some icons itself (select arrows, checkbox marks, alert icons, picker buttons).
+// These defaults swap them for the app's icon family; see design-system.md, "Icons".
+const glyph = (Icon: AppIcon, props?: AppIconProps) => createElement(Icon, props);
+const pickerSlots = {
+    leftArrowIcon: ChevronLeftIcon,
+    rightArrowIcon: ChevronRightIcon,
+    switchViewIcon: ChevronDownIcon,
+};
 
 // Static surfaces get no shadow; anything elevated above 4 is a floating layer.
 const shadows = [
@@ -338,8 +367,12 @@ export const appTheme = createTheme({
             styleOverrides: { root: { color: color.ink500, '& svg': { fontSize: 18 } } },
         },
         MuiSelect: {
-            styleOverrides: { icon: { color: color.ink500 } },
+            defaultProps: { IconComponent: ChevronDownIcon },
+            styleOverrides: {
+                icon: { color: color.ink500, right: 10, '&.MuiSvgIcon-root': { fontSize: 18 } },
+            },
         },
+        MuiNativeSelect: { defaultProps: { IconComponent: ChevronDownIcon } },
         MuiFormHelperText: {
             styleOverrides: {
                 root: {
@@ -354,6 +387,10 @@ export const appTheme = createTheme({
             },
         },
         MuiAutocomplete: {
+            defaultProps: {
+                popupIcon: glyph(ChevronDownIcon, { size: 18 }),
+                clearIcon: glyph(CloseIcon, { size: 16, weight: 'bold' }),
+            },
             styleOverrides: {
                 inputRoot: { '&&': { padding: '4px 6px 4px 8px' } },
                 paper: {
@@ -374,7 +411,12 @@ export const appTheme = createTheme({
 
         // Choice controls
         MuiCheckbox: {
-            defaultProps: { color: 'secondary' },
+            defaultProps: {
+                color: 'secondary',
+                icon: glyph(CheckboxIcon),
+                checkedIcon: glyph(CheckboxCheckedIcon, { weight: 'fill' }),
+                indeterminateIcon: glyph(CheckboxIndeterminateIcon, { weight: 'fill' }),
+            },
             styleOverrides: {
                 root: {
                     color: color.lineStrong,
@@ -386,6 +428,10 @@ export const appTheme = createTheme({
             },
         },
         MuiRadio: {
+            defaultProps: {
+                icon: glyph(RadioIcon),
+                checkedIcon: glyph(RadioCheckedIcon, { weight: 'fill' }),
+            },
             styleOverrides: {
                 root: {
                     color: color.lineStrong,
@@ -453,6 +499,12 @@ export const appTheme = createTheme({
 
         // Navigation
         MuiTabs: {
+            defaultProps: {
+                slots: {
+                    StartScrollButtonIcon: ChevronLeftIcon,
+                    EndScrollButtonIcon: ChevronRightIcon,
+                },
+            },
             styleOverrides: {
                 root: { minHeight: 44 },
                 indicator: { height: 2, borderRadius: 0, backgroundColor: color.ink900 },
@@ -703,6 +755,15 @@ export const appTheme = createTheme({
 
         // Feedback
         MuiAlert: {
+            defaultProps: {
+                iconMapping: {
+                    success: glyph(SuccessIcon, { fontSize: 'inherit' }),
+                    info: glyph(InfoIcon, { fontSize: 'inherit' }),
+                    warning: glyph(WarningIcon, { fontSize: 'inherit' }),
+                    error: glyph(ErrorIcon, { fontSize: 'inherit' }),
+                },
+                slots: { closeIcon: CloseIcon },
+            },
             styleOverrides: {
                 root: {
                     borderRadius: radius.md,
@@ -800,6 +861,7 @@ export const appTheme = createTheme({
             },
         },
         MuiChip: {
+            defaultProps: { deleteIcon: glyph(CloseIcon, { weight: 'bold' }) },
             styleOverrides: {
                 root: {
                     height: 32,
@@ -865,11 +927,31 @@ export const appTheme = createTheme({
                 },
             },
         },
+        MuiPaginationItem: {
+            defaultProps: { slots: { previous: ChevronLeftIcon, next: ChevronRightIcon } },
+        },
         MuiTablePagination: {
+            defaultProps: {
+                slots: {
+                    actions: {
+                        previousButtonIcon: ChevronLeftIcon,
+                        nextButtonIcon: ChevronRightIcon,
+                    },
+                },
+            },
             styleOverrides: { root: { borderTop: hairline }, toolbar: { minHeight: 48 } },
         },
 
         // MUI X date and time pickers
+        MuiDatePicker: {
+            defaultProps: { slots: { openPickerIcon: CalendarIcon, ...pickerSlots } },
+        },
+        MuiTimePicker: {
+            defaultProps: { slots: { openPickerIcon: TimeIcon, ...pickerSlots } },
+        },
+        MuiDateTimePicker: {
+            defaultProps: { slots: { openPickerIcon: CalendarIcon, ...pickerSlots } },
+        },
         MuiPickersPopper: {
             styleOverrides: {
                 paper: { borderRadius: radius.md, border: hairline, boxShadow: shadow.float },

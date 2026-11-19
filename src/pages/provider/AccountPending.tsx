@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, CircularProgress } from '@mui/material';
-import { HourglassTop, Refresh } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { useGetAccountApprovalScreenQuery } from '@/features/provider/providerApi';
 import { useAppDispatch } from '@/store/hooks';
@@ -8,6 +7,7 @@ import { updateUser } from '@/features/auth/authSlice';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import StatusScreen from './components/StatusScreen';
+import { PendingIcon, RefreshIcon } from '@/components/ui/icons';
 
 export default function AccountPending() {
     useDocumentTitle('Application under review');
@@ -36,7 +36,7 @@ export default function AccountPending() {
         <StatusScreen
             tone="amber"
             statusLabel="In review"
-            icon={<HourglassTop />}
+            icon={<PendingIcon />}
             title="Application under review"
             description={
                 data?.createdAt
@@ -52,7 +52,11 @@ export default function AccountPending() {
                 <Button
                     variant="contained"
                     startIcon={
-                        isFetching ? <CircularProgress size={16} color="inherit" /> : <Refresh />
+                        isFetching ? (
+                            <CircularProgress size={16} color="inherit" />
+                        ) : (
+                            <RefreshIcon />
+                        )
                     }
                     onClick={() => void handleRefresh()}
                     disabled={isFetching}

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { CheckCircle, LockOutlined } from '@mui/icons-material';
 import { loadStripe, type Appearance } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import {
@@ -23,6 +22,7 @@ import {
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { color, font, layout, shadow } from '@/theme/tokens';
 import { PLATFORM_FEE_RATE } from '@/utils/format';
+import { SecureIcon, SuccessIcon } from '@/components/ui/icons';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
@@ -144,7 +144,7 @@ function CheckoutForm({ total, onSuccess }: { total: number; onSuccess: () => vo
                         spacing={0.75}
                         sx={{ alignItems: 'center', color: color.ink500 }}
                     >
-                        <LockOutlined sx={{ fontSize: 14 }} aria-hidden="true" />
+                        <SecureIcon weight="bold" sx={{ fontSize: 14 }} aria-hidden="true" />
                         <Typography variant="caption">
                             Payments are processed securely by Stripe.
                         </Typography>
@@ -178,7 +178,7 @@ export default function BookingPayment() {
                 <PageHeader title="Payment received" />
                 <Panel>
                     <Stack spacing={2} sx={{ alignItems: 'center', textAlign: 'center', py: 3 }}>
-                        <CheckCircle
+                        <SuccessIcon
                             sx={{ fontSize: 48, color: color.green700 }}
                             aria-hidden="true"
                         />

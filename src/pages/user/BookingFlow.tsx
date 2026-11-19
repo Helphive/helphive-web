@@ -11,7 +11,6 @@ import {
     ToggleButton,
     Typography,
 } from '@mui/material';
-import { Add, Check, CheckCircleOutline, Remove } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -51,6 +50,7 @@ import {
     usd0,
     validateFlow,
 } from './bookingForm';
+import { AddIcon, CheckMarkIcon, RemoveIcon, SuccessIcon } from '@/components/ui/icons';
 
 const OTHER = 'other';
 
@@ -72,7 +72,7 @@ function SectionMark({ done, index }: { done: boolean; index: number }) {
                 border: done ? 0 : `1.5px solid ${color.lineStrong}`,
             }}
         >
-            {done ? <Check sx={{ fontSize: 14 }} /> : index}
+            {done ? <CheckMarkIcon weight="bold" sx={{ fontSize: 14 }} /> : index}
         </Box>
     );
 }
@@ -463,7 +463,7 @@ export default function BookingFlow() {
                                             dispatch(setFormData({ hours: formData.hours - 1 }))
                                         }
                                     >
-                                        <Remove />
+                                        <RemoveIcon />
                                     </IconButton>
                                     <Box
                                         aria-live="polite"
@@ -482,7 +482,7 @@ export default function BookingFlow() {
                                             dispatch(setFormData({ hours: formData.hours + 1 }))
                                         }
                                     >
-                                        <Add />
+                                        <AddIcon />
                                     </IconButton>
                                 </Box>
                             </Box>
@@ -572,7 +572,11 @@ export default function BookingFlow() {
                                 sx={{ alignItems: 'center', mt: 1.5, color: color.green700 }}
                                 role="status"
                             >
-                                <CheckCircleOutline sx={{ fontSize: 16 }} aria-hidden="true" />
+                                <SuccessIcon
+                                    weight="bold"
+                                    sx={{ fontSize: 16 }}
+                                    aria-hidden="true"
+                                />
                                 <Typography variant="caption" sx={{ color: 'inherit' }}>
                                     {pinApproximate
                                         ? 'Address saved as typed. Maps could not pin it.'

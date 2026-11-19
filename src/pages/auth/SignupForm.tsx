@@ -35,6 +35,8 @@ interface SignupFormProps {
     successMessage: ReactNode;
     /** Links shown under the form. */
     links: ReactNode;
+    /** Shown between the form and the links (the demo-account choice). Hidden after sign-up. */
+    alternative?: ReactNode;
 }
 
 /** Shared sign-up form for customers and providers. */
@@ -48,6 +50,7 @@ export default function SignupForm({
     successTitle,
     successMessage,
     links,
+    alternative,
 }: SignupFormProps) {
     const [error, setError] = useState<string | null>(null);
     const [sentTo, setSentTo] = useState<string | null>(null);
@@ -160,8 +163,9 @@ export default function SignupForm({
                         {submitLabel}
                     </SubmitButton>
                 </Stack>
-                <AuthLinks>{links}</AuthLinks>
             </form>
+            {alternative}
+            <AuthLinks>{links}</AuthLinks>
         </Box>
     );
 }

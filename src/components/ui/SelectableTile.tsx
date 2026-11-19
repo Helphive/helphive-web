@@ -1,7 +1,7 @@
 import { forwardRef, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Box, type SxProps, type Theme } from '@mui/material';
-import { Check } from '@mui/icons-material';
 import { color, font, hairlineStrong, radius } from '@/theme/tokens';
+import { CheckMarkIcon } from '@/components/ui/icons';
 
 export interface SelectableTileProps {
     selected: boolean;
@@ -158,7 +158,7 @@ function Mark({ type, selected }: { type: 'radio' | 'checkbox'; selected: boolea
                     '& svg': { fontSize: 13 },
                 }}
             >
-                {selected && <Check />}
+                {selected && <CheckMarkIcon weight="bold" />}
             </Box>
         );
     }

@@ -1,6 +1,6 @@
 import { forwardRef, useState } from 'react';
 import { IconButton, InputAdornment, TextField, Tooltip, type TextFieldProps } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { HidePasswordIcon, ShowPasswordIcon } from '@/components/ui/icons';
 
 export type PasswordFieldProps = Omit<TextFieldProps, 'type'>;
 
@@ -36,9 +36,9 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(function 
                                     onMouseDown={(e) => e.preventDefault()}
                                 >
                                     {visible ? (
-                                        <VisibilityOff fontSize="small" />
+                                        <HidePasswordIcon fontSize="small" />
                                     ) : (
-                                        <Visibility fontSize="small" />
+                                        <ShowPasswordIcon fontSize="small" />
                                     )}
                                 </IconButton>
                             </Tooltip>

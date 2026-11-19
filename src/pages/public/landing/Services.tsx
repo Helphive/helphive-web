@@ -1,12 +1,12 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Typography } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
 import { ServiceIcon } from '@/components/ui';
 import { SERVICES } from '@/types';
 import { color, font, hairline, radius } from '@/theme/tokens';
 import { DotsBackdrop } from './Backdrops';
 import { revealChild } from './motion';
 import { Section, SectionHead } from './Section';
+import { ForwardIcon } from '@/components/ui/icons';
 
 // Room Attendant first, as in the booking flow.
 const ORDER = [2, 1, 3];
@@ -42,7 +42,7 @@ export default function Services() {
                         to="/signup"
                         variant="contained"
                         size="large"
-                        endIcon={<ArrowForward />}
+                        endIcon={<ForwardIcon />}
                         data-reveal=""
                         sx={{ display: { xs: 'none', md: 'inline-flex' } }}
                     >
@@ -116,7 +116,11 @@ export default function Services() {
                                 }}
                             >
                                 Book a {service.name.toLowerCase()}
-                                <ArrowForward sx={{ fontSize: 16 }} aria-hidden="true" />
+                                <ForwardIcon
+                                    weight="bold"
+                                    sx={{ fontSize: 16 }}
+                                    aria-hidden="true"
+                                />
                             </Link>
                         </Box>
                     ))}

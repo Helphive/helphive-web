@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Button, CircularProgress } from '@mui/material';
-import { Refresh, WorkOutline } from '@mui/icons-material';
 import { useGetAvailableBookingsQuery } from '@/features/provider/providerApi';
 import { EmptyState, ErrorState, ListSkeleton, PageHeader, Panel } from '@/components/ui';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getErrorMessage } from '@/utils/format';
 import OrderList from './components/OrderList';
 import { byStartAsc } from './orderUtils';
+import { AvailableOrdersIcon, RefreshIcon } from '@/components/ui/icons';
 
 const getOrderLink = (id: string) => `/provider/orders/${id}`;
 
@@ -36,7 +36,7 @@ export default function AvailableOrders() {
     } else if (orders.length === 0) {
         body = (
             <EmptyState
-                icon={<WorkOutline />}
+                icon={<AvailableOrdersIcon />}
                 title="No open orders right now"
                 description="New orders for your services appear here as customers book them. Check that your services are switched on."
                 action={
@@ -67,7 +67,11 @@ export default function AvailableOrders() {
                     <Button
                         variant="outlined"
                         startIcon={
-                            isFetching && !isLoading ? <CircularProgress size={16} /> : <Refresh />
+                            isFetching && !isLoading ? (
+                                <CircularProgress size={16} />
+                            ) : (
+                                <RefreshIcon />
+                            )
                         }
                         onClick={() => void refetch()}
                         disabled={isFetching}

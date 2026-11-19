@@ -1,22 +1,22 @@
 import type { ReactElement } from 'react';
-import {
-    EventAvailableOutlined as CreatedIcon,
-    CheckCircleOutline as AcceptedIcon,
-    HourglassTopOutlined as StartRequestedIcon,
-    PlayCircleOutline as StartedIcon,
-    TaskAltOutlined as CompletedIcon,
-    EventBusyOutlined as CancelledIcon,
-    TimerOffOutlined as ExpiredIcon,
-    CreditScoreOutlined as PaymentIcon,
-    UndoOutlined as RefundIcon,
-    AccountBalanceOutlined as PayoutIcon,
-    VerifiedUserOutlined as ApprovedIcon,
-    GppBadOutlined as RejectedIcon,
-    NotificationsNoneOutlined as GeneralIcon,
-} from '@mui/icons-material';
 import dayjs from 'dayjs';
 import type { Notification, NotificationType } from '@/types';
 import { TONE_STYLES, type Tone } from '@/components/ui/status';
+import {
+    BookingAcceptedIcon,
+    BookingCancelledIcon,
+    BookingCreatedIcon,
+    BookingExpiredIcon,
+    BookingStartedIcon,
+    NotificationsIcon,
+    PaymentIcon,
+    PayoutIcon,
+    PendingIcon,
+    RefundIcon,
+    RejectedIcon,
+    SuccessIcon,
+    VerifiedIcon,
+} from '@/components/ui/icons';
 
 export type UserArea = 'user' | 'provider';
 
@@ -34,19 +34,19 @@ const tone = (t: Tone, icon: ReactElement): TypeMeta => ({
 
 // Tones follow the status pills: green done, blue in motion, amber needs action, red stopped.
 const NOTIFICATION_META: Record<NotificationType, TypeMeta> = {
-    booking_created: tone('amber', <CreatedIcon />),
-    booking_accepted: tone('blue', <AcceptedIcon />),
-    booking_start_requested: tone('amber', <StartRequestedIcon />),
-    booking_started: tone('blue', <StartedIcon />),
-    booking_completed: tone('green', <CompletedIcon />),
-    booking_cancelled: tone('red', <CancelledIcon />),
-    booking_expired: tone('grey', <ExpiredIcon />),
+    booking_created: tone('amber', <BookingCreatedIcon />),
+    booking_accepted: tone('blue', <BookingAcceptedIcon />),
+    booking_start_requested: tone('amber', <PendingIcon />),
+    booking_started: tone('blue', <BookingStartedIcon />),
+    booking_completed: tone('green', <SuccessIcon />),
+    booking_cancelled: tone('red', <BookingCancelledIcon />),
+    booking_expired: tone('grey', <BookingExpiredIcon />),
     payment_succeeded: tone('green', <PaymentIcon />),
     payment_refunded: tone('blue', <RefundIcon />),
     payout_paid: tone('green', <PayoutIcon />),
-    account_approved: tone('green', <ApprovedIcon />),
+    account_approved: tone('green', <VerifiedIcon />),
     account_rejected: tone('red', <RejectedIcon />),
-    general: tone('grey', <GeneralIcon />),
+    general: tone('grey', <NotificationsIcon />),
 };
 
 export const getNotificationMeta = (type: NotificationType | undefined): TypeMeta =>

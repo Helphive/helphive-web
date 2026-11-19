@@ -12,7 +12,6 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { NotificationsNoneOutlined } from '@mui/icons-material';
 import { color, hairline } from '@/theme/tokens';
 import {
     NOTIFICATIONS_PREVIEW_SIZE,
@@ -22,6 +21,7 @@ import {
 import NotificationItem from './NotificationItem';
 import { useNotificationActions } from './useNotificationActions';
 import type { UserArea } from './notificationMeta';
+import { NotificationsIcon } from '@/components/ui/icons';
 
 const POLL_INTERVAL_MS = 60_000;
 
@@ -57,7 +57,7 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                     aria-expanded={open}
                 >
                     <Badge badgeContent={unreadCount || undefined} color="primary" max={99}>
-                        <NotificationsNoneOutlined />
+                        <NotificationsIcon />
                     </Badge>
                 </IconButton>
             </Tooltip>
@@ -137,9 +137,7 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                     </List>
                 ) : (
                     <Box sx={{ px: 3, py: 4, textAlign: 'center' }}>
-                        <NotificationsNoneOutlined
-                            sx={{ fontSize: 28, color: color.ink300, mb: 1 }}
-                        />
+                        <NotificationsIcon sx={{ fontSize: 28, color: color.ink300, mb: 1 }} />
                         <Typography variant="subtitle2">You are all caught up</Typography>
                         <Typography variant="body2" color="text.secondary">
                             Booking and payment updates will appear here.

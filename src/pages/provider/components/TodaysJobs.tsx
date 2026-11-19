@@ -1,6 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Stack } from '@mui/material';
-import { EventAvailable, LocationOnOutlined, ScheduleOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import type { Booking, DisplayStatus } from '@/types';
 import { formatMoney, getDisplayStatus, getErrorMessage, pluralHours } from '@/utils/format';
@@ -15,6 +14,7 @@ import {
     type ShiftBlock,
 } from '@/components/ui';
 import { orderEarnings, timeRange, venueName } from '../orderUtils';
+import { LocationIcon, TimeIcon, TodayIcon } from '@/components/ui/icons';
 
 type Tone = NonNullable<ShiftBlock['tone']>;
 
@@ -70,7 +70,7 @@ export default function TodaysJobs({ jobs, loading, error, onRetry }: TodaysJobs
             ) : jobs.length === 0 ? (
                 <EmptyState
                     bare
-                    icon={<EventAvailable />}
+                    icon={<TodayIcon />}
                     title="No jobs today"
                     description="Jobs you accept for today appear here with their times."
                     action={
@@ -160,11 +160,11 @@ function JobRow({ job }: { job: Booking }) {
                     }}
                 >
                     <span>
-                        <ScheduleOutlined />
+                        <TimeIcon weight="bold" />
                         {timeRange(job)}, {job.hours} h
                     </span>
                     <span>
-                        <LocationOnOutlined />
+                        <LocationIcon weight="bold" />
                         {job.address}
                     </span>
                 </Stack>

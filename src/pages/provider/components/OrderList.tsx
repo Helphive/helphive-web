@@ -14,13 +14,13 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import { CalendarTodayOutlined, LocationOnOutlined, ScheduleOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import type { Booking } from '@/types';
 import { formatMoney, getDisplayStatus, pluralHours, formatDay } from '@/utils/format';
 import { color, font, hairline } from '@/theme/tokens';
 import { BookingStatusPill, ServiceIcon, srOnly } from '@/components/ui';
 import { orderEarnings } from '../orderUtils';
+import { CalendarIcon, LocationIcon, TimeIcon } from '@/components/ui/icons';
 
 interface OrderListProps {
     orders: Booking[];
@@ -84,13 +84,15 @@ function StackedRows({ orders, getLink, showStatus, label }: OrderListProps) {
                                     {order.service?.name || 'Service'}
                                 </Typography>
                                 <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                                    <Meta icon={<CalendarTodayOutlined />}>
+                                    <Meta icon={<CalendarIcon weight="bold" />}>
                                         {formatDay(start)}, {start.format('HH:mm')}
                                     </Meta>
-                                    <Meta icon={<ScheduleOutlined />}>
+                                    <Meta icon={<TimeIcon weight="bold" />}>
                                         {pluralHours(order.hours)} at {formatMoney(order.rate)}/hr
                                     </Meta>
-                                    <Meta icon={<LocationOnOutlined />}>{order.address}</Meta>
+                                    <Meta icon={<LocationIcon weight="bold" />}>
+                                        {order.address}
+                                    </Meta>
                                 </Stack>
                             </Box>
                             <Stack spacing={0.75} sx={{ alignItems: 'flex-end' }}>

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, List, Tab, Tabs, Typography } from '@mui/material';
-import { DoneAll, NotificationsNoneOutlined } from '@mui/icons-material';
 import {
     NOTIFICATIONS_PAGE_SIZE,
     useGetNotificationsQuery,
@@ -16,6 +15,7 @@ import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useAutoLoadMore } from '@/hooks/useAutoLoadMore';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { layout } from '@/theme/tokens';
+import { MarkAllReadIcon, NotificationsIcon } from '@/components/ui/icons';
 
 export default function NotificationsPage({ area }: { area: UserArea }) {
     useDocumentTitle('Notifications');
@@ -65,7 +65,9 @@ export default function NotificationsPage({ area }: { area: UserArea }) {
                 actions={
                     <Button
                         variant="outlined"
-                        startIcon={isMarkingAll ? <CircularProgress size={16} /> : <DoneAll />}
+                        startIcon={
+                            isMarkingAll ? <CircularProgress size={16} /> : <MarkAllReadIcon />
+                        }
                         onClick={handleMarkAll}
                         disabled={isMarkingAll || unreadCount === 0}
                     >
@@ -97,7 +99,7 @@ export default function NotificationsPage({ area }: { area: UserArea }) {
                 />
             ) : groups.length === 0 ? (
                 <EmptyState
-                    icon={<NotificationsNoneOutlined />}
+                    icon={<NotificationsIcon />}
                     title={filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
                     description={
                         filter === 'unread'

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Box, Button, CircularProgress, Typography, type SxProps, type Theme } from '@mui/material';
-import { ErrorOutline, Refresh } from '@mui/icons-material';
 import { color, hairline, radius } from '@/theme/tokens';
+import { ErrorIcon, RefreshIcon } from './icons';
 
 export interface ErrorStateProps {
     /** What failed ("Could not load your bookings"). */
@@ -64,10 +64,10 @@ export default function ErrorState({
                     display: 'grid',
                     placeItems: 'center',
                     mb: 2,
-                    '& svg': { fontSize: 22 },
+                    '& svg': { fontSize: 24 },
                 }}
             >
-                <ErrorOutline />
+                <ErrorIcon weight="duotone" />
             </Box>
             <Typography variant="h6" component="p">
                 {title}
@@ -98,7 +98,7 @@ export default function ErrorState({
                                 retrying ? (
                                     <CircularProgress size={16} color="inherit" />
                                 ) : (
-                                    <Refresh />
+                                    <RefreshIcon />
                                 )
                             }
                             onClick={onRetry}

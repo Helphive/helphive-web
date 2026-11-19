@@ -1,5 +1,4 @@
 import { Box, Button, Skeleton, Stack, Typography } from '@mui/material';
-import { ContentCopy, Print } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import { useGetBookingReceiptQuery } from '@/features/booking/bookingApi';
 import { ErrorState } from '@/components/common/PageStates';
@@ -8,6 +7,7 @@ import { DataList, DataRow, Logo, PageHeader, StatusPill, type Tone } from '@/co
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatDateTime, formatMoney, getErrorMessage, pluralHours } from '@/utils/format';
 import { color, font, hairline, layout, radius } from '@/theme/tokens';
+import { CopyTextIcon, PrintIcon } from '@/components/ui/icons';
 
 interface ReceiptPageProps {
     area: 'user' | 'provider';
@@ -103,12 +103,16 @@ export default function ReceiptPage({ area }: ReceiptPageProps) {
                 backLabel="Back to details"
                 actions={
                     <>
-                        <Button variant="outlined" startIcon={<ContentCopy />} onClick={handleCopy}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<CopyTextIcon />}
+                            onClick={handleCopy}
+                        >
                             Copy link
                         </Button>
                         <Button
                             variant="contained"
-                            startIcon={<Print />}
+                            startIcon={<PrintIcon />}
                             onClick={() => window.print()}
                         >
                             Print or save PDF

@@ -1,10 +1,10 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Button, Link } from '@mui/material';
-import { WorkOutline } from '@mui/icons-material';
 import type { Booking } from '@/types';
 import { getErrorMessage } from '@/utils/format';
 import { EmptyState, ErrorState, ListSkeleton, Panel } from '@/components/ui';
 import OrderList from './OrderList';
+import { AvailableOrdersIcon } from '@/components/ui/icons';
 
 const getOrderLink = (id: string) => `/provider/orders/${id}`;
 const PREVIEW_COUNT = 5;
@@ -40,7 +40,7 @@ export default function OpenOrdersPanel({ orders, loading, error, onRetry }: Ope
             ) : orders.length === 0 ? (
                 <EmptyState
                     bare
-                    icon={<WorkOutline />}
+                    icon={<AvailableOrdersIcon />}
                     title="No open orders right now"
                     description="New orders for your services appear here as customers book them."
                     action={

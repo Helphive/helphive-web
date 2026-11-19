@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Typography } from '@mui/material';
-import { ArrowForward, Check } from '@mui/icons-material';
 import { demoLoginPath } from '@/features/auth/demoAccounts';
 import { color, font, hairline, radius } from '@/theme/tokens';
 import { HoneycombBackdrop, InkBackdrop } from './Backdrops';
@@ -9,6 +8,7 @@ import { revealChild } from './motion';
 import PhoneImage from './PhoneImage';
 import { Section, SectionHead } from './Section';
 import { toneMuted, type SectionTone } from './tones';
+import { CheckMarkIcon, ForwardIcon } from '@/components/ui/icons';
 
 interface Point {
     title: string;
@@ -42,7 +42,7 @@ function Points({ points, tone }: { points: Point[]; tone: SectionTone }) {
                             color: dark ? color.coral100 : color.coral700,
                         }}
                     >
-                        <Check sx={{ fontSize: 18 }} />
+                        <CheckMarkIcon sx={{ fontSize: 18 }} />
                     </Box>
                     <Box>
                         <Typography sx={{ fontWeight: 700, color: 'inherit' }}>
@@ -147,7 +147,7 @@ export function ForTeams() {
                             to="/signup"
                             variant="contained"
                             size="large"
-                            endIcon={<ArrowForward />}
+                            endIcon={<ForwardIcon />}
                         >
                             Book a service
                         </Button>
@@ -214,7 +214,7 @@ export function ForProviders() {
                             to="/provider-signup"
                             variant="contained"
                             size="large"
-                            endIcon={<ArrowForward />}
+                            endIcon={<ForwardIcon />}
                         >
                             Become a provider
                         </Button>

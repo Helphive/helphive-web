@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { font } from '@/theme/tokens';
+import { BackIcon } from '@/components/ui/icons';
 
 export interface PageHeaderProps {
     title: ReactNode;
@@ -33,7 +33,7 @@ export default function PageHeader({
                     component={RouterLink}
                     to={backTo}
                     size="small"
-                    startIcon={<ArrowBack />}
+                    startIcon={<BackIcon />}
                     className="no-print"
                     sx={{ mb: 1, ml: -1.5 }}
                 >

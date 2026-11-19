@@ -1,6 +1,7 @@
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useProviderSignupMutation } from '@/features/auth/authApi';
 import { AuthLinkLine } from './authForm';
+import DemoAccounts from './DemoAccounts';
 import SignupForm from './SignupForm';
 
 export default function ProviderSignupPage() {
@@ -17,6 +18,7 @@ export default function ProviderSignupPage() {
             isLoading={isLoading}
             successTitle="Check your email"
             successMessage="After you verify it, sign in to complete provider onboarding."
+            alternative={<DemoAccounts context="signup" lead="provider" disabled={isLoading} />}
             links={
                 <>
                     <AuthLinkLine text="Already have an account?" to="/login" linkText="Sign in" />

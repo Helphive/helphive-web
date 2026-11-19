@@ -10,7 +10,6 @@ import {
     Typography,
     type TextFieldProps,
 } from '@mui/material';
-import { PhotoCameraOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import {
     useGetUserInfoQuery,
@@ -33,6 +32,7 @@ import {
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getErrorMessage } from '@/utils/format';
 import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
+import { PhotoCameraIcon } from '@/components/ui/icons';
 
 // Mirrors the backend validator for names (validateUpdateProfileFields).
 const NAME_REGEX = /^[a-zA-Z\xC0-￿]+([ \-']{0,1}[a-zA-Z\xC0-￿]+){0,2}[.]{0,1}$/;
@@ -254,7 +254,7 @@ export default function ProfilePage({ area }: { area: 'user' | 'provider' }) {
                                 <Button
                                     variant="outlined"
                                     size="small"
-                                    startIcon={<PhotoCameraOutlined />}
+                                    startIcon={<PhotoCameraIcon />}
                                     onClick={() => photoInput.current?.click()}
                                     disabled={isSaving}
                                 >

@@ -12,13 +12,13 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import { ReceiptLong } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import type { Earning, Payout } from '@/types';
 import { formatMoney } from '@/utils/format';
 import { color, font, hairline } from '@/theme/tokens';
 import { StatusPill, type Tone } from '@/components/ui';
 import { orderCode } from '../orderUtils';
+import { ReceiptIcon } from '@/components/ui/icons';
 
 const EARNING_STATUS: Record<Earning['status'], { label: string; tone: Tone }> = {
     pending: { label: 'Pending', tone: 'amber' },
@@ -77,7 +77,7 @@ function ReceiptButton({ earning }: { earning: Earning }) {
             to={`/provider/orders/${earning.bookingId}/receipt`}
             aria-label={`View receipt for ${orderCode(earning.bookingId)}`}
         >
-            <ReceiptLong fontSize="small" />
+            <ReceiptIcon fontSize="small" />
         </IconButton>
     );
 }

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, Skeleton } from '@mui/material';
-import { AccountBalanceWallet, OpenInNew, ReceiptLong } from '@mui/icons-material';
 import {
     useGetEarningsQuery,
     useCreatePayoutMutation,
@@ -17,6 +16,7 @@ import { EarningsHistoryList, PayoutTable } from './components/EarningsTables';
 import MonthlyChart from './components/MonthlyChart';
 import PayoutDialog from './components/PayoutDialog';
 import { monthlyStats, summarizeEarnings } from './orderUtils';
+import { EarningsIcon, ExternalLinkIcon, ReceiptIcon } from '@/components/ui/icons';
 
 const HISTORY_LIMIT = 20;
 
@@ -54,7 +54,7 @@ function StripeRow({ title, description, label, busy, onClick, divider }: Stripe
                 onClick={onClick}
                 disabled={busy}
                 startIcon={busy ? <CircularProgress size={16} /> : undefined}
-                endIcon={busy ? undefined : <OpenInNew />}
+                endIcon={busy ? undefined : <ExternalLinkIcon />}
                 sx={{ flexShrink: 0 }}
             >
                 {label}
@@ -225,7 +225,7 @@ export default function Earnings() {
                                 ) : (
                                     <EmptyState
                                         bare
-                                        icon={<AccountBalanceWallet />}
+                                        icon={<EarningsIcon />}
                                         title="No payouts yet"
                                         description="Payouts you request appear here with their status."
                                         sx={{ py: 4 }}
@@ -253,7 +253,7 @@ export default function Earnings() {
                                 ) : (
                                     <EmptyState
                                         bare
-                                        icon={<ReceiptLong />}
+                                        icon={<ReceiptIcon />}
                                         title="No earnings yet"
                                         description="Earnings from completed jobs appear here, each with a receipt."
                                     />

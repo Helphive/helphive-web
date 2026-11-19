@@ -1,11 +1,11 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Typography } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
 import { LogoMark } from '@/components/ui';
 import { demoLoginPath } from '@/features/auth/demoAccounts';
 import { color, font } from '@/theme/tokens';
 import { HoneycombBackdrop } from './Backdrops';
 import { Section } from './Section';
+import { ForwardIcon } from '@/components/ui/icons';
 
 const demo = { color: color.coral700, fontWeight: 700 };
 
@@ -62,7 +62,7 @@ export default function ClosingCta() {
                         to="/signup"
                         variant="contained"
                         size="large"
-                        endIcon={<ArrowForward />}
+                        endIcon={<ForwardIcon />}
                     >
                         Book a service
                     </Button>

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Link, Typography } from '@mui/material';
-import { CheckCircleOutline } from '@mui/icons-material';
 import { color, radius } from '@/theme/tokens';
+import { SuccessIcon } from '@/components/ui/icons';
 
 export function AuthHeading({ title, subtitle }: { title: string; subtitle?: string }) {
     return (
@@ -100,7 +100,7 @@ export function AuthSuccess({
                     color: color.green700,
                 }}
             >
-                <CheckCircleOutline />
+                <SuccessIcon />
             </Box>
             <Typography variant="h3" component="h1">
                 {title}

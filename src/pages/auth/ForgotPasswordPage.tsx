@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Stack, TextField } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useGetPasswordResetMutation } from '@/features/auth/authApi';
 import { AuthError, AuthHeading, AuthSuccess, SubmitButton } from './authForm';
 import { authErrorMessage, emailRules } from './authRules';
+import { BackIcon } from '@/components/ui/icons';
 
 interface ForgotPasswordFormData {
     email: string;
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
                 variant="body2"
                 sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mb: 3 }}
             >
-                <ArrowBack sx={{ fontSize: 16 }} />
+                <BackIcon weight="bold" sx={{ fontSize: 16 }} />
                 Back to sign in
             </Link>
             <AuthHeading

@@ -1,13 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Stack, TextField } from '@mui/material';
-import {
-    BadgeOutlined,
-    CheckCircleOutline,
-    DescriptionOutlined,
-    PersonOutline,
-    UploadFileOutlined,
-} from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { useRequestProviderAccountMutation } from '@/features/provider/providerApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -28,6 +21,13 @@ import { color, font, radius } from '@/theme/tokens';
 import DocumentUploadRow from './components/DocumentUploadRow';
 import OnboardingFrame from './components/OnboardingFrame';
 import StatusScreen from './components/StatusScreen';
+import {
+    DocumentIcon,
+    IdDocumentIcon,
+    PersonIcon,
+    SuccessIcon,
+    UploadFileIcon,
+} from '@/components/ui/icons';
 
 interface OnboardingFormData {
     firstName: string;
@@ -67,7 +67,7 @@ const DOCS: DocConfig[] = [
         description: 'A clear photo of your face. Customers see it on your profile. Accepted:',
         accept: 'image/*',
         formats: 'a JPG, PNG or other image',
-        icon: <PersonOutline />,
+        icon: <PersonIcon />,
         missing: 'Add a profile photo',
         previewImage: true,
     },
@@ -77,7 +77,7 @@ const DOCS: DocConfig[] = [
         description: 'A passport, driving licence or national ID card. Accepted:',
         accept: 'image/*,.pdf',
         formats: 'an image or a PDF',
-        icon: <BadgeOutlined />,
+        icon: <IdDocumentIcon />,
         missing: 'Upload your ID document',
     },
     {
@@ -86,7 +86,7 @@ const DOCS: DocConfig[] = [
         description: 'Your Disclosure and Barring Service check certificate. Accepted:',
         accept: 'image/*,.pdf',
         formats: 'an image or a PDF',
-        icon: <DescriptionOutlined />,
+        icon: <DocumentIcon />,
         missing: 'Upload your DBS certificate',
     },
     {
@@ -95,7 +95,7 @@ const DOCS: DocConfig[] = [
         description: 'Your recent work experience. Accepted:',
         accept: '.pdf,.doc,.docx',
         formats: 'a PDF, DOC or DOCX file',
-        icon: <UploadFileOutlined />,
+        icon: <UploadFileIcon />,
         missing: 'Upload your resume or CV',
     },
 ];
@@ -235,7 +235,7 @@ export default function ProviderOnboarding() {
             <StatusScreen
                 tone="green"
                 statusLabel="Sent"
-                icon={<CheckCircleOutline />}
+                icon={<SuccessIcon />}
                 title="Application sent"
                 description="Thank you. Your provider application is with our team for review."
                 next={[

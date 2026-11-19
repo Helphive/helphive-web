@@ -1,11 +1,11 @@
 import { memo } from 'react';
 import { Box, IconButton, ListItem, ListItemButton, Tooltip } from '@mui/material';
-import { DeleteOutline } from '@mui/icons-material';
 import type { Notification } from '@/types';
 import { formatTimeAgo } from '@/utils/format';
 import { color, font, hairline, radius } from '@/theme/tokens';
 import { srOnly } from '@/components/ui/status';
 import { getNotificationMeta } from './notificationMeta';
+import { DeleteIcon } from '@/components/ui/icons';
 
 interface NotificationItemProps {
     notification: Notification;
@@ -28,7 +28,7 @@ function NotificationItem({ notification, onOpen, onDelete }: NotificationItemPr
                             aria-label={`Delete notification: ${notification.title}`}
                             onClick={() => onDelete(notification)}
                         >
-                            <DeleteOutline fontSize="small" />
+                            <DeleteIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
                 )

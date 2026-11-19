@@ -1,12 +1,12 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Typography } from '@mui/material';
-import { Apple, Download } from '@mui/icons-material';
 import { color, font } from '@/theme/tokens';
 import { HoneycombBackdrop } from './Backdrops';
 import { IOS_UNAVAILABLE_MESSAGE } from './constants';
 import { revealChild } from './motion';
 import PhoneImage from './PhoneImage';
 import { Section } from './Section';
+import { AndroidIcon, AppleIcon } from '@/components/ui/icons';
 
 /** Three whole phones, fanned: chat in front, booking and provider screens tucked behind. */
 function PhoneFan() {
@@ -108,7 +108,7 @@ export default function AppDownload({
                         <Button
                             variant="contained"
                             size="large"
-                            startIcon={<Download />}
+                            startIcon={<AndroidIcon weight="fill" size={20} />}
                             onClick={onAndroid}
                         >
                             Download Android APK
@@ -116,7 +116,7 @@ export default function AppDownload({
                         <Button
                             variant="outlined"
                             size="large"
-                            startIcon={<Apple />}
+                            startIcon={<AppleIcon weight="fill" size={20} />}
                             onClick={onIos}
                             sx={{ bgcolor: color.surface }}
                         >

@@ -1,11 +1,11 @@
 import { Alert, Box, Skeleton } from '@mui/material';
-import { LocationOff } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { EmptyState, ErrorBoundary, ErrorState, Panel } from '@/components/ui';
 import { radius } from '@/theme/tokens';
 import type { Coordinates } from '../useProviderLocation';
+import { LocationOffIcon } from '@/components/ui/icons';
 
 // Fix for default marker icons in Leaflet
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -72,7 +72,7 @@ export default function LocationPanel({ location, error }: LocationPanelProps) {
                 ) : error ? (
                     <EmptyState
                         bare
-                        icon={<LocationOff />}
+                        icon={<LocationOffIcon />}
                         title="Location unavailable"
                         description="Allow location access in your browser settings to see your position here."
                         sx={{ py: 4 }}

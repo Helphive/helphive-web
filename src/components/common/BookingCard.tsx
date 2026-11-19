@@ -2,7 +2,6 @@ import { memo } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { CalendarTodayOutlined, LocationOnOutlined, ScheduleOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import type { Booking } from '@/types';
 import { PLATFORM_FEE_RATE, formatMoney, getDisplayStatus, pluralHours } from '@/utils/format';
@@ -10,6 +9,7 @@ import { color, font, hairline, radius } from '@/theme/tokens';
 import ServiceIcon from '@/components/ui/ServiceIcon';
 import { ShiftRuler } from '@/components/ui/ShiftRuler';
 import StatusChip from './StatusChip';
+import { CalendarIcon, LocationIcon, TimeIcon } from '@/components/ui/icons';
 
 interface BookingCardProps {
     booking: Booking;
@@ -80,12 +80,12 @@ function BookingCard({ booking, to, role, badge }: BookingCardProps) {
             </Stack>
 
             <Stack spacing={0.75} sx={{ px: 2.5, pt: 2 }}>
-                <Meta icon={<CalendarTodayOutlined />}>{start.format('ddd D MMM YYYY')}</Meta>
-                <Meta icon={<ScheduleOutlined />}>
+                <Meta icon={<CalendarIcon weight="bold" />}>{start.format('ddd D MMM YYYY')}</Meta>
+                <Meta icon={<TimeIcon weight="bold" />}>
                     {start.format('HH:mm')}, {pluralHours(booking.hours)} at{' '}
                     {formatMoney(booking.rate)}/hr
                 </Meta>
-                <Meta icon={<LocationOnOutlined />}>{booking.address}</Meta>
+                <Meta icon={<LocationIcon weight="bold" />}>{booking.address}</Meta>
             </Stack>
 
             <Box sx={{ px: 2.5, pt: 2, pb: 2 }}>

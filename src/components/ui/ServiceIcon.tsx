@@ -1,30 +1,31 @@
 import { Box } from '@mui/material';
-import {
-    BedOutlined,
-    CleaningServicesOutlined,
-    DryCleaningOutlined,
-    WorkOutline,
-} from '@mui/icons-material';
 import { color, radius } from '@/theme/tokens';
+import {
+    LinenPorterIcon,
+    PublicAreaIcon,
+    RoomAttendantIcon,
+    ServiceIconFallback,
+    type AppIcon,
+} from './icons';
 
 // Service ids match SERVICES in src/types: 1 Public Area Attendant, 2 Room Attendant, 3 Linen Porter.
-const ICONS = {
-    1: CleaningServicesOutlined,
-    2: BedOutlined,
-    3: DryCleaningOutlined,
-} as const;
+const ICONS: Record<number, AppIcon> = {
+    1: PublicAreaIcon,
+    2: RoomAttendantIcon,
+    3: LinenPorterIcon,
+};
 
 interface ServiceIconProps {
     serviceId?: number;
-    /** plain: the glyph only. tile: 40px coral-50 square (service headers, summaries). */
+    /** plain: the line glyph only. tile: duotone glyph on a coral-50 square (headers, summaries). */
     variant?: 'plain' | 'tile';
     size?: number;
 }
 
-/** Line icon for a service. Replaces the PNG icons in /public/icons for new UI. */
+/** Icon for a service: a made bed, a broom for shared spaces, folded linen. */
 export default function ServiceIcon({ serviceId, variant = 'plain', size }: ServiceIconProps) {
-    const Icon = ICONS[serviceId as keyof typeof ICONS] ?? WorkOutline;
-    if (variant === 'plain') return <Icon aria-hidden="true" sx={{ fontSize: size ?? 18 }} />;
+    const Icon = (serviceId !== undefined && ICONS[serviceId]) || ServiceIconFallback;
+    if (variant === 'plain') return <Icon size={size ?? 20} />;
     const box = size ?? 40;
     return (
         <Box
@@ -40,7 +41,7 @@ export default function ServiceIcon({ serviceId, variant = 'plain', size }: Serv
                 flexShrink: 0,
             }}
         >
-            <Icon sx={{ fontSize: Math.round(box * 0.5) }} />
+            <Icon weight="duotone" size={Math.round(box * 0.55)} />
         </Box>
     );
 }

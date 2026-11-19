@@ -1,4 +1,4 @@
-import { Suspense, useState, type ReactElement } from 'react';
+import { Suspense, useState } from 'react';
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     AppBar,
@@ -18,18 +18,6 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import {
-    AccountBalanceWalletOutlined,
-    AssignmentOutlined,
-    CalendarMonthOutlined,
-    HomeOutlined,
-    InfoOutlined,
-    Logout,
-    NotificationsNoneOutlined,
-    PersonOutline,
-    UnfoldMore,
-    WorkOutline,
-} from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectCurrentUser, logout } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/features/auth/authApi';
@@ -39,6 +27,19 @@ import { useGetUnreadCountQuery } from '@/features/notifications/notificationsAp
 import { Count, ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
 import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
 import { color, font, hairline, layout, radius } from '@/theme/tokens';
+import {
+    AvailableOrdersIcon,
+    BookingsIcon,
+    EarningsIcon,
+    ExpandIcon,
+    HomeIcon,
+    InfoIcon,
+    LogoutIcon,
+    NotificationsIcon,
+    OrdersIcon,
+    ProfileIcon,
+    type AppIcon,
+} from '@/components/ui/icons';
 
 interface DashboardLayoutProps {
     userType: 'user' | 'provider';
@@ -48,41 +49,42 @@ interface NavItem {
     label: string;
     // Bottom-navigation label (phones).
     short: string;
-    icon: ReactElement;
+    /** Regular weight; the active item switches to fill. */
+    Icon: AppIcon;
     path: string;
     countsUnread?: boolean;
 }
 
 const userNavItems: NavItem[] = [
-    { label: 'Bookings', short: 'Bookings', icon: <CalendarMonthOutlined />, path: '/user' },
+    { label: 'Bookings', short: 'Bookings', Icon: BookingsIcon, path: '/user' },
     {
         label: 'Notifications',
         short: 'Inbox',
-        icon: <NotificationsNoneOutlined />,
+        Icon: NotificationsIcon,
         path: '/user/notifications',
         countsUnread: true,
     },
 ];
 
 const providerNavItems: NavItem[] = [
-    { label: 'Home', short: 'Home', icon: <HomeOutlined />, path: '/provider' },
+    { label: 'Home', short: 'Home', Icon: HomeIcon, path: '/provider' },
     {
         label: 'Available orders',
         short: 'Available',
-        icon: <AssignmentOutlined />,
+        Icon: AvailableOrdersIcon,
         path: '/provider/orders',
     },
-    { label: 'My orders', short: 'My orders', icon: <WorkOutline />, path: '/provider/my-orders' },
+    { label: 'My orders', short: 'My orders', Icon: OrdersIcon, path: '/provider/my-orders' },
     {
         label: 'Earnings',
         short: 'Earnings',
-        icon: <AccountBalanceWalletOutlined />,
+        Icon: EarningsIcon,
         path: '/provider/earnings',
     },
     {
         label: 'Notifications',
         short: 'Inbox',
-        icon: <NotificationsNoneOutlined />,
+        Icon: NotificationsIcon,
         path: '/provider/notifications',
         countsUnread: true,
     },
@@ -146,7 +148,7 @@ function DemoNotice({ email }: { email?: string | null }) {
                 lineHeight: 1.45,
             }}
         >
-            <InfoOutlined sx={{ fontSize: 18, mt: '1px', flexShrink: 0 }} aria-hidden />
+            <InfoIcon sx={{ fontSize: 18, mt: '1px' }} />
             <span>
                 You're using a shared demo account. Anyone can sign in to it, so don't enter real
                 personal or payment details.
@@ -241,7 +243,7 @@ function AccountMenu({
                 }}
             >
                 <ListItemIcon>
-                    <PersonOutline />
+                    <ProfileIcon />
                 </ListItemIcon>
                 Profile
             </MenuItem>
@@ -252,7 +254,7 @@ function AccountMenu({
                 }}
             >
                 <ListItemIcon>
-                    <Logout />
+                    <LogoutIcon />
                 </ListItemIcon>
                 Log out
             </MenuItem>
@@ -454,7 +456,7 @@ function SideNav({ account, unread }: { account: Account; unread: number }) {
                                 },
                             }}
                         >
-                            {item.icon}
+                            <item.Icon weight={active ? 'fill' : 'regular'} />
                             {item.label}
                             {item.countsUnread && unread > 0 && (
                                 <Box sx={{ ml: 'auto' }}>
@@ -493,7 +495,7 @@ function SideNav({ account, unread }: { account: Account; unread: number }) {
                         Provider account
                     </Typography>
                 </Box>
-                <UnfoldMore sx={{ fontSize: 18, color: color.ink500 }} />
+                <ExpandIcon sx={{ fontSize: 18, color: color.ink500 }} />
             </ButtonBase>
             <AccountMenu
                 account={account}
@@ -561,25 +563,28 @@ function ProviderShell({ account }: { account: Account }) {
                     }}
                 >
                     <BottomNavigation value={navIndex} showLabels sx={{ bgcolor: 'transparent' }}>
-                        {providerNavItems.map((item) => (
-                            <BottomNavigationAction
-                                key={item.path}
-                                label={item.short}
-                                aria-current={
-                                    isActivePath(pathname, item.path, homePath) ? 'page' : undefined
-                                }
-                                onClick={() => navigate(item.path)}
-                                icon={
-                                    item.countsUnread && unread > 0 ? (
-                                        <Badge badgeContent={unread} color="primary" max={99}>
-                                            {item.icon}
-                                        </Badge>
-                                    ) : (
-                                        item.icon
-                                    )
-                                }
-                            />
-                        ))}
+                        {providerNavItems.map((item, index) => {
+                            const icon = (
+                                <item.Icon weight={index === navIndex ? 'fill' : 'regular'} />
+                            );
+                            return (
+                                <BottomNavigationAction
+                                    key={item.path}
+                                    label={item.short}
+                                    aria-current={index === navIndex ? 'page' : undefined}
+                                    onClick={() => navigate(item.path)}
+                                    icon={
+                                        item.countsUnread && unread > 0 ? (
+                                            <Badge badgeContent={unread} color="primary" max={99}>
+                                                {icon}
+                                            </Badge>
+                                        ) : (
+                                            icon
+                                        )
+                                    }
+                                />
+                            );
+                        })}
                     </BottomNavigation>
                 </Box>
             )}

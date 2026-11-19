@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { TextField, CircularProgress, InputAdornment } from '@mui/material';
-import { LocationOn } from '@mui/icons-material';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
+import { LocationIcon } from '@/components/ui/icons';
 
 const libraries: 'places'[] = ['places'];
 
@@ -83,7 +83,7 @@ export default function PlacesAutocomplete({
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">
-                            <LocationOn color="action" />
+                            <LocationIcon />
                         </InputAdornment>
                     ),
                 }}
@@ -128,7 +128,7 @@ export default function PlacesAutocomplete({
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">
-                            <LocationOn color="action" />
+                            <LocationIcon />
                         </InputAdornment>
                     ),
                 }}

@@ -1,16 +1,11 @@
 import { Box, Typography } from '@mui/material';
-import {
-    ChatBubbleOutline,
-    ForumOutlined,
-    PhoneOutlined,
-    PhotoOutlined,
-} from '@mui/icons-material';
 import type { ReactNode } from 'react';
 import { color, radius } from '@/theme/tokens';
 import { HoneycombBackdrop } from './Backdrops';
 import { revealChild } from './motion';
 import PhoneImage from './PhoneImage';
 import { Section, SectionHead } from './Section';
+import { ChatIcon, ConversationsIcon, PhoneIcon, PhotoIcon } from '@/components/ui/icons';
 
 interface Note {
     icon: ReactNode;
@@ -20,12 +15,12 @@ interface Note {
 
 const LEFT: Note[] = [
     {
-        icon: <ChatBubbleOutline />,
+        icon: <ChatIcon weight="duotone" />,
         title: 'Chat from the booking',
         text: 'Open a booking and tap Chat to message the person on the other side of it.',
     },
     {
-        icon: <ForumOutlined />,
+        icon: <ConversationsIcon weight="duotone" />,
         title: 'Every conversation in one tab',
         text: 'Customers and providers both have a Chat tab in the mobile app.',
     },
@@ -33,12 +28,12 @@ const LEFT: Note[] = [
 
 const RIGHT: Note[] = [
     {
-        icon: <PhoneOutlined />,
+        icon: <PhoneIcon weight="duotone" />,
         title: 'Call when it is quicker',
         text: 'The booking shows a Call button when a phone number is on the profile.',
     },
     {
-        icon: <PhotoOutlined />,
+        icon: <PhotoIcon weight="duotone" />,
         title: 'Send photos',
         text: 'Share photos in the conversation, right next to the messages.',
     },
@@ -83,7 +78,7 @@ function Notes({ notes, start, align }: { notes: Note[]; start: number; align: '
                             borderRadius: `${radius.sm}px`,
                             bgcolor: color.coral50,
                             color: color.coral700,
-                            '& svg': { fontSize: 22 },
+                            '& svg': { fontSize: 24 },
                         }}
                     >
                         {note.icon}

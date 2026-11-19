@@ -1,10 +1,10 @@
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { LockOutlined } from '@mui/icons-material';
 import type { Dayjs } from 'dayjs';
 import { DataList, DataRow, Money, Panel, ServiceIcon } from '@/components/ui';
 import { color, font, hairline } from '@/theme/tokens';
 import { PLATFORM_FEE_RATE } from '@/utils/format';
 import { usd0 } from './bookingForm';
+import { SecureIcon } from '@/components/ui/icons';
 
 interface BookingSummaryProps {
     serviceId: number | null;
@@ -135,7 +135,11 @@ export default function BookingSummary({
                         spacing={1}
                         sx={{ alignItems: 'flex-start', color: color.ink500 }}
                     >
-                        <LockOutlined sx={{ fontSize: 16, mt: '2px' }} aria-hidden="true" />
+                        <SecureIcon
+                            weight="bold"
+                            sx={{ fontSize: 16, mt: '2px' }}
+                            aria-hidden="true"
+                        />
                         <Typography variant="caption">
                             You pay on the next step with Stripe. A {PLATFORM_FEE_RATE * 100}%
                             platform fee is added there. The booking stays scheduled until a

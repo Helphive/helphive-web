@@ -1,9 +1,9 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import type { Booking } from '@/types';
 import { formatDateTime, getDisplayStatus } from '@/utils/format';
 import { BOOKING_STATUS } from '@/components/ui/status';
 import { color } from '@/theme/tokens';
+import { CheckMarkIcon, CloseIcon } from '@/components/ui/icons';
 
 type StepState = 'done' | 'current' | 'pending' | 'error';
 
@@ -86,8 +86,8 @@ export default function StatusTimeline({ booking }: { booking: Booking }) {
                                     '& svg': { fontSize: 14 },
                                 }}
                             >
-                                {step.state === 'done' && <CheckIcon />}
-                                {step.state === 'error' && <CloseIcon />}
+                                {step.state === 'done' && <CheckMarkIcon weight="bold" />}
+                                {step.state === 'error' && <CloseIcon weight="bold" />}
                             </Box>
                             {!last && (
                                 <Box
