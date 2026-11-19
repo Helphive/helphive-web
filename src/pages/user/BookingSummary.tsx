@@ -2,7 +2,6 @@ import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import type { Dayjs } from 'dayjs';
 import { DataList, DataRow, Money, Panel, ServiceIcon } from '@/components/ui';
 import { color, font, hairline } from '@/theme/tokens';
-import { PLATFORM_FEE_RATE } from '@/utils/format';
 import { usd0 } from './bookingForm';
 import { SecureIcon } from '@/components/ui/icons';
 
@@ -141,9 +140,8 @@ export default function BookingSummary({
                             aria-hidden="true"
                         />
                         <Typography variant="caption">
-                            You pay on the next step with Stripe. A {PLATFORM_FEE_RATE * 100}%
-                            platform fee is added there. The booking stays scheduled until a
-                            provider accepts it.
+                            You pay on the next step with Stripe. The booking stays scheduled until
+                            a provider accepts it.
                         </Typography>
                     </Stack>
                 </Stack>

@@ -21,7 +21,6 @@ import {
 } from '@/features/booking/bookingSlice';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { color, font, layout, shadow } from '@/theme/tokens';
-import { PLATFORM_FEE_RATE } from '@/utils/format';
 import { SecureIcon, SuccessIcon } from '@/components/ui/icons';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -163,9 +162,8 @@ export default function BookingPayment() {
     const paymentInfo = useAppSelector(selectPaymentInfo);
     const [paid, setPaid] = useState<{ serviceName: string; total: number } | null>(null);
 
-    const subtotal = formData.rate * formData.hours;
-    const platformFee = subtotal * PLATFORM_FEE_RATE;
-    const total = subtotal + platformFee;
+    // The card is charged rate x hours. The platform fee comes out of the provider's pay, not on top.
+    const total = formData.rate * formData.hours;
 
     const handlePaymentSuccess = () => {
         setPaid({ serviceName: formData.serviceName, total });
@@ -293,11 +291,6 @@ export default function BookingPayment() {
                     <DataList sx={{ '& > div': { py: 0.75 } }}>
                         <DataRow label="Hourly rate" value={<Money amount={formData.rate} />} />
                         <DataRow label="Hours" value={formData.hours} />
-                        <DataRow label="Subtotal" value={<Money amount={subtotal} />} />
-                        <DataRow
-                            label={`Platform fee (${PLATFORM_FEE_RATE * 100}%)`}
-                            value={<Money amount={platformFee} />}
-                        />
                     </DataList>
                     <Box
                         sx={{
