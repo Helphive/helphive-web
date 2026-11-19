@@ -181,10 +181,12 @@ export default function ConversationView({
             page.map((m) => toChatMessage(m, me)).filter((m): m is ChatMessage => !!m);
         // Show what was loaded last straight away, then check it against the server.
         const cached = chatRuntime.cachedMessages(uid);
+        const shown = cached ? toList(cached) : [];
+        const fromCache = new Set(shown.map((m) => m.key));
         setLoading(!cached);
         setRefreshing(!!cached);
         setLoadError(false);
-        setMessages(cached ? toList(cached) : []);
+        setMessages(shown);
         setHasMore(true);
         lastMarked.current = 0;
         stickBottom.current = true;
@@ -195,7 +197,8 @@ export default function ConversationView({
             if (activeUid.current !== uid || request.current !== mine) return;
             chatRuntime.rememberMessages(uid, page);
             const list = toList(page);
-            // Keep anything still being sent, and anything that arrived while the page was loading.
+            // The server's page replaces everything shown from the cache. Kept: what is still being sent, and
+            // what arrived live while the page was loading.
             setMessages((cur) => {
                 const known = new Set(list.flatMap((m) => (m.muid ? [m.key, m.muid] : [m.key])));
                 const lastId = list.reduce((max, m) => Math.max(max, m.id ?? 0), 0);
@@ -204,6 +207,7 @@ export default function ConversationView({
                     ...cur.filter(
                         (m) =>
                             !known.has(m.key) &&
+                            !fromCache.has(m.key) &&
                             !(m.muid && known.has(m.muid)) &&
                             (!m.id || m.id > lastId)
                     ),

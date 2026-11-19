@@ -156,15 +156,30 @@ const MAX_CACHED_THREADS = 20;
 let conversationsCache: CometChat.Conversation[] | null = null;
 let conversationsLoading: Promise<CometChat.Conversation[]> | null = null;
 const messagesCache = new Map<string, CometChat.BaseMessage[]>();
+// The chat identity the caches belong to. They are open only between that person's sign-in becoming ready and the
+// start of sign-out, so nothing loaded for one account can be read, or written late, under another.
+let cacheOwner: string | null = null;
+let cachesOpen = false;
+const cacheUsable = () =>
+    cachesOpen && state.status === 'ready' && !!state.me && state.me === cacheOwner;
 
 function clearCaches() {
+    cachesOpen = false;
+    cacheOwner = null;
     conversationsCache = null;
     conversationsLoading = null;
     messagesCache.clear();
 }
 
+function openCaches(owner: string) {
+    clearCaches();
+    cacheOwner = owner;
+    cachesOpen = true;
+}
+
 /** Keeps the newest page of a conversation (the most recently opened conversations only). */
 function rememberMessages(uid: string, page: CometChat.BaseMessage[]) {
+    if (!cacheUsable()) return;
     messagesCache.delete(uid);
     messagesCache.set(uid, page.slice());
     const oldest = messagesCache.keys().next().value;
@@ -174,6 +189,7 @@ function rememberMessages(uid: string, page: CometChat.BaseMessage[]) {
 
 /** A cached page follows the conversation as messages arrive, are edited or are deleted. */
 function noteMessage(peer: string, raw: CometChat.BaseMessage) {
+    if (!cacheUsable()) return;
     const page = messagesCache.get(peer);
     if (!page) return;
     const i = page.findIndex((m) => m.getId() === raw.getId());
@@ -387,6 +403,7 @@ async function start() {
         removeListeners();
         addListeners(chat.uid);
         window.addEventListener('online', onOnline);
+        openCaches(chat.uid);
         setState({ status: 'ready', me: chat.uid, connection: 'connected' });
         void refreshUnread();
     } catch (err) {
@@ -426,6 +443,7 @@ async function signOut(reason: 'signout' | 'switched') {
     } catch {
         // The server revokes the token at POST /auth/logout regardless.
     }
+    clearCaches();
     starting = null;
     state = { ...initial, status: reason === 'switched' ? 'switched' : 'idle' };
     if (reason === 'switched') {
@@ -506,7 +524,7 @@ export const chatRuntime = {
             .conversationsRequest()
             .fetchNext()
             .then((list) => {
-                if (gen === generation) conversationsCache = list;
+                if (gen === generation && cacheUsable()) conversationsCache = list;
                 return list;
             })
             .finally(() => {
@@ -515,8 +533,8 @@ export const chatRuntime = {
         conversationsLoading = load;
         return load;
     },
-    cachedConversations: () => conversationsCache,
-    cachedMessages: (uid: string) => messagesCache.get(uid) ?? null,
+    cachedConversations: () => (cacheUsable() ? conversationsCache : null),
+    cachedMessages: (uid: string) => (cacheUsable() ? (messagesCache.get(uid) ?? null) : null),
     rememberMessages,
 
     /**
