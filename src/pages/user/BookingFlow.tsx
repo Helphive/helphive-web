@@ -312,7 +312,6 @@ export default function BookingFlow() {
                                                 key={d.format('YYYY-MM-DD')}
                                                 value={d.format('YYYY-MM-DD')}
                                                 selected={selected}
-                                                aria-label={d.format('dddd D MMMM')}
                                                 onChange={() => {
                                                     setDate(d);
                                                     setOtherDate(false);
@@ -332,12 +331,15 @@ export default function BookingFlow() {
                                                     sx={{ fontSize: font.size.xs, fontWeight: 600 }}
                                                 >
                                                     {i === 0 ? 'Today' : d.format('ddd')}
-                                                </Box>
+                                                </Box>{' '}
                                                 <Box
                                                     component="span"
                                                     sx={{ fontSize: font.size.xl, fontWeight: 800 }}
                                                 >
                                                     {d.format('D')}
+                                                </Box>
+                                                <Box component="span" sx={srOnly}>
+                                                    {d.format(' MMMM')}
                                                 </Box>
                                             </ToggleButton>
                                         );

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Box, Button, Typography, type SxProps, type Theme } from '@mui/material';
+import { Box, Button, CircularProgress, Typography, type SxProps, type Theme } from '@mui/material';
 import { ErrorOutline, Refresh } from '@mui/icons-material';
 import { color, hairline, radius } from '@/theme/tokens';
 
@@ -11,6 +11,8 @@ export interface ErrorStateProps {
     /** Shows a "Try again" button. */
     onRetry?: () => void;
     retryLabel?: string;
+    /** A retry is in flight: the button shows a spinner and is disabled. */
+    retrying?: boolean;
     /** Extra action next to retry (e.g. a link back). */
     action?: ReactNode;
     /** Drop the frame inside a Panel. */
@@ -24,6 +26,7 @@ export default function ErrorState({
     message,
     onRetry,
     retryLabel = 'Try again',
+    retrying = false,
     action,
     bare,
     sx,
@@ -89,8 +92,20 @@ export default function ErrorState({
                     }}
                 >
                     {onRetry && (
-                        <Button variant="outlined" startIcon={<Refresh />} onClick={onRetry}>
-                            {retryLabel}
+                        <Button
+                            variant="outlined"
+                            startIcon={
+                                retrying ? (
+                                    <CircularProgress size={16} color="inherit" />
+                                ) : (
+                                    <Refresh />
+                                )
+                            }
+                            onClick={onRetry}
+                            disabled={retrying}
+                            aria-busy={retrying || undefined}
+                        >
+                            {retrying ? 'Trying again' : retryLabel}
                         </Button>
                     )}
                     {action}

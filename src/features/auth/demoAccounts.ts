@@ -27,4 +27,8 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     },
 ];
 
+// Links to the login page with the matching demo button highlighted. It never signs in by itself.
 export const demoLoginPath = (key: DemoKey) => `/login?demo=${key}`;
+
+export const isDemoEmail = (email?: string | null) =>
+    !!email && DEMO_ACCOUNTS.some((a) => a.email.toLowerCase() === email.toLowerCase());

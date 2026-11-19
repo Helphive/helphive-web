@@ -23,7 +23,7 @@ export default function AccountApproved() {
             dispatch(updateUser({ providerAccountApproval: true }));
             navigate('/provider');
         } catch {
-            setError('Something went wrong. Try again.');
+            setError('Could not open your dashboard. Try again.');
         }
     };
 

@@ -131,6 +131,11 @@ export const appTheme = createTheme({
     shape: { borderRadius: radius.sm },
     shadows,
     components: {
+        // Subtitles are emphasised labels, not headings. MUI renders them as h6 by default,
+        // which put stray h6s into the outline; pass component="h2"/"h3" when one is a heading.
+        MuiTypography: {
+            defaultProps: { variantMapping: { subtitle1: 'p', subtitle2: 'p' } },
+        },
         MuiCssBaseline: {
             styleOverrides: {
                 body: {

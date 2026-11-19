@@ -12,7 +12,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useBookingLoader } from '@/hooks/useBookingLoader';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { formatMoney, getDisplayStatus, getErrorMessage } from '@/utils/format';
+import { formatMoney, getDisplayStatus, getErrorMessage, formatDay } from '@/utils/format';
 import EarningsBreakdown from './components/EarningsBreakdown';
 import { orderCode, orderEarnings, timeRange } from './orderUtils';
 
@@ -26,7 +26,7 @@ export default function OrderDetails() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [getBooking] = useGetProviderBookingByIdMutation();
     const [acceptBooking, { isLoading: isAccepting }] = useAcceptBookingMutation();
-    const { booking, error, loading, reload } = useBookingLoader(bookingId, getBooking);
+    const { booking, error, loading, reloading, reload } = useBookingLoader(bookingId, getBooking);
 
     // Already-assigned bookings live under My orders.
     const assigned = !!booking?.providerId;
@@ -59,6 +59,7 @@ export default function OrderDetails() {
                     title="Could not load this order"
                     message={error || 'This order was not found. It may have been removed.'}
                     onRetry={() => void reload()}
+                    retrying={reloading}
                     action={
                         <Button component={RouterLink} to="/provider/orders" variant="outlined">
                             Available orders
@@ -119,7 +120,7 @@ export default function OrderDetails() {
                 onClose={() => setConfirmOpen(false)}
             >
                 <DataList variant="inline">
-                    <DataRow label="Date" value={start.format('ddd D MMM')} />
+                    <DataRow label="Date" value={formatDay(start)} />
                     <DataRow label="Time" value={timeRange(booking)} />
                     <DataRow label="You earn" value={formatMoney(orderEarnings(booking))} />
                 </DataList>

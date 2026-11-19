@@ -152,7 +152,7 @@ function Mark({ type, selected }: { type: 'radio' | 'checkbox'; selected: boolea
                     borderRadius: '4px',
                     border: selected ? 0 : `1.5px solid ${color.lineStrong}`,
                     bgcolor: selected ? color.ink900 : 'transparent',
-                    color: '#FFFFFF',
+                    color: color.surface,
                     display: 'grid',
                     placeItems: 'center',
                     '& svg': { fontSize: 13 },

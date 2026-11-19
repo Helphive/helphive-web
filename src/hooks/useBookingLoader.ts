@@ -17,12 +17,14 @@ interface BookingResult {
 type BookingFetcher = (arg: { bookingId: string }) => { unwrap: () => Promise<BookingResult> };
 
 // Loads a single booking through one of the get-booking-by-id mutations.
-// `reload` refreshes in the background without flashing the loading state.
+// `reload` refreshes in the background without flashing the loading state; `reloading` is true
+// while it runs, so a retry button can show that it is busy.
 export function useBookingLoader(bookingId: string | undefined, fetcher: BookingFetcher) {
     const [booking, setBooking] = useState<Booking | null>(null);
     const [payment, setPayment] = useState<BookingPayment | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [reloading, setReloading] = useState(false);
     const fetcherRef = useRef(fetcher);
 
     useEffect(() => {
@@ -31,6 +33,7 @@ export function useBookingLoader(bookingId: string | undefined, fetcher: Booking
 
     const reload = useCallback(async () => {
         if (!bookingId) return;
+        setReloading(true);
         try {
             const result = await fetcherRef.current({ bookingId }).unwrap();
             setBooking(result.booking);
@@ -40,6 +43,7 @@ export function useBookingLoader(bookingId: string | undefined, fetcher: Booking
             setError(getErrorMessage(err, 'Failed to load details'));
         } finally {
             setLoading(false);
+            setReloading(false);
         }
     }, [bookingId]);
 
@@ -49,5 +53,5 @@ export function useBookingLoader(bookingId: string | undefined, fetcher: Booking
         void reload();
     }, [reload]);
 
-    return { booking, payment, error, loading, reload };
+    return { booking, payment, error, loading, reloading, reload };
 }

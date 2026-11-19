@@ -27,13 +27,13 @@ export default function AccountRejected() {
             nextTitle="What you can do"
             next={[
                 'Check your documents and details against the reason above.',
-                'Resubmit your application with the corrected documents.',
+                'Apply again with the corrected documents.',
                 'If you think this was a mistake, contact our support team.',
             ]}
             actions={
                 <>
                     <Button variant="contained" onClick={() => navigate('/provider/onboarding')}>
-                        Resubmit application
+                        Apply again
                     </Button>
                     <Button
                         variant="outlined"

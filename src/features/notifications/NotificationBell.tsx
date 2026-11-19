@@ -51,11 +51,12 @@ export default function NotificationBell({ area }: { area: UserArea }) {
             <Tooltip title="Notifications">
                 <IconButton
                     onClick={(e) => setAnchorEl(e.currentTarget)}
-                    aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
+                    // Name the count the way the badge shows it ("99+"), so speech matches sight.
+                    aria-label={`Notifications${unreadCount ? `, ${unreadCount > 99 ? '99+' : unreadCount} unread` : ''}`}
                     aria-haspopup="dialog"
                     aria-expanded={open}
                 >
-                    <Badge badgeContent={unreadCount} color="primary" max={99}>
+                    <Badge badgeContent={unreadCount || undefined} color="primary" max={99}>
                         <NotificationsNoneOutlined />
                     </Badge>
                 </IconButton>

@@ -24,6 +24,8 @@ export default function PlacesAutocomplete({
 }: PlacesAutocompleteProps) {
     const [inputValue, setInputValue] = useState(value);
     const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+    // Set when typing clears the chosen address, so the cleared value does not wipe the text.
+    const clearedByTyping = useRef(false);
 
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -31,8 +33,22 @@ export default function PlacesAutocomplete({
     });
 
     useEffect(() => {
+        if (clearedByTyping.current) {
+            clearedByTyping.current = false;
+            return;
+        }
         setInputValue(value);
     }, [value]);
+
+    // Editing the text after picking a suggestion drops the chosen address, so the form asks
+    // for a new selection instead of keeping the old one behind new text.
+    const handleTyping = (text: string) => {
+        setInputValue(text);
+        if (value && text !== value) {
+            clearedByTyping.current = true;
+            onChange('', 0, 0);
+        }
+    };
 
     const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
         autocompleteRef.current = autocomplete;
@@ -106,7 +122,7 @@ export default function PlacesAutocomplete({
                 fullWidth
                 label={label}
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => handleTyping(e.target.value)}
                 placeholder={placeholder}
                 error={error}
                 helperText={helperText}

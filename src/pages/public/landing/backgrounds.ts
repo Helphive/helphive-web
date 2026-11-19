@@ -22,3 +22,13 @@ export const fadeFrom = (position: string) =>
 /** Soft coral wash used behind phones and the download band. */
 export const coralWash = (position: string) =>
     `radial-gradient(ellipse 60% 90% at ${position}, ${color.coral100} 0%, transparent 70%)`;
+
+/** Soft ground shadow under a phone: an ink ellipse that fades out. */
+export const contactShadow = `radial-gradient(closest-side, rgba(16, 24, 40, 0.28), rgba(16, 24, 40, 0.1) 55%, transparent)`;
+
+/** Lift shadow that follows a phone's transparent silhouette. */
+export const phoneLift = 'drop-shadow(0 18px 28px rgba(16, 24, 40, 0.16))';
+
+/** Ink section glow: a faint coral light from one corner. */
+export const inkGlow = (position: string) =>
+    `radial-gradient(ellipse 55% 70% at ${position}, rgba(255, 87, 64, 0.16) 0%, transparent 70%)`;

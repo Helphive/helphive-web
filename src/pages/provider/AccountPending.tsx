@@ -51,7 +51,9 @@ export default function AccountPending() {
             actions={
                 <Button
                     variant="contained"
-                    startIcon={isFetching ? <CircularProgress size={16} /> : <Refresh />}
+                    startIcon={
+                        isFetching ? <CircularProgress size={16} color="inherit" /> : <Refresh />
+                    }
                     onClick={() => void handleRefresh()}
                     disabled={isFetching}
                 >
