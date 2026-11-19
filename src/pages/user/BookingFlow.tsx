@@ -187,14 +187,15 @@ export default function BookingFlow() {
             document.getElementById(target)?.scrollIntoView({ block: 'start' });
             return;
         }
-        if (!formData.serviceId || !date || !time) return;
+        if (!formData.serviceId || !date || !time || !start) return;
 
         try {
             setSubmitError(null);
             const result = await createBooking({
-                service: { id: formData.serviceId, name: formData.serviceName },
+                service: formData.serviceId,
                 rate: formData.rate,
                 hours: formData.hours,
+                startAt: start.toISOString(),
                 startDate: date.toISOString(),
                 startTime: time.toISOString(),
                 address: formData.address,

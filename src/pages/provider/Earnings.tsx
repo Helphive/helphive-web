@@ -78,7 +78,7 @@ export default function Earnings() {
     const handleWithdrawMethods = async () => {
         try {
             const result = await getOnboardingLink().unwrap();
-            window.open(result.url, '_blank');
+            window.open(result.connectedAccountOnboardingLink, '_blank');
         } catch {
             snackbar.error('Could not open Stripe payout setup. Try again in a moment.');
         }
@@ -87,7 +87,7 @@ export default function Earnings() {
     const handleViewDashboard = async () => {
         try {
             const result = await getLoginLink().unwrap();
-            window.open(result.url, '_blank');
+            window.open(result.loginLink.url, '_blank');
         } catch {
             snackbar.error('Could not open the Stripe dashboard. Try again in a moment.');
         }

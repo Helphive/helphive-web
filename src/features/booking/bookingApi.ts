@@ -2,9 +2,13 @@ import { apiSlice } from '@/store/api/apiSlice';
 import type { Booking, BookingReceipt } from '@/types';
 
 interface CreateBookingRequest {
-    service: { id: number; name: string };
+    // The service id (1 to 3), as the API validates it.
+    service: number;
     rate: number;
     hours: number;
+    // The exact start of the shift. The API uses it when present.
+    startAt: string;
+    // Still required by the API for older clients.
     startDate: string;
     startTime: string;
     address: string;

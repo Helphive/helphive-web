@@ -11,7 +11,7 @@ interface UpdateAvailabilityRequest {
 }
 
 interface StripeOnboardingResponse {
-    url: string;
+    connectedAccountOnboardingLink: string;
 }
 
 interface CreatePayoutRequest {
@@ -113,7 +113,7 @@ export const providerApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Earnings'],
         }),
-        getStripeExpressLoginLink: builder.query<{ url: string }, void>({
+        getStripeExpressLoginLink: builder.query<{ loginLink: { url: string } }, void>({
             query: () => '/auth/provider/stripe-express-login-link',
         }),
     }),
