@@ -14,6 +14,12 @@ interface CreateBookingRequest {
     address: string;
     latitude: number;
     longitude: number;
+    // Optional, from the location picker (contract section 7).
+    placeId?: string;
+    formattedAddress?: string;
+    placeName?: string;
+    locationSource?: 'search' | 'map' | 'current_location';
+    customAddress?: string;
 }
 
 interface CreateBookingResponse {

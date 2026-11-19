@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Booking } from '@/types';
+import type { PickedLocation } from '@/features/places/pickedLocation';
 
 interface BookingFormData {
     serviceId: number | null;
@@ -11,6 +12,8 @@ interface BookingFormData {
     address: string;
     latitude: number | null;
     longitude: number | null;
+    /** The picker's state; `address`, `latitude` and `longitude` above mirror it. */
+    location: PickedLocation | null;
 }
 
 interface BookingState {
@@ -31,6 +34,7 @@ const initialState: BookingState = {
         address: '',
         latitude: null,
         longitude: null,
+        location: null,
     },
     currentBooking: null,
     paymentIntentId: null,

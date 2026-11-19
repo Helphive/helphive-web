@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Avatar, Box, Button, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Button, Link, Stack, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { Booking, DisplayStatus, User } from '@/types';
@@ -12,7 +12,14 @@ import { ShiftRuler } from '@/components/ui/ShiftRuler';
 import { DataList, DataRow } from '@/components/ui/DataList';
 import { BookingStatusPill } from '@/components/ui/StatusPill';
 import StatusTimeline from './StatusTimeline';
-import { EmailIcon, PersonIcon, PhoneIcon, RatingIcon, ReceiptIcon } from '@/components/ui/icons';
+import {
+    EmailIcon,
+    ExternalLinkIcon,
+    PersonIcon,
+    PhoneIcon,
+    RatingIcon,
+    ReceiptIcon,
+} from '@/components/ui/icons';
 
 const HERO_TEXT: Record<DisplayStatus, string> = {
     scheduled: 'Waiting for a provider to accept this booking.',
@@ -119,6 +126,12 @@ export default function BookingDetailView({
     const status = getDisplayStatus(booking);
     const start = dayjs(booking.startDate);
     const end = start.add(booking.hours || 0, 'hour');
+    const hasPin = !!booking.latitude && !!booking.longitude;
+    // When the customer typed their own address, say where the pin is too.
+    const pinAddress =
+        booking.location?.customAddress && booking.location.formattedAddress !== booking.address
+            ? booking.location.formattedAddress
+            : null;
 
     return (
         <Box
@@ -187,6 +200,28 @@ export default function BookingDetailView({
                             {start.format('dddd D MMMM YYYY')}, {start.format('HH:mm')} to{' '}
                             {end.format('HH:mm')}
                         </Typography>
+                        {pinAddress && (
+                            <Typography variant="caption" component="p">
+                                Map pin: {pinAddress}
+                            </Typography>
+                        )}
+                        {hasPin && (
+                            <Link
+                                href={`https://www.google.com/maps/search/?api=1&query=${booking.latitude},${booking.longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                variant="body2"
+                                sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.75,
+                                    mt: 1,
+                                }}
+                            >
+                                Open in Google Maps
+                                <ExternalLinkIcon size={16} aria-hidden="true" />
+                            </Link>
+                        )}
                     </Box>
                 </Panel>
 

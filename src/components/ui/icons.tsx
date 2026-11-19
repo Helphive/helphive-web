@@ -23,6 +23,7 @@ import {
     BellIcon,
     BriefcaseIcon,
     BroomIcon,
+    BuildingsIcon,
     CalendarBlankIcon,
     CalendarCheckIcon,
     CalendarPlusIcon,
@@ -45,6 +46,7 @@ import {
     ClockIcon,
     CopyIcon,
     CreditCardIcon,
+    CrosshairSimpleIcon,
     DownloadSimpleIcon,
     EnvelopeSimpleIcon,
     EyeIcon,
@@ -63,8 +65,10 @@ import {
     ListMagnifyingGlassIcon,
     LockSimpleIcon,
     MapPinIcon,
+    MapTrifoldIcon,
     MinusIcon,
     MinusSquareIcon,
+    PencilSimpleIcon,
     PhoneIcon as PhPhoneIcon,
     PlayCircleIcon,
     PlusIcon,
@@ -199,6 +203,10 @@ export const CalendarIcon = icon(CalendarBlankIcon, 'CalendarIcon');
 export const TimeIcon = icon(ClockIcon, 'TimeIcon');
 export const LocationIcon = icon(MapPinIcon, 'LocationIcon');
 export const LocationOffIcon = icon(GpsSlashIcon, 'LocationOffIcon');
+export const VenueIcon = icon(BuildingsIcon, 'VenueIcon');
+export const CurrentLocationIcon = icon(CrosshairSimpleIcon, 'CurrentLocationIcon');
+export const MapIcon = icon(MapTrifoldIcon, 'MapIcon');
+export const EditIcon = icon(PencilSimpleIcon, 'EditIcon');
 export const EmailIcon = icon(EnvelopeSimpleIcon, 'EmailIcon');
 export const PhoneIcon = icon(PhPhoneIcon, 'PhoneIcon');
 export const PersonIcon = icon(UserIcon, 'PersonIcon');

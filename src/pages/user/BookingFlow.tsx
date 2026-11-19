@@ -16,7 +16,12 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { type Dayjs } from 'dayjs';
-import PlacesAutocomplete from '@/components/PlacesAutocomplete';
+import LocationPicker from '@/components/location/LocationPicker';
+import {
+    bookingLocationFields,
+    displayText,
+    type PickedLocation,
+} from '@/features/places/pickedLocation';
 import {
     Panel,
     SelectableTileGroup,
@@ -33,7 +38,7 @@ import {
     setPaymentInfo,
     resetBookingForm,
 } from '@/features/booking/bookingSlice';
-import { useCreateBookingMutation } from '@/features/booking/bookingApi';
+import { useCreateBookingMutation, useGetUserBookingsQuery } from '@/features/booking/bookingApi';
 import { SERVICES } from '@/types';
 import { color, font } from '@/theme/tokens';
 import { getErrorMessage } from '@/utils/format';
@@ -50,7 +55,7 @@ import {
     usd0,
     validateFlow,
 } from './bookingForm';
-import { AddIcon, CheckMarkIcon, RemoveIcon, SuccessIcon } from '@/components/ui/icons';
+import { AddIcon, CheckMarkIcon, RemoveIcon } from '@/components/ui/icons';
 
 const OTHER = 'other';
 
@@ -136,12 +141,34 @@ export default function BookingFlow() {
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     const days = useMemo(() => getDayOptions(), []);
+    const location = formData.location ?? null;
+    // The map opens at the customer's last booking when there is no pin yet.
+    const { data: pastBookings } = useGetUserBookingsQuery();
+    const startPoint = useMemo(() => {
+        const all = pastBookings
+            ? [...pastBookings.active, ...pastBookings.scheduled, ...pastBookings.history]
+            : [];
+        const last = all
+            .filter((b) => b.latitude && b.longitude)
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+        return last ? { latitude: last.latitude, longitude: last.longitude } : null;
+    }, [pastBookings]);
+    const setLocation = (loc: PickedLocation | null) =>
+        dispatch(
+            setFormData({
+                location: loc,
+                address: displayText(loc),
+                latitude: loc?.latitude ?? null,
+                longitude: loc?.longitude ?? null,
+            })
+        );
 
     const errors = validateFlow({
         serviceId: formData.serviceId,
         date,
         time,
-        address: formData.address,
+        address: displayText(location),
+        pinned: !!location,
     });
     // Before the first submit only the "time has passed" message shows, and only once a time exists.
     const visible = (key: keyof typeof errors) =>
@@ -187,7 +214,7 @@ export default function BookingFlow() {
             document.getElementById(target)?.scrollIntoView({ block: 'start' });
             return;
         }
-        if (!formData.serviceId || !date || !time || !start) return;
+        if (!formData.serviceId || !date || !time || !start || !location) return;
 
         try {
             setSubmitError(null);
@@ -198,9 +225,7 @@ export default function BookingFlow() {
                 startAt: start.toISOString(),
                 startDate: date.toISOString(),
                 startTime: time.toISOString(),
-                address: formData.address,
-                latitude: formData.latitude || 0,
-                longitude: formData.longitude || 0,
+                ...bookingLocationFields(location),
             }).unwrap();
 
             dispatch(
@@ -228,8 +253,6 @@ export default function BookingFlow() {
         setSubmitError(null);
     };
 
-    const pinned = !!formData.address && formData.latitude !== null && formData.longitude !== null;
-    const pinApproximate = pinned && formData.latitude === 0 && formData.longitude === 0;
     const endLabel = start ? start.add(formData.hours, 'hour').format('HH:mm') : '';
 
     return (
@@ -557,33 +580,12 @@ export default function BookingFlow() {
                     </FlowSection>
 
                     <FlowSection id="flow-address" index={4} title="Address" done={addressDone}>
-                        <PlacesAutocomplete
-                            value={formData.address}
-                            onChange={(address, lat, lng) =>
-                                dispatch(setFormData({ address, latitude: lat, longitude: lng }))
-                            }
-                            error={!!visible('address')}
-                            helperText={visible('address')}
+                        <LocationPicker
+                            value={location}
+                            onChange={setLocation}
+                            error={visible('address')}
+                            startPoint={startPoint}
                         />
-                        {pinned && (
-                            <Stack
-                                direction="row"
-                                spacing={0.75}
-                                sx={{ alignItems: 'center', mt: 1.5, color: color.green700 }}
-                                role="status"
-                            >
-                                <SuccessIcon
-                                    weight="bold"
-                                    sx={{ fontSize: 16 }}
-                                    aria-hidden="true"
-                                />
-                                <Typography variant="caption" sx={{ color: 'inherit' }}>
-                                    {pinApproximate
-                                        ? 'Address saved as typed. Maps could not pin it.'
-                                        : 'Location pinned. Providers nearby will see this booking.'}
-                                </Typography>
-                            </Stack>
-                        )}
                     </FlowSection>
 
                     <Box>

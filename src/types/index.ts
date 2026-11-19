@@ -77,6 +77,15 @@ export interface Booking {
     address: string;
     latitude: number;
     longitude: number;
+    /** How the location was picked; null or missing on older bookings. `address` is always the text to show. */
+    location?: {
+        placeId?: string | null;
+        formattedAddress?: string | null;
+        placeName?: string | null;
+        source?: 'search' | 'map' | 'current_location' | null;
+        customAddress?: string | null;
+        submittedAddress?: string | null;
+    } | null;
     status: BookingStatus;
     displayStatus?: DisplayStatus;
     payments?: BookingPaymentSummary[];

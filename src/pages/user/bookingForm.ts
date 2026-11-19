@@ -29,7 +29,10 @@ export interface FlowValues {
     serviceId: number | null;
     date: Dayjs | null;
     time: Dayjs | null;
+    /** The address text that will be shown to the provider. */
     address: string;
+    /** Whether a pin has been placed (by search, the map or the current location). */
+    pinned: boolean;
 }
 
 export interface FlowErrors {
@@ -40,7 +43,7 @@ export interface FlowErrors {
 }
 
 /** Messages say how to fix the problem. The past-time check only runs once both values exist. */
-export function validateFlow({ serviceId, date, time, address }: FlowValues): FlowErrors {
+export function validateFlow({ serviceId, date, time, address, pinned }: FlowValues): FlowErrors {
     const errors: FlowErrors = {};
     if (!serviceId) errors.service = 'Choose a service to book.';
     if (!date) errors.date = 'Choose the day of the shift.';
@@ -52,7 +55,8 @@ export function validateFlow({ serviceId, date, time, address }: FlowValues): Fl
     if (start && !errors.date && !errors.time && start.isBefore(dayjs())) {
         errors.time = 'That start time has passed. Choose a later time or another day.';
     }
-    if (!address.trim()) errors.address = 'Search for the address and pick it from the list.';
+    if (!pinned) errors.address = 'Search for the place, or choose it on the map.';
+    else if (!address.trim()) errors.address = 'Type the address your provider should go to.';
     return errors;
 }
 
