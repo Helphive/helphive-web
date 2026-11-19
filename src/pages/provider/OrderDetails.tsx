@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, CardContent, Divider, Typography } from '@mui/material';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
+import { Alert, Button, Typography } from '@mui/material';
+import dayjs from 'dayjs';
 import {
     useGetProviderBookingByIdMutation,
     useAcceptBookingMutation,
 } from '@/features/provider/providerApi';
 import BookingDetailView from '@/components/common/BookingDetailView';
-import { PriceRow } from '@/components/common/InfoRow';
-import PageHeader from '@/components/common/PageHeader';
-import { DetailSkeleton, ErrorState } from '@/components/common/PageStates';
-import ConfirmDialog from '@/components/feedback/ConfirmDialog';
+import { ConfirmDialog, DataList, DataRow, DetailSkeleton, ErrorState } from '@/components/ui';
+import PageHeader from '@/components/ui/PageHeader';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useBookingLoader } from '@/hooks/useBookingLoader';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { PLATFORM_FEE_RATE, formatMoney, getDisplayStatus, getErrorMessage } from '@/utils/format';
+import { formatMoney, getDisplayStatus, getErrorMessage } from '@/utils/format';
+import EarningsBreakdown from './components/EarningsBreakdown';
+import { orderCode, orderEarnings, timeRange } from './orderUtils';
 
 // Details of an open (unassigned) order with the accept action.
 export default function OrderDetails() {
@@ -27,7 +28,7 @@ export default function OrderDetails() {
     const [acceptBooking, { isLoading: isAccepting }] = useAcceptBookingMutation();
     const { booking, error, loading, reload } = useBookingLoader(bookingId, getBooking);
 
-    // Already-assigned bookings live under My Orders.
+    // Already-assigned bookings live under My orders.
     const assigned = !!booking?.providerId;
     useEffect(() => {
         if (assigned && bookingId) navigate(`/provider/my-orders/${bookingId}`, { replace: true });
@@ -40,76 +41,72 @@ export default function OrderDetails() {
             navigate(`/provider/my-orders/${bookingId}`);
         } catch (err) {
             setConfirmOpen(false);
-            snackbar.error(getErrorMessage(err, 'Failed to accept order'));
+            snackbar.error(getErrorMessage(err, 'Could not accept the order'));
         }
     };
 
-    if (loading || assigned) return <DetailSkeleton />;
+    if (loading || assigned) return <DetailSkeleton label="Loading order" />;
 
     if (error || !booking) {
         return (
-            <ErrorState
-                title="Order details"
-                message={error || 'Order not found'}
-                backTo="/provider/orders"
-                backLabel="Back to available orders"
-                onRetry={reload}
-            />
+            <>
+                <PageHeader
+                    title="Order details"
+                    backTo="/provider/orders"
+                    backLabel="Back to available orders"
+                />
+                <ErrorState
+                    title="Could not load this order"
+                    message={error || 'This order was not found. It may have been removed.'}
+                    onRetry={() => void reload()}
+                    action={
+                        <Button component={RouterLink} to="/provider/orders" variant="outlined">
+                            Available orders
+                        </Button>
+                    }
+                />
+            </>
         );
     }
 
     const status = getDisplayStatus(booking);
-    const subtotal = (booking.rate || 0) * (booking.hours || 0);
-    const platformFee = subtotal * PLATFORM_FEE_RATE;
     const canAccept = status === 'scheduled';
-
-    const priceCard = (
-        <Card>
-            <CardContent>
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-                    Earnings breakdown
-                </Typography>
-                <PriceRow label="Hourly rate" value={formatMoney(booking.rate)} />
-                <PriceRow label="Hours" value={String(booking.hours || 0)} />
-                <PriceRow label="Subtotal" value={formatMoney(subtotal)} />
-                <PriceRow
-                    label={`Platform fee (${PLATFORM_FEE_RATE * 100}%)`}
-                    value={`-${formatMoney(platformFee)}`}
-                    color="error.main"
-                />
-                <Divider sx={{ my: 1 }} />
-                <PriceRow
-                    label="Your earnings"
-                    value={formatMoney(subtotal - platformFee)}
-                    color="success.main"
-                    strong
-                />
-            </CardContent>
-        </Card>
-    );
+    const start = dayjs(booking.startDate);
 
     return (
         <>
             <PageHeader
-                title="Order details"
+                title={`Order ${orderCode(booking._id)}`}
+                subtitle="Review the job and your pay before you accept"
                 backTo="/provider/orders"
                 backLabel="Back to available orders"
             />
             <BookingDetailView
                 booking={booking}
                 counterpart={{ title: 'Customer', person: booking.userId }}
-                priceCard={priceCard}
+                priceCard={<EarningsBreakdown booking={booking} />}
                 actions={
                     canAccept ? (
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            size="large"
-                            onClick={() => setConfirmOpen(true)}
-                        >
-                            Accept order
-                        </Button>
-                    ) : undefined
+                        <>
+                            <Button
+                                variant="contained"
+                                fullWidth
+                                size="large"
+                                onClick={() => setConfirmOpen(true)}
+                            >
+                                Accept order
+                            </Button>
+                            <Typography variant="caption" sx={{ display: 'block' }}>
+                                Accepting commits you to arrive at the scheduled time. You can
+                                cancel from My orders before you start.
+                            </Typography>
+                        </>
+                    ) : (
+                        <Alert severity="info">
+                            This order can no longer be accepted. Browse available orders for other
+                            jobs.
+                        </Alert>
+                    )
                 }
             />
             <ConfirmDialog
@@ -120,7 +117,13 @@ export default function OrderDetails() {
                 loading={isAccepting}
                 onConfirm={handleAccept}
                 onClose={() => setConfirmOpen(false)}
-            />
+            >
+                <DataList variant="inline">
+                    <DataRow label="Date" value={start.format('ddd D MMM')} />
+                    <DataRow label="Time" value={timeRange(booking)} />
+                    <DataRow label="You earn" value={formatMoney(orderEarnings(booking))} />
+                </DataList>
+            </ConfirmDialog>
         </>
     );
 }

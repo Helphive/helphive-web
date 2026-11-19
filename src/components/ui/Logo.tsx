@@ -15,26 +15,17 @@ interface LogoProps {
 export function LogoMark({ size = 28 }: { size?: number }) {
     return (
         <Box
-            component="svg"
-            viewBox="0 0 32 32"
+            component="img"
+            src="/logo-mark.png"
+            alt=""
             width={size}
             height={size}
-            aria-hidden="true"
-            sx={{ display: 'block', flex: 'none' }}
-        >
-            <path d="M16 2.5 27.7 9.25v13.5L16 29.5 4.3 22.75V9.25Z" fill={color.coral500} />
-            <path
-                d="M11.5 10.5v11M20.5 10.5v11M11.5 16h9"
-                stroke="#fff"
-                strokeWidth="2.6"
-                strokeLinecap="round"
-                fill="none"
-            />
-        </Box>
+            sx={{ display: 'block', flex: 'none', objectFit: 'contain' }}
+        />
     );
 }
 
-/** HelpHive hexagon mark with the wordmark. The bee PNG in /public is the favicon only. */
+/** The HelpHive bee logo with the wordmark. */
 export default function Logo({ to, size = 28, wordmark = 'always', sx }: LogoProps) {
     const linkProps = to ? { component: RouterLink, to, 'aria-label': 'HelpHive home' } : {};
     return (

@@ -1,30 +1,35 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Button, Card, CardContent, Chip, Divider, TextField, Typography } from '@mui/material';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Box, Button, TextField } from '@mui/material';
 import {
     useGetBookingByIdMutation,
     useCancelBookingMutation,
     useApproveStartJobRequestMutation,
 } from '@/features/booking/bookingApi';
 import BookingDetailView from '@/components/common/BookingDetailView';
-import { PriceRow } from '@/components/common/InfoRow';
-import PageHeader from '@/components/common/PageHeader';
-import { DetailSkeleton, ErrorState } from '@/components/common/PageStates';
-import ConfirmDialog from '@/components/feedback/ConfirmDialog';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
+import {
+    ConfirmDialog,
+    DataList,
+    DataRow,
+    DetailSkeleton,
+    ErrorState,
+    Money,
+    PageHeader,
+    Panel,
+    StatusPill,
+} from '@/components/ui';
 import { useBookingLoader, type BookingPayment } from '@/hooks/useBookingLoader';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { formatMoney, getDisplayStatus, getErrorMessage } from '@/utils/format';
+import { getDisplayStatus, getErrorMessage } from '@/utils/format';
 
-function paymentChip(payment: BookingPayment | null) {
+function PaymentPill({ payment }: { payment: BookingPayment | null }) {
     if (!payment) return null;
-    if (payment.refundStatus) {
-        return <Chip label="Refunded" size="small" color="info" />;
-    }
+    if (payment.refundStatus) return <StatusPill tone="blue">Refunded</StatusPill>;
     return payment.status === 'completed' ? (
-        <Chip label="Paid" size="small" color="success" />
+        <StatusPill tone="green">Paid</StatusPill>
     ) : (
-        <Chip label="Payment pending" size="small" color="warning" />
+        <StatusPill tone="amber">Payment pending</StatusPill>
     );
 }
 
@@ -53,7 +58,7 @@ export default function BookingDetails() {
             snackbar.success('Booking cancelled. Any payment will be refunded.');
             void reload();
         } catch (err) {
-            snackbar.error(getErrorMessage(err, 'Failed to cancel booking'));
+            snackbar.error(getErrorMessage(err, 'Could not cancel the booking. Try again.'));
         }
     };
 
@@ -64,21 +69,27 @@ export default function BookingDetails() {
             snackbar.success('Job start approved');
             void reload();
         } catch (err) {
-            snackbar.error(getErrorMessage(err, 'Failed to approve job start'));
+            snackbar.error(getErrorMessage(err, 'Could not approve the job start. Try again.'));
         }
     };
 
-    if (loading) return <DetailSkeleton />;
+    if (loading) return <DetailSkeleton label="Loading booking" />;
 
     if (error || !booking) {
         return (
-            <ErrorState
-                title="Booking details"
-                message={error || 'Booking not found'}
-                backTo="/user"
-                backLabel="Back to bookings"
-                onRetry={reload}
-            />
+            <>
+                <PageHeader title="Booking details" backTo="/user" backLabel="Back to bookings" />
+                <ErrorState
+                    title="Could not load this booking"
+                    message={error || 'This booking was not found. It may have been removed.'}
+                    onRetry={() => void reload()}
+                    action={
+                        <Button component={RouterLink} to="/user?tab=active" variant="text">
+                            Go to bookings
+                        </Button>
+                    }
+                />
+            </>
         );
     }
 
@@ -87,19 +98,34 @@ export default function BookingDetails() {
     const canCancel = ['scheduled', 'accepted', 'awaiting_start_approval'].includes(status);
 
     const priceCard = (
-        <Card>
-            <CardContent>
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-                    Price breakdown
-                </Typography>
-                <PriceRow label="Hourly rate" value={formatMoney(booking.rate)} />
-                <PriceRow label="Hours" value={String(booking.hours || 0)} />
-                <PriceRow label="Subtotal" value={formatMoney(subtotal)} />
-                <Divider sx={{ my: 1 }} />
-                <PriceRow label="Total" value={formatMoney(payment?.amount ?? subtotal)} strong />
-                {paymentChip(payment)}
-            </CardContent>
-        </Card>
+        <Panel title="Price breakdown" actions={<PaymentPill payment={payment} />}>
+            <DataList sx={{ '& > div': { py: 0.75 } }}>
+                <DataRow label="Hourly rate" value={<Money amount={booking.rate} />} />
+                <DataRow label="Hours" value={booking.hours || 0} />
+                <DataRow label="Subtotal" value={<Money amount={subtotal} />} />
+            </DataList>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    mt: 1.5,
+                    pt: 2,
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                <Box component="span" sx={{ fontWeight: 700 }}>
+                    Total
+                </Box>
+                <Money amount={payment?.amount ?? subtotal} size="xl" />
+            </Box>
+            {!!payment?.refundAmount && (
+                <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 13 }}>
+                    Refunded <Money amount={payment.refundAmount} />
+                </Box>
+            )}
+        </Panel>
     );
 
     const actions = (
@@ -129,7 +155,12 @@ export default function BookingDetails() {
 
     return (
         <>
-            <PageHeader title="Booking details" backTo="/user" backLabel="Back to bookings" />
+            <PageHeader
+                title="Booking details"
+                subtitle={`Reference ${booking._id.slice(-6).toUpperCase()}`}
+                backTo="/user"
+                backLabel="Back to bookings"
+            />
             <BookingDetailView
                 booking={booking}
                 counterpart={{
@@ -146,7 +177,7 @@ export default function BookingDetails() {
                 open={approveOpen}
                 title="Approve job start?"
                 description="The provider has arrived and is ready to begin. Approving marks the job as in progress."
-                confirmLabel="Approve"
+                confirmLabel="Approve job start"
                 loading={isApproving}
                 onConfirm={handleApproveStart}
                 onClose={() => setApproveOpen(false)}

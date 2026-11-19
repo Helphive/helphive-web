@@ -1,62 +1,50 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, Button } from '@mui/material';
-import { Cancel, Email } from '@mui/icons-material';
+import { Button } from '@mui/material';
+import { Email, ErrorOutline } from '@mui/icons-material';
 import { useGetAccountApprovalScreenQuery } from '@/features/provider/providerApi';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { Panel } from '@/components/ui';
+import StatusScreen from './components/StatusScreen';
+import { SUPPORT_EMAIL } from './constants';
 
 export default function AccountRejected() {
+    useDocumentTitle('Application not approved');
     const navigate = useNavigate();
     const { data } = useGetAccountApprovalScreenQuery();
 
     return (
-        <Box
-            sx={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'background.default',
-                p: 3,
-            }}
-        >
-            <Card sx={{ maxWidth: 500, textAlign: 'center' }}>
-                <CardContent sx={{ py: 6 }}>
-                    <Cancel sx={{ fontSize: 80, color: 'error.main', mb: 3 }} />
-                    <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
-                        Application Not Approved
-                    </Typography>
-                    <Typography color="text.secondary" sx={{ mb: 2 }}>
-                        Unfortunately, your provider application was not approved.
-                    </Typography>
-                    {data?.rejectReason && (
-                        <Card variant="outlined" sx={{ mb: 4, bgcolor: 'error.50' }}>
-                            <CardContent>
-                                <Typography variant="body2" color="error.main">
-                                    Reason: {data.rejectReason}
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    )}
-                    <Typography color="text.secondary" sx={{ mb: 4 }}>
-                        If you believe this was a mistake or have questions, please contact our
-                        support team.
-                    </Typography>
+        <StatusScreen
+            tone="red"
+            statusLabel="Not approved"
+            icon={<ErrorOutline />}
+            title="Application not approved"
+            description="We could not approve your provider application this time. You can send a new application or ask our team about the decision."
+            notice={
+                data?.rejectReason ? (
+                    <Panel title="Reason from our team">{data.rejectReason}</Panel>
+                ) : undefined
+            }
+            nextTitle="What you can do"
+            next={[
+                'Check your documents and details against the reason above.',
+                'Resubmit your application with the corrected documents.',
+                'If you think this was a mistake, contact our support team.',
+            ]}
+            actions={
+                <>
+                    <Button variant="contained" onClick={() => navigate('/provider/onboarding')}>
+                        Resubmit application
+                    </Button>
                     <Button
-                        variant="contained"
+                        variant="outlined"
                         startIcon={<Email />}
-                        href="mailto:support@helphive.himaiz.com"
-                        sx={{ px: 4 }}
+                        href={`mailto:${SUPPORT_EMAIL}`}
                     >
-                        Contact Support
+                        Contact support
                     </Button>
-                    <Button
-                        variant="text"
-                        onClick={() => navigate('/provider/onboarding')}
-                        sx={{ display: 'block', mx: 'auto', mt: 2 }}
-                    >
-                        Resubmit Application
-                    </Button>
-                </CardContent>
-            </Card>
-        </Box>
+                </>
+            }
+            support={false}
+        />
     );
 }
