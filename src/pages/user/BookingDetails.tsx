@@ -7,6 +7,7 @@ import {
     useApproveStartJobRequestMutation,
 } from '@/features/booking/bookingApi';
 import BookingDetailView from '@/components/common/BookingDetailView';
+import BookingChatAction from '@/features/chat/BookingChatAction';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import {
     ConfirmDialog,
@@ -142,6 +143,7 @@ export default function BookingDetails() {
 
     const actions = (
         <>
+            <BookingChatAction bookingId={booking._id} area="user" />
             {status === 'awaiting_start_approval' && (
                 <Button
                     variant="contained"

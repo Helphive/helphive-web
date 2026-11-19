@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { ThemeProvider } from '@/theme/ThemeContext';
 import { AppSkeleton, ErrorBoundary } from '@/components/ui';
 import SnackbarProvider from '@/components/feedback/SnackbarProvider';
@@ -27,6 +27,7 @@ const NotificationsPage = lazy(() => import('@/pages/shared/NotificationsPage'))
 const ReceiptPage = lazy(() => import('@/pages/shared/ReceiptPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const ProfilePage = lazy(() => import('@/pages/shared/ProfilePage'));
+const MessagesPage = lazy(() => import('@/features/chat/ui/MessagesPage'));
 
 // Provider pages
 const ProviderDashboard = lazy(() => import('@/pages/provider/ProviderDashboard'));
@@ -135,6 +136,14 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
+// Chat links from notifications (/chat/:uid) open the conversation in the right area.
+function ChatRedirect() {
+    const user = useAppSelector(selectCurrentUser);
+    const { uid = '' } = useParams<{ uid: string }>();
+    const area = hasRole(user?.roles, 'Provider') ? 'provider' : 'user';
+    return <Navigate to={`/${area}/messages/${encodeURIComponent(uid)}`} replace />;
+}
+
 // Home redirect based on user role
 function HomeRedirect() {
     const user = useAppSelector(selectCurrentUser);
@@ -188,6 +197,15 @@ function App() {
                                 }
                             />
 
+                            <Route
+                                path="/chat/:uid"
+                                element={
+                                    <ProtectedRoute>
+                                        <ChatRedirect />
+                                    </ProtectedRoute>
+                                }
+                            />
+
                             {/* User routes */}
                             <Route
                                 path="/user"
@@ -209,6 +227,11 @@ function App() {
                                     element={<NotificationsPage area="user" />}
                                 />
                                 <Route path="profile" element={<ProfilePage area="user" />} />
+                                <Route path="messages" element={<MessagesPage area="user" />} />
+                                <Route
+                                    path="messages/:uid"
+                                    element={<MessagesPage area="user" />}
+                                />
                                 <Route path="*" element={<NotFoundPage />} />
                             </Route>
 
@@ -240,6 +263,11 @@ function App() {
                                     element={<NotificationsPage area="provider" />}
                                 />
                                 <Route path="profile" element={<ProfilePage area="provider" />} />
+                                <Route path="messages" element={<MessagesPage area="provider" />} />
+                                <Route
+                                    path="messages/:uid"
+                                    element={<MessagesPage area="provider" />}
+                                />
                                 <Route path="*" element={<NotFoundPage />} />
                             </Route>
 
