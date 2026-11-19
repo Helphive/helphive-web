@@ -6,6 +6,20 @@ const API_URL =
     import.meta.env.VITE_API_URL ||
     (import.meta.env.DEV ? 'http://localhost:8080' : 'https://api.helphive.himaiz.com');
 
+// A random id made once and kept in localStorage, sent as X-Device-Id. Undefined when storage is unavailable.
+const getDeviceId = (): string | undefined => {
+    try {
+        let id = localStorage.getItem('deviceId');
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem('deviceId', id);
+        }
+        return id;
+    } catch {
+        return undefined;
+    }
+};
+
 const baseQuery = fetchBaseQuery({
     baseUrl: API_URL,
     credentials: 'include',
@@ -14,6 +28,15 @@ const baseQuery = fetchBaseQuery({
         if (token) {
             headers.set('Authorization', `Bearer ${token}`);
         }
+        // Optional client details for analytics; a failure here must never block the request.
+        headers.set('X-App-Platform', 'web');
+        try {
+            headers.set('X-App-Version', __APP_VERSION__);
+        } catch {
+            // Not defined (e.g. a tool that skips the Vite build): leave the header out.
+        }
+        const deviceId = getDeviceId();
+        if (deviceId) headers.set('X-Device-Id', deviceId);
         return headers;
     },
 });

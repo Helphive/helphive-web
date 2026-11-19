@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+/** Set at build time by vite.config.ts: package version plus short commit hash. */
+declare const __APP_VERSION__: string;
+
 interface ImportMetaEnv {
     readonly VITE_API_URL: string;
     readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
