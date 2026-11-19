@@ -1,17 +1,6 @@
 import { useMemo, useState } from 'react';
-import {
-    Box,
-    Button,
-    CircularProgress,
-    List,
-    Paper,
-    Skeleton,
-    Stack,
-    Tab,
-    Tabs,
-    Typography,
-} from '@mui/material';
-import { DoneAll, NotificationsNone, Refresh } from '@mui/icons-material';
+import { Box, Button, CircularProgress, List, Tab, Tabs, Typography } from '@mui/material';
+import { DoneAll, NotificationsNoneOutlined } from '@mui/icons-material';
 import {
     NOTIFICATIONS_PAGE_SIZE,
     useGetNotificationsQuery,
@@ -21,12 +10,12 @@ import {
 import NotificationItem from '@/features/notifications/NotificationItem';
 import { groupNotifications, type UserArea } from '@/features/notifications/notificationMeta';
 import { useNotificationActions } from '@/features/notifications/useNotificationActions';
-import EmptyState from '@/components/common/EmptyState';
-import PageHeader from '@/components/common/PageHeader';
+import { EmptyState, ErrorState, ListSkeleton, PageHeader, Panel } from '@/components/ui';
 import TabLabel from '@/components/common/TabLabel';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useAutoLoadMore } from '@/hooks/useAutoLoadMore';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { layout } from '@/theme/tokens';
 
 export default function NotificationsPage({ area }: { area: UserArea }) {
     useDocumentTitle('Notifications');
@@ -69,20 +58,14 @@ export default function NotificationsPage({ area }: { area: UserArea }) {
     const unreadCount = data?.unreadCount ?? 0;
 
     return (
-        <>
+        <Box sx={{ maxWidth: layout.narrowMaxWidth + 40 }}>
             <PageHeader
                 title="Notifications"
-                subtitle="Updates about your bookings, payments and account"
+                subtitle="Updates about your bookings, payments and account."
                 actions={
                     <Button
                         variant="outlined"
-                        startIcon={
-                            isMarkingAll ? (
-                                <CircularProgress size={16} color="inherit" />
-                            ) : (
-                                <DoneAll />
-                            )
-                        }
+                        startIcon={isMarkingAll ? <CircularProgress size={16} /> : <DoneAll />}
                         onClick={handleMarkAll}
                         disabled={isMarkingAll || unreadCount === 0}
                     >
@@ -94,7 +77,8 @@ export default function NotificationsPage({ area }: { area: UserArea }) {
             <Tabs
                 value={filter}
                 onChange={handleFilter}
-                sx={{ mb: 2, borderBottom: '1px solid', borderColor: 'divider' }}
+                aria-label="Filter notifications"
+                sx={{ mb: 2.5, borderBottom: 1, borderColor: 'divider' }}
             >
                 <Tab value="all" label="All" />
                 <Tab
@@ -104,30 +88,16 @@ export default function NotificationsPage({ area }: { area: UserArea }) {
             </Tabs>
 
             {isLoading ? (
-                <Paper variant="outlined" sx={{ p: 2 }}>
-                    {[0, 1, 2, 3].map((i) => (
-                        <Stack key={i} direction="row" spacing={1.5} sx={{ mb: 2 }}>
-                            <Skeleton variant="circular" width={40} height={40} />
-                            <Box sx={{ flex: 1 }}>
-                                <Skeleton width="40%" />
-                                <Skeleton width="80%" />
-                            </Box>
-                        </Stack>
-                    ))}
-                </Paper>
+                <ListSkeleton rows={5} withHeader={false} label="Loading notifications" />
             ) : isError && !notifications?.length ? (
-                <EmptyState
-                    icon={<Refresh />}
+                <ErrorState
                     title="Could not load notifications"
-                    action={
-                        <Button variant="contained" onClick={() => refetch()}>
-                            Try again
-                        </Button>
-                    }
+                    message="Check your connection and try again."
+                    onRetry={() => refetch()}
                 />
             ) : groups.length === 0 ? (
                 <EmptyState
-                    icon={<NotificationsNone />}
+                    icon={<NotificationsNoneOutlined />}
                     title={filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
                     description={
                         filter === 'unread'
@@ -136,17 +106,23 @@ export default function NotificationsPage({ area }: { area: UserArea }) {
                     }
                 />
             ) : (
-                <Stack spacing={2.5}>
+                <Box sx={{ display: 'grid', gap: 3 }}>
                     {groups.map((group) => (
-                        <Box key={group.label}>
+                        <Box
+                            component="section"
+                            key={group.label}
+                            aria-labelledby={`group-${group.label}`}
+                        >
                             <Typography
-                                variant="overline"
+                                id={`group-${group.label}`}
+                                variant="subtitle2"
+                                component="h2"
                                 color="text.secondary"
-                                sx={{ display: 'block', mb: 0.5, fontWeight: 700 }}
+                                sx={{ mb: 1 }}
                             >
                                 {group.label}
                             </Typography>
-                            <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
+                            <Panel flush sx={{ overflow: 'hidden' }}>
                                 <List disablePadding>
                                     {group.items.map((n) => (
                                         <NotificationItem
@@ -157,22 +133,26 @@ export default function NotificationsPage({ area }: { area: UserArea }) {
                                         />
                                     ))}
                                 </List>
-                            </Paper>
+                            </Panel>
                         </Box>
                     ))}
                     <Box ref={sentinelRef} sx={{ height: 1 }} />
-                    {isFetching && (
-                        <Box sx={{ textAlign: 'center', py: 1 }}>
-                            <CircularProgress size={24} />
-                        </Box>
+                    {isFetching && !!cursor && (
+                        <ListSkeleton
+                            rows={2}
+                            withHeader={false}
+                            label="Loading more notifications"
+                        />
                     )}
                     {isError && (
                         <Box sx={{ textAlign: 'center' }}>
-                            <Button onClick={() => refetch()}>Failed to load more. Retry</Button>
+                            <Button variant="outlined" onClick={() => refetch()}>
+                                Could not load more. Try again
+                            </Button>
                         </Box>
                     )}
-                </Stack>
+                </Box>
             )}
-        </>
+        </Box>
     );
 }

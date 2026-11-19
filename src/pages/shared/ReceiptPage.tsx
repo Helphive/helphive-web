@@ -1,43 +1,41 @@
-import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Divider,
-    Paper,
-    Skeleton,
-    Stack,
-    Typography,
-} from '@mui/material';
+import { Box, Button, Skeleton, Stack, Typography } from '@mui/material';
 import { ContentCopy, Print } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import { useGetBookingReceiptQuery } from '@/features/booking/bookingApi';
-import PageHeader from '@/components/common/PageHeader';
 import { ErrorState } from '@/components/common/PageStates';
-import { PriceRow } from '@/components/common/InfoRow';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
+import { DataList, DataRow, Logo, PageHeader, StatusPill, type Tone } from '@/components/ui';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatDateTime, formatMoney, getErrorMessage, pluralHours } from '@/utils/format';
+import { color, font, hairline, layout, radius } from '@/theme/tokens';
 
 interface ReceiptPageProps {
     area: 'user' | 'provider';
 }
 
-const STATUS_LABEL: Record<string, string> = {
-    pending: 'Pending',
-    'in progress': 'In progress',
-    completed: 'Completed',
-    cancelled: 'Cancelled',
+const STATUS: Record<string, { label: string; tone: Tone }> = {
+    pending: { label: 'Pending', tone: 'grey' },
+    'in progress': { label: 'In progress', tone: 'blue' },
+    completed: { label: 'Completed', tone: 'green' },
+    cancelled: { label: 'Cancelled', tone: 'red' },
 };
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+const sheetSx = {
+    maxWidth: layout.narrowMaxWidth,
+    mx: 'auto',
+    bgcolor: color.surface,
+    border: hairline,
+    borderRadius: `${radius.lg}px`,
+    overflow: 'hidden',
+} as const;
+
+const sectionSx = { px: { xs: 2, sm: 2.5 }, py: { xs: 2.5, sm: 3 } } as const;
+
+function SectionTitle({ children }: { children: string }) {
     return (
-        <Box sx={{ minWidth: 0 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                {label}
-            </Typography>
-            <Typography sx={{ wordBreak: 'break-word' }}>{children}</Typography>
-        </Box>
+        <Typography variant="subtitle2" component="h2" sx={{ mb: 1 }}>
+            {children}
+        </Typography>
     );
 }
 
@@ -64,11 +62,20 @@ export default function ReceiptPage({ area }: ReceiptPageProps) {
 
     if (isLoading) {
         return (
-            <Paper variant="outlined" sx={{ p: 4, maxWidth: 720, mx: 'auto' }}>
-                <Skeleton width="40%" height={36} />
-                <Skeleton width="25%" sx={{ mb: 3 }} />
-                <Skeleton variant="rounded" height={220} />
-            </Paper>
+            <Box
+                role="status"
+                aria-busy="true"
+                aria-label="Loading receipt"
+                sx={{ maxWidth: layout.narrowMaxWidth, mx: 'auto' }}
+            >
+                <Skeleton width={160} height={40} sx={{ mb: 3 }} />
+                <Box sx={{ ...sheetSx, ...sectionSx }}>
+                    <Skeleton width="40%" height={32} />
+                    <Skeleton width="25%" sx={{ mb: 3 }} />
+                    <Skeleton variant="rounded" height={120} sx={{ mb: 2 }} />
+                    <Skeleton variant="rounded" height={160} />
+                </Box>
+            </Box>
         );
     }
 
@@ -86,9 +93,10 @@ export default function ReceiptPage({ area }: ReceiptPageProps) {
 
     const currency = receipt.currency;
     const payment = receipt.payment;
+    const status = STATUS[receipt.status] ?? { label: receipt.status, tone: 'grey' as Tone };
 
     return (
-        <>
+        <Box className="print-container" sx={{ maxWidth: layout.narrowMaxWidth, mx: 'auto' }}>
             <PageHeader
                 title="Receipt"
                 backTo={backTo}
@@ -103,136 +111,158 @@ export default function ReceiptPage({ area }: ReceiptPageProps) {
                             startIcon={<Print />}
                             onClick={() => window.print()}
                         >
-                            Print / Save PDF
+                            Print or save PDF
                         </Button>
                     </>
                 }
             />
 
-            <Paper
-                variant="outlined"
-                className="print-sheet"
-                sx={{ p: { xs: 2.5, sm: 4 }, maxWidth: 720, mx: 'auto' }}
-            >
+            <Box component="article" className="print-sheet" sx={sheetSx} aria-label="Receipt">
                 <Stack
                     direction="row"
-                    sx={{ justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}
+                    sx={{
+                        ...sectionSx,
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: 2,
+                        borderBottom: hairline,
+                    }}
                 >
-                    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-                        <Box component="img" src="/logo.png" alt="" sx={{ height: 36 }} />
-                        <Typography variant="h5" fontWeight={800}>
-                            HelpHive
-                        </Typography>
-                    </Stack>
+                    <Logo />
                     <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="subtitle1" fontWeight={700}>
+                        <Typography variant="subtitle2" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                             {receipt.receiptNumber}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption">
                             Issued {formatDateTime(receipt.issuedAt)}
                         </Typography>
                     </Box>
                 </Stack>
 
-                <Divider sx={{ mb: 3 }} />
-
-                <Box
-                    sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                        gap: 2.5,
-                        mb: 3,
-                    }}
-                >
-                    <Field label="Service">{receipt.service?.name}</Field>
-                    <Field label="Status">
-                        <Chip
-                            size="small"
-                            label={STATUS_LABEL[receipt.status] ?? receipt.status}
-                            variant="outlined"
+                <Box sx={{ borderBottom: hairline }}>
+                    <DataList variant="grid" columns={{ xs: 2, sm: 4 }}>
+                        <DataRow label="Service" value={receipt.service?.name} />
+                        <DataRow
+                            label="Status"
+                            value={<StatusPill tone={status.tone}>{status.label}</StatusPill>}
                         />
-                    </Field>
-                    <Field label="Date and time">{formatDateTime(receipt.startDate)}</Field>
-                    <Field label="Duration">{pluralHours(receipt.hours)}</Field>
-                    <Field label="Customer">
-                        {receipt.customer?.name}
-                        <Typography
-                            component="span"
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ display: 'block' }}
-                        >
-                            {receipt.customer?.email}
-                        </Typography>
-                    </Field>
-                    <Field label="Provider">{receipt.provider?.name ?? 'Not assigned'}</Field>
-                    <Box sx={{ gridColumn: { sm: '1 / -1' } }}>
-                        <Field label="Address">{receipt.address}</Field>
-                    </Box>
-                    {receipt.completedAt && (
-                        <Field label="Completed">{formatDateTime(receipt.completedAt)}</Field>
-                    )}
-                    {receipt.cancelledAt && (
-                        <Field label="Cancelled">
-                            {formatDateTime(receipt.cancelledAt)}
-                            {receipt.cancellationReason ? ` - ${receipt.cancellationReason}` : ''}
-                        </Field>
-                    )}
+                        <DataRow label="Start" value={formatDateTime(receipt.startDate)} />
+                        <DataRow label="Duration" value={pluralHours(receipt.hours)} />
+                    </DataList>
                 </Box>
 
-                <Divider sx={{ mb: 2 }} />
+                <Box sx={{ ...sectionSx, borderBottom: hairline }}>
+                    <DataList variant="stacked" columns={{ xs: 1, sm: 2 }}>
+                        <DataRow label="Customer">
+                            {receipt.customer?.name}
+                            <Box
+                                component="span"
+                                sx={{ display: 'block', fontWeight: 500, color: color.ink600 }}
+                            >
+                                {receipt.customer?.email}
+                            </Box>
+                        </DataRow>
+                        <DataRow
+                            label="Provider"
+                            value={receipt.provider?.name ?? 'Not assigned'}
+                        />
+                        <DataRow label="Address" value={receipt.address} wide />
+                        {receipt.completedAt && (
+                            <DataRow
+                                label="Completed"
+                                value={formatDateTime(receipt.completedAt)}
+                            />
+                        )}
+                        {receipt.cancelledAt && (
+                            <DataRow label="Cancelled">
+                                {formatDateTime(receipt.cancelledAt)}
+                                {receipt.cancellationReason
+                                    ? `, ${receipt.cancellationReason}`
+                                    : ''}
+                            </DataRow>
+                        )}
+                    </DataList>
+                </Box>
 
-                <PriceRow label="Hourly rate" value={formatMoney(receipt.rate, currency)} />
-                <PriceRow label="Hours" value={String(receipt.hours)} />
-                <PriceRow label="Subtotal" value={formatMoney(receipt.subtotal, currency)} />
-                <Divider sx={{ my: 1 }} />
-                <PriceRow label="Total" value={formatMoney(receipt.total, currency)} strong />
-
-                <Box sx={{ mt: 3 }}>
-                    <Typography variant="overline" color="text.secondary" fontWeight={700}>
-                        Payment
+                <Box sx={{ ...sectionSx, borderBottom: hairline }}>
+                    <SectionTitle>Charges</SectionTitle>
+                    <DataList>
+                        <DataRow label="Hourly rate" value={formatMoney(receipt.rate, currency)} />
+                        <DataRow label="Hours" value={receipt.hours} />
+                        <DataRow label="Subtotal" value={formatMoney(receipt.subtotal, currency)} />
+                    </DataList>
+                </Box>
+                <Stack
+                    direction="row"
+                    sx={{
+                        ...sectionSx,
+                        py: 2,
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        bgcolor: color.subtle,
+                        borderBottom: hairline,
+                    }}
+                >
+                    <Typography variant="subtitle2" component="span">
+                        Total
                     </Typography>
+                    <Box
+                        sx={{
+                            fontSize: font.size['3xl'],
+                            fontWeight: 800,
+                            letterSpacing: font.tracking.head,
+                            fontVariantNumeric: 'tabular-nums',
+                        }}
+                    >
+                        {formatMoney(receipt.total, currency)}
+                    </Box>
+                </Stack>
+
+                <Box sx={sectionSx}>
+                    <SectionTitle>Payment</SectionTitle>
                     {payment ? (
-                        <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                            <PriceRow
+                        <DataList>
+                            <DataRow
                                 label={`Payment ${payment.status}`}
                                 value={formatMoney(payment.amount, currency)}
                             />
                             {payment.paidAt && (
-                                <Typography variant="body2" color="text.secondary">
-                                    Paid {formatDateTime(payment.paidAt)}
-                                </Typography>
+                                <DataRow label="Paid" value={formatDateTime(payment.paidAt)} />
                             )}
                             {payment.refundStatus && (
-                                <Typography variant="body2" color="text.secondary">
-                                    Refund {payment.refundStatus}:{' '}
-                                    {formatMoney(payment.refundAmount, currency)}
-                                    {payment.refundedAt
-                                        ? ` on ${formatDateTime(payment.refundedAt)}`
-                                        : ''}
-                                </Typography>
+                                <DataRow
+                                    label={`Refund ${payment.refundStatus}`}
+                                    value={`${formatMoney(payment.refundAmount, currency)}${
+                                        payment.refundedAt
+                                            ? `, ${formatDateTime(payment.refundedAt)}`
+                                            : ''
+                                    }`}
+                                />
                             )}
-                        </Stack>
+                        </DataList>
                     ) : (
-                        <Alert severity="info" sx={{ mt: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
                             No payment recorded for this booking.
-                        </Alert>
+                        </Typography>
+                    )}
+
+                    {receipt.earning && (
+                        <Box sx={{ mt: 3 }}>
+                            <SectionTitle>Your earning</SectionTitle>
+                            <DataList>
+                                <DataRow
+                                    label={`Earning, ${receipt.earning.status}`}
+                                    value={
+                                        <Box component="span" sx={{ color: color.green700 }}>
+                                            {formatMoney(receipt.earning.amount, currency)}
+                                        </Box>
+                                    }
+                                />
+                            </DataList>
+                        </Box>
                     )}
                 </Box>
-
-                {receipt.earning && (
-                    <Box sx={{ mt: 3 }}>
-                        <Typography variant="overline" color="text.secondary" fontWeight={700}>
-                            Your earning
-                        </Typography>
-                        <PriceRow
-                            label={`Earning (${receipt.earning.status})`}
-                            value={formatMoney(receipt.earning.amount, currency)}
-                            color="success.main"
-                        />
-                    </Box>
-                )}
-            </Paper>
-        </>
+            </Box>
+        </Box>
     );
 }

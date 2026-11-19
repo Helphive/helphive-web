@@ -2,6 +2,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import type { Booking } from '@/types';
 import { STATUS_META, formatDateTime, getDisplayStatus } from '@/utils/format';
+import { color } from '@/theme/tokens';
 
 type StepState = 'done' | 'current' | 'pending' | 'error';
 
@@ -49,10 +50,10 @@ function buildTimeline(booking: Booking): Step[] {
 }
 
 const stateColor: Record<StepState, string> = {
-    done: 'success.main',
-    current: 'primary.main',
-    pending: 'grey.300',
-    error: 'error.main',
+    done: color.ink900,
+    current: color.coral600,
+    pending: color.lineStrong,
+    error: color.red700,
 };
 
 export default function StatusTimeline({ booking }: { booking: Booking }) {
@@ -68,8 +69,8 @@ export default function StatusTimeline({ booking }: { booking: Booking }) {
                         >
                             <Box
                                 sx={{
-                                    width: 24,
-                                    height: 24,
+                                    width: 20,
+                                    height: 20,
                                     borderRadius: '50%',
                                     bgcolor: stateColor[step.state],
                                     color: 'common.white',
@@ -79,9 +80,9 @@ export default function StatusTimeline({ booking }: { booking: Booking }) {
                                     flexShrink: 0,
                                     boxShadow:
                                         step.state === 'current'
-                                            ? '0 0 0 4px rgba(255, 87, 64, 0.18)'
+                                            ? `0 0 0 4px ${color.coral50}`
                                             : 'none',
-                                    '& svg': { fontSize: 16 },
+                                    '& svg': { fontSize: 14 },
                                 }}
                             >
                                 {step.state === 'done' && <CheckIcon />}
@@ -92,16 +93,16 @@ export default function StatusTimeline({ booking }: { booking: Booking }) {
                                     sx={{
                                         width: 2,
                                         flex: 1,
-                                        minHeight: 24,
-                                        bgcolor:
-                                            step.state === 'done' ? 'success.main' : 'grey.300',
+                                        minHeight: 20,
+                                        bgcolor: step.state === 'done' ? color.ink900 : color.line,
                                     }}
                                 />
                             )}
                         </Box>
-                        <Box sx={{ pb: last ? 0 : 2.5, minWidth: 0 }}>
+                        <Box sx={{ pb: last ? 0 : 2, minWidth: 0, mt: '-1px' }}>
                             <Typography
-                                fontWeight={step.state === 'pending' ? 400 : 700}
+                                variant="body2"
+                                fontWeight={step.state === 'pending' ? 500 : 700}
                                 color={step.state === 'pending' ? 'text.secondary' : 'text.primary'}
                             >
                                 {step.label}

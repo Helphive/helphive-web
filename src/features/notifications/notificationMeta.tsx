@@ -1,21 +1,22 @@
 import type { ReactElement } from 'react';
 import {
-    EventAvailable as CreatedIcon,
+    EventAvailableOutlined as CreatedIcon,
     CheckCircleOutline as AcceptedIcon,
-    HourglassTop as StartRequestedIcon,
+    HourglassTopOutlined as StartRequestedIcon,
     PlayCircleOutline as StartedIcon,
-    TaskAlt as CompletedIcon,
-    EventBusy as CancelledIcon,
-    TimerOff as ExpiredIcon,
-    CreditScore as PaymentIcon,
-    Undo as RefundIcon,
-    AccountBalance as PayoutIcon,
-    VerifiedUser as ApprovedIcon,
-    GppBad as RejectedIcon,
-    Notifications as GeneralIcon,
+    TaskAltOutlined as CompletedIcon,
+    EventBusyOutlined as CancelledIcon,
+    TimerOffOutlined as ExpiredIcon,
+    CreditScoreOutlined as PaymentIcon,
+    UndoOutlined as RefundIcon,
+    AccountBalanceOutlined as PayoutIcon,
+    VerifiedUserOutlined as ApprovedIcon,
+    GppBadOutlined as RejectedIcon,
+    NotificationsNoneOutlined as GeneralIcon,
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import type { Notification, NotificationType } from '@/types';
+import { TONE_STYLES, type Tone } from '@/components/ui/status';
 
 export type UserArea = 'user' | 'provider';
 
@@ -25,24 +26,27 @@ interface TypeMeta {
     background: string;
 }
 
+const tone = (t: Tone, icon: ReactElement): TypeMeta => ({
+    icon,
+    color: TONE_STYLES[t].fg,
+    background: TONE_STYLES[t].bg,
+});
+
+// Tones follow the status pills: green done, blue in motion, amber needs action, red stopped.
 const NOTIFICATION_META: Record<NotificationType, TypeMeta> = {
-    booking_created: { icon: <CreatedIcon />, color: '#B54708', background: '#FFFAEB' },
-    booking_accepted: { icon: <AcceptedIcon />, color: '#175CD3', background: '#EFF8FF' },
-    booking_start_requested: {
-        icon: <StartRequestedIcon />,
-        color: '#6941C6',
-        background: '#F4F3FF',
-    },
-    booking_started: { icon: <StartedIcon />, color: '#FF5740', background: '#FFF1EE' },
-    booking_completed: { icon: <CompletedIcon />, color: '#067647', background: '#ECFDF3' },
-    booking_cancelled: { icon: <CancelledIcon />, color: '#B42318', background: '#FEF3F2' },
-    booking_expired: { icon: <ExpiredIcon />, color: '#475467', background: '#F2F4F7' },
-    payment_succeeded: { icon: <PaymentIcon />, color: '#067647', background: '#ECFDF3' },
-    payment_refunded: { icon: <RefundIcon />, color: '#175CD3', background: '#EFF8FF' },
-    payout_paid: { icon: <PayoutIcon />, color: '#067647', background: '#ECFDF3' },
-    account_approved: { icon: <ApprovedIcon />, color: '#067647', background: '#ECFDF3' },
-    account_rejected: { icon: <RejectedIcon />, color: '#B42318', background: '#FEF3F2' },
-    general: { icon: <GeneralIcon />, color: '#475467', background: '#F2F4F7' },
+    booking_created: tone('amber', <CreatedIcon />),
+    booking_accepted: tone('blue', <AcceptedIcon />),
+    booking_start_requested: tone('amber', <StartRequestedIcon />),
+    booking_started: tone('blue', <StartedIcon />),
+    booking_completed: tone('green', <CompletedIcon />),
+    booking_cancelled: tone('red', <CancelledIcon />),
+    booking_expired: tone('grey', <ExpiredIcon />),
+    payment_succeeded: tone('green', <PaymentIcon />),
+    payment_refunded: tone('blue', <RefundIcon />),
+    payout_paid: tone('green', <PayoutIcon />),
+    account_approved: tone('green', <ApprovedIcon />),
+    account_rejected: tone('red', <RejectedIcon />),
+    general: tone('grey', <GeneralIcon />),
 };
 
 export const getNotificationMeta = (type: NotificationType | undefined): TypeMeta =>

@@ -1,8 +1,10 @@
 import { memo } from 'react';
-import { Box, IconButton, ListItem, ListItemButton, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, ListItem, ListItemButton, Tooltip } from '@mui/material';
 import { DeleteOutline } from '@mui/icons-material';
 import type { Notification } from '@/types';
 import { formatTimeAgo } from '@/utils/format';
+import { color, font, hairline, radius } from '@/theme/tokens';
+import { srOnly } from '@/components/ui/status';
 import { getNotificationMeta } from './notificationMeta';
 
 interface NotificationItemProps {
@@ -14,6 +16,7 @@ interface NotificationItemProps {
 
 function NotificationItem({ notification, onOpen, onDelete }: NotificationItemProps) {
     const meta = getNotificationMeta(notification.type);
+    const unread = !notification.read;
     return (
         <ListItem
             disablePadding
@@ -21,9 +24,8 @@ function NotificationItem({ notification, onOpen, onDelete }: NotificationItemPr
                 onDelete && (
                     <Tooltip title="Delete">
                         <IconButton
-                            edge="end"
                             size="small"
-                            aria-label="Delete notification"
+                            aria-label={`Delete notification: ${notification.title}`}
                             onClick={() => onDelete(notification)}
                         >
                             <DeleteOutline fontSize="small" />
@@ -31,7 +33,11 @@ function NotificationItem({ notification, onOpen, onDelete }: NotificationItemPr
                     </Tooltip>
                 )
             }
-            sx={{ '& .MuiListItemSecondaryAction-root': { top: 16, transform: 'none' } }}
+            sx={{
+                borderTop: hairline,
+                '&:first-of-type': { borderTop: 0 },
+                '& .MuiListItemSecondaryAction-root': { top: 12, right: 12, transform: 'none' },
+            }}
         >
             <ListItemButton
                 onClick={() => onOpen(notification)}
@@ -39,60 +45,78 @@ function NotificationItem({ notification, onOpen, onDelete }: NotificationItemPr
                 sx={{
                     gap: 1.5,
                     py: 1.5,
-                    pr: onDelete ? 7 : 2,
-                    bgcolor: notification.read ? 'transparent' : 'rgba(255, 87, 64, 0.05)',
+                    pl: { xs: 2, sm: 2.5 },
+                    pr: onDelete ? 7 : 2.5,
+                    borderRadius: 0,
+                    bgcolor: unread ? color.subtle : 'transparent',
+                    '&:hover': { bgcolor: color.canvas },
                 }}
             >
                 <Box
+                    aria-hidden="true"
                     sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
+                        width: 32,
+                        height: 32,
+                        borderRadius: `${radius.sm}px`,
                         bgcolor: meta.background,
                         color: meta.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        display: 'grid',
+                        placeItems: 'center',
                         flexShrink: 0,
-                        '& svg': { fontSize: 20 },
+                        '& svg': { fontSize: 18 },
                     }}
                 >
                     {meta.icon}
                 </Box>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography
-                        variant="subtitle2"
-                        fontWeight={notification.read ? 500 : 700}
-                        sx={{ wordBreak: 'break-word' }}
-                    >
-                        {notification.title}
-                    </Typography>
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
+                    <Box
                         sx={{
+                            fontSize: font.size.md,
+                            fontWeight: unread ? 700 : 600,
+                            color: color.ink900,
+                            overflowWrap: 'anywhere',
+                        }}
+                    >
+                        {unread && (
+                            <Box component="span" sx={srOnly}>
+                                Unread:{' '}
+                            </Box>
+                        )}
+                        {notification.title}
+                    </Box>
+                    <Box
+                        sx={{
+                            fontSize: font.size.sm,
+                            color: color.ink600,
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
-                            wordBreak: 'break-word',
+                            overflowWrap: 'anywhere',
                         }}
                     >
                         {notification.message}
-                    </Typography>
-                    <Typography variant="caption" color="text.disabled">
-                        {formatTimeAgo(notification.createdAt)}
-                    </Typography>
-                </Box>
-                {!notification.read && (
+                    </Box>
                     <Box
-                        aria-label="Unread"
+                        sx={{
+                            mt: 0.5,
+                            fontSize: font.size.xs,
+                            fontWeight: 600,
+                            color: color.ink500,
+                        }}
+                    >
+                        {formatTimeAgo(notification.createdAt)}
+                    </Box>
+                </Box>
+                {unread && (
+                    <Box
+                        aria-hidden="true"
                         sx={{
                             width: 8,
                             height: 8,
-                            mt: 1,
+                            mt: 0.75,
                             borderRadius: '50%',
-                            bgcolor: 'primary.main',
+                            bgcolor: color.coral500,
                             flexShrink: 0,
                         }}
                     />

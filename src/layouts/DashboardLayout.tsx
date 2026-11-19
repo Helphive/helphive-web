@@ -1,88 +1,137 @@
-import { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Suspense, useState, type ReactElement } from 'react';
+import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-    Box,
     AppBar,
-    Toolbar,
-    Typography,
-    IconButton,
-    Drawer,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
     Avatar,
-    Menu,
-    MenuItem,
-    Divider,
-    useTheme,
-    useMediaQuery,
+    Badge,
+    Box,
     BottomNavigation,
     BottomNavigationAction,
-    Paper,
-    Container,
-    Stack,
+    ButtonBase,
+    Divider,
+    IconButton,
+    ListItemIcon,
+    Menu,
+    MenuItem,
+    Toolbar,
+    Typography,
+    useMediaQuery,
+    useTheme,
 } from '@mui/material';
 import {
-    Menu as MenuIcon,
-    Home as HomeIcon,
-    CalendarMonth as BookingsIcon,
-    Work as OrdersIcon,
-    AccountBalanceWallet as EarningsIcon,
-    Notifications as NotificationsIcon,
-    Logout as LogoutIcon,
+    AccountBalanceWalletOutlined,
+    AssignmentOutlined,
+    CalendarMonthOutlined,
+    HomeOutlined,
+    Logout,
+    NotificationsNoneOutlined,
+    PersonOutline,
+    UnfoldMore,
+    WorkOutline,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectCurrentUser, logout } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/features/auth/authApi';
 import NotificationBell from '@/features/notifications/NotificationBell';
+import { useGetUnreadCountQuery } from '@/features/notifications/notificationsApi';
+import { Count, ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
+import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
+import { color, font, hairline, layout, radius } from '@/theme/tokens';
 
 interface DashboardLayoutProps {
     userType: 'user' | 'provider';
 }
 
-const DRAWER_WIDTH = 260;
+interface NavItem {
+    label: string;
+    // Bottom-navigation label (phones).
+    short: string;
+    icon: ReactElement;
+    path: string;
+    countsUnread?: boolean;
+}
 
-const userNavItems = [
-    { label: 'Home', icon: <HomeIcon />, path: '/user' },
-    { label: 'Notifications', icon: <NotificationsIcon />, path: '/user/notifications' },
+const userNavItems: NavItem[] = [
+    { label: 'Bookings', short: 'Bookings', icon: <CalendarMonthOutlined />, path: '/user' },
+    {
+        label: 'Notifications',
+        short: 'Inbox',
+        icon: <NotificationsNoneOutlined />,
+        path: '/user/notifications',
+        countsUnread: true,
+    },
 ];
 
-const providerNavItems = [
-    { label: 'Home', icon: <HomeIcon />, path: '/provider' },
-    { label: 'Available Orders', icon: <OrdersIcon />, path: '/provider/orders' },
-    { label: 'My Orders', icon: <BookingsIcon />, path: '/provider/my-orders' },
-    { label: 'Earnings', icon: <EarningsIcon />, path: '/provider/earnings' },
-    { label: 'Notifications', icon: <NotificationsIcon />, path: '/provider/notifications' },
+const providerNavItems: NavItem[] = [
+    { label: 'Home', short: 'Home', icon: <HomeOutlined />, path: '/provider' },
+    {
+        label: 'Available orders',
+        short: 'Available',
+        icon: <AssignmentOutlined />,
+        path: '/provider/orders',
+    },
+    { label: 'My orders', short: 'My orders', icon: <WorkOutline />, path: '/provider/my-orders' },
+    {
+        label: 'Earnings',
+        short: 'Earnings',
+        icon: <AccountBalanceWalletOutlined />,
+        path: '/provider/earnings',
+    },
+    {
+        label: 'Notifications',
+        short: 'Inbox',
+        icon: <NotificationsNoneOutlined />,
+        path: '/provider/notifications',
+        countsUnread: true,
+    },
 ];
 
-// A nav item is active on its own path and on nested detail pages (except the home root).
-const isActivePath = (pathname: string, itemPath: string, homePath: string) =>
-    itemPath === homePath
-        ? pathname === itemPath
-        : pathname === itemPath || pathname.startsWith(`${itemPath}/`);
+// A nav item is active on its own path and nested pages. Home is exact, plus the customer
+// booking flow pages that live under it.
+const HOME_CHILDREN = ['booking', 'payment'];
+const isActivePath = (pathname: string, itemPath: string, homePath: string) => {
+    const under = (p: string) => pathname === p || pathname.startsWith(`${p}/`);
+    if (itemPath !== homePath) return under(itemPath);
+    return pathname === homePath || HOME_CHILDREN.some((c) => under(`${homePath}/${c}`));
+};
 
-export default function DashboardLayout({ userType }: DashboardLayoutProps) {
-    const theme = useTheme();
+function SkipLink() {
+    return (
+        <Box
+            component="a"
+            href="#main"
+            sx={{
+                position: 'absolute',
+                left: 8,
+                top: -48,
+                zIndex: 2000,
+                px: 2,
+                py: 1,
+                borderRadius: `${radius.sm}px`,
+                bgcolor: color.ink900,
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: font.size.md,
+                textDecoration: 'none',
+                '&:focus': { top: 8 },
+            }}
+        >
+            Skip to content
+        </Box>
+    );
+}
+
+function useAccount(userType: 'user' | 'provider') {
     const navigate = useNavigate();
-    const location = useLocation();
     const dispatch = useAppDispatch();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
     const user = useAppSelector(selectCurrentUser);
     const [logoutApi] = useLogoutMutation();
 
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-    const navItems = userType === 'user' ? userNavItems : providerNavItems;
-
     const handleLogout = async () => {
         try {
-            const refreshToken = localStorage.getItem('helphive-auth');
-            if (refreshToken) {
-                const parsed = JSON.parse(refreshToken);
+            const stored = localStorage.getItem('helphive-auth');
+            if (stored) {
+                const parsed = JSON.parse(stored);
                 await logoutApi({ refreshToken: parsed.refreshToken }).unwrap();
             }
         } catch {
@@ -93,225 +142,416 @@ export default function DashboardLayout({ userType }: DashboardLayoutProps) {
         }
     };
 
-    const homePath = navItems[0].path;
-    const getCurrentNavIndex = () =>
-        navItems.findIndex((item) => isActivePath(location.pathname, item.path, homePath));
+    const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Your account';
+    return {
+        user,
+        name,
+        initials: getInitials(user?.firstName, user?.lastName),
+        avatarSrc: getProfileImageUrl(user?.profile),
+        profilePath: `/${userType}/profile`,
+        handleLogout,
+    };
+}
 
-    const drawer = (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF' }}>
-            <Toolbar sx={{ justifyContent: 'center', py: 2.5, gap: 1 }}>
-                <Box component="img" src="/logo.png" alt="HelpHive" sx={{ height: 36 }} />
-                <Typography variant="h5" fontWeight={800} color="text.primary">
-                    HelpHive
+type Account = ReturnType<typeof useAccount>;
+
+function AccountMenu({
+    account,
+    anchorEl,
+    onClose,
+    placement = 'below',
+}: {
+    account: Account;
+    anchorEl: HTMLElement | null;
+    onClose: () => void;
+    placement?: 'below' | 'above';
+}) {
+    const navigate = useNavigate();
+    const above = placement === 'above';
+    return (
+        <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={onClose}
+            anchorOrigin={{
+                horizontal: above ? 'left' : 'right',
+                vertical: above ? 'top' : 'bottom',
+            }}
+            transformOrigin={{
+                horizontal: above ? 'left' : 'right',
+                vertical: above ? 'bottom' : 'top',
+            }}
+            slotProps={{ paper: { sx: { minWidth: 240, mt: above ? -1 : 0.5 } } }}
+        >
+            <Box sx={{ px: 1.5, pt: 1, pb: 1.25 }}>
+                <Typography variant="subtitle2" noWrap>
+                    {account.name}
                 </Typography>
-            </Toolbar>
-            <Divider />
-            <List sx={{ flex: 1, px: 2, py: 2 }}>
-                {navItems.map((item) => (
-                    <ListItem key={item.path} disablePadding sx={{ mb: 1 }}>
-                        <ListItemButton
-                            selected={isActivePath(location.pathname, item.path, homePath)}
-                            onClick={() => {
-                                navigate(item.path);
-                                setDrawerOpen(false);
-                            }}
+                {account.user?.email && (
+                    <Typography variant="caption" component="p" noWrap>
+                        {account.user.email}
+                    </Typography>
+                )}
+            </Box>
+            <Divider sx={{ my: 0.5 }} />
+            <MenuItem
+                onClick={() => {
+                    onClose();
+                    navigate(account.profilePath);
+                }}
+            >
+                <ListItemIcon>
+                    <PersonOutline />
+                </ListItemIcon>
+                Profile
+            </MenuItem>
+            <MenuItem
+                onClick={() => {
+                    onClose();
+                    account.handleLogout();
+                }}
+            >
+                <ListItemIcon>
+                    <Logout />
+                </ListItemIcon>
+                Log out
+            </MenuItem>
+        </Menu>
+    );
+}
+
+function AccountButton({ account }: { account: Account }) {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    return (
+        <>
+            <IconButton
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                aria-label={`Account menu for ${account.name}`}
+                aria-haspopup="menu"
+                aria-expanded={Boolean(anchorEl)}
+                sx={{ borderRadius: '50%' }}
+            >
+                <Avatar src={account.avatarSrc} alt="" sx={{ width: 32, height: 32 }}>
+                    {account.initials}
+                </Avatar>
+            </IconButton>
+            <AccountMenu account={account} anchorEl={anchorEl} onClose={() => setAnchorEl(null)} />
+        </>
+    );
+}
+
+function Content({ maxWidth }: { maxWidth: number }) {
+    const location = useLocation();
+    return (
+        <Box
+            className="print-container"
+            sx={{
+                maxWidth,
+                mx: 'auto',
+                px: {
+                    xs: `${layout.gutter.xs}px`,
+                    sm: `${layout.gutter.sm}px`,
+                    md: `${layout.gutter.md}px`,
+                },
+                py: { xs: 2.5, md: 4 },
+            }}
+        >
+            <ErrorBoundary resetKey={location.pathname}>
+                <Suspense fallback={<PageSkeleton />}>
+                    <Outlet />
+                </Suspense>
+            </ErrorBoundary>
+        </Box>
+    );
+}
+
+/* ---------- Customer: top bar with section tabs ---------- */
+
+function CustomerShell({ account }: { account: Account }) {
+    const { pathname } = useLocation();
+    const navItems = userNavItems;
+    const homePath = navItems[0].path;
+    return (
+        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+            <SkipLink />
+            <AppBar position="sticky" className="no-print">
+                <Toolbar
+                    sx={{
+                        gap: { xs: 1, sm: 3 },
+                        px: { xs: 2, sm: 3 },
+                        maxWidth: layout.contentMaxWidth + 2 * layout.gutter.md,
+                        width: '100%',
+                        mx: 'auto',
+                    }}
+                    disableGutters
+                >
+                    <Logo to={homePath} wordmark="desktop" />
+                    <Box
+                        component="nav"
+                        aria-label="Main"
+                        sx={{
+                            display: 'flex',
+                            gap: 0.5,
+                            flex: 1,
+                            alignSelf: 'stretch',
+                            overflowX: 'auto',
+                            scrollbarWidth: 'none',
+                        }}
+                    >
+                        {navItems.map((item) => {
+                            const active = isActivePath(pathname, item.path, homePath);
+                            return (
+                                <Box
+                                    key={item.path}
+                                    component={RouterLink}
+                                    to={item.path}
+                                    aria-current={active ? 'page' : undefined}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        px: 1.5,
+                                        fontSize: font.size.md,
+                                        fontWeight: 600,
+                                        color: active ? color.ink900 : color.ink600,
+                                        textDecoration: 'none',
+                                        whiteSpace: 'nowrap',
+                                        borderBottom: '2px solid',
+                                        borderColor: active ? color.ink900 : 'transparent',
+                                        borderTop: '2px solid transparent',
+                                        '&:hover': { color: color.ink900 },
+                                        '&:focus-visible': { outlineOffset: -2 },
+                                    }}
+                                >
+                                    {item.label}
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                    <NotificationBell area="user" />
+                    <AccountButton account={account} />
+                </Toolbar>
+            </AppBar>
+            <Box
+                component="main"
+                id="main"
+                tabIndex={-1}
+                className="print-main"
+                sx={{ outline: 0 }}
+            >
+                <Content maxWidth={layout.contentMaxWidth + 2 * layout.gutter.md} />
+            </Box>
+        </Box>
+    );
+}
+
+/* ---------- Provider: sidebar on desktop, bottom navigation on phones ---------- */
+
+function SideNav({ account, unread }: { account: Account; unread: number }) {
+    const { pathname } = useLocation();
+    const homePath = providerNavItems[0].path;
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    return (
+        <Box
+            component="aside"
+            className="no-print"
+            sx={{
+                position: 'sticky',
+                top: 0,
+                height: '100vh',
+                width: layout.sidebarWidth,
+                flexShrink: 0,
+                bgcolor: color.subtle,
+                borderRight: hairline,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 3,
+                px: 1.5,
+                pt: 2,
+                pb: 1.5,
+            }}
+        >
+            <Box
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    pl: 1,
+                }}
+            >
+                <Logo to={homePath} />
+                <NotificationBell area="provider" />
+            </Box>
+            <Box component="nav" aria-label="Provider" sx={{ display: 'grid', gap: '2px' }}>
+                {providerNavItems.map((item) => {
+                    const active = isActivePath(pathname, item.path, homePath);
+                    return (
+                        <Box
+                            key={item.path}
+                            component={RouterLink}
+                            to={item.path}
+                            aria-current={active ? 'page' : undefined}
                             sx={{
-                                borderRadius: 2,
-                                minHeight: 48,
-                                color: 'text.secondary',
-                                '&.Mui-selected': {
-                                    bgcolor: 'primary.main',
-                                    color: 'white',
-                                    boxShadow: '0 12px 24px rgba(255, 87, 64, 0.22)',
-                                    '&:hover': {
-                                        bgcolor: 'primary.dark',
-                                    },
-                                    '& .MuiListItemIcon-root': {
-                                        color: 'white',
-                                    },
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                height: 38,
+                                px: 1.5,
+                                borderRadius: `${radius.sm}px`,
+                                fontSize: font.size.md,
+                                fontWeight: 600,
+                                textDecoration: 'none',
+                                color: active ? color.ink900 : color.ink600,
+                                bgcolor: active ? color.surface : 'transparent',
+                                boxShadow: active ? `inset 0 0 0 1px ${color.line}` : 'none',
+                                '& svg': {
+                                    fontSize: 20,
+                                    color: active ? color.coral600 : 'inherit',
+                                },
+                                '&:hover': {
+                                    bgcolor: active ? color.surface : color.canvas,
+                                    color: color.ink900,
                                 },
                             }}
                         >
-                            <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                            <ListItemText primary={item.label} />
-                        </ListItemButton>
-                    </ListItem>
-                ))}
-            </List>
-            <Divider />
-            <List sx={{ px: 2, py: 2 }}>
-                <ListItem disablePadding>
-                    <ListItemButton
-                        onClick={handleLogout}
-                        sx={{ borderRadius: 2, color: 'error.main' }}
-                    >
-                        <ListItemIcon sx={{ minWidth: 40, color: 'error.main' }}>
-                            <LogoutIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Logout" />
-                    </ListItemButton>
-                </ListItem>
-            </List>
+                            {item.icon}
+                            {item.label}
+                            {item.countsUnread && unread > 0 && (
+                                <Box sx={{ ml: 'auto' }}>
+                                    <Count value={unread} label={`${unread} unread`} />
+                                </Box>
+                            )}
+                        </Box>
+                    );
+                })}
+            </Box>
+            <ButtonBase
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                aria-label={`Account menu for ${account.name}`}
+                aria-haspopup="menu"
+                aria-expanded={Boolean(anchorEl)}
+                sx={{
+                    mt: 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    p: 1.5,
+                    borderTop: hairline,
+                    borderRadius: `${radius.sm}px`,
+                    textAlign: 'left',
+                    justifyContent: 'flex-start',
+                    '&:hover': { bgcolor: color.canvas },
+                }}
+            >
+                <Avatar src={account.avatarSrc} alt="" sx={{ width: 32, height: 32 }}>
+                    {account.initials}
+                </Avatar>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+                        {account.name}
+                    </Typography>
+                    <Typography variant="caption" component="p" noWrap>
+                        Provider account
+                    </Typography>
+                </Box>
+                <UnfoldMore sx={{ fontSize: 18, color: color.ink500 }} />
+            </ButtonBase>
+            <AccountMenu
+                account={account}
+                anchorEl={anchorEl}
+                onClose={() => setAnchorEl(null)}
+                placement="above"
+            />
         </Box>
+    );
+}
+
+function ProviderShell({ account }: { account: Account }) {
+    const theme = useTheme();
+    const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+    const { pathname } = useLocation();
+    const navigate = useNavigate();
+    const { data: countData } = useGetUnreadCountQuery();
+    const unread = countData?.unreadCount ?? 0;
+    const homePath = providerNavItems[0].path;
+    const navIndex = providerNavItems.findIndex((item) =>
+        isActivePath(pathname, item.path, homePath)
     );
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-            {/* App Bar */}
-            <AppBar
-                position="fixed"
-                elevation={0}
-                className="no-print"
-                sx={{
-                    width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-                    ml: { md: `${DRAWER_WIDTH}px` },
-                    bgcolor: 'background.paper',
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                    backdropFilter: 'blur(18px)',
-                }}
-            >
-                <Toolbar>
-                    {isMobile && (
-                        <IconButton edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 2 }}>
-                            <MenuIcon />
-                        </IconButton>
-                    )}
-                    <Stack sx={{ flex: 1 }}>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ display: { xs: 'none', sm: 'block' } }}
-                        >
-                            {userType === 'provider' ? 'Provider workspace' : 'Customer workspace'}
-                        </Typography>
-                    </Stack>
-                    <NotificationBell area={userType} />
-                    <IconButton
-                        onClick={(e) => setAnchorEl(e.currentTarget)}
-                        aria-label="Account menu"
-                    >
-                        <Avatar
-                            src={user?.profile}
-                            sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}
-                        >
-                            {user?.firstName?.[0]}
-                        </Avatar>
-                    </IconButton>
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={() => setAnchorEl(null)}
-                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                    >
-                        <MenuItem disabled>
-                            <Typography variant="body2">
-                                {user?.firstName} {user?.lastName}
-                            </Typography>
-                        </MenuItem>
-                        <Divider />
-                        <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
-                            <LogoutIcon sx={{ mr: 1 }} />
-                            Logout
-                        </MenuItem>
-                    </Menu>
-                </Toolbar>
-            </AppBar>
-
-            {/* Side Drawer - Desktop */}
-            {!isMobile && (
-                <Drawer
-                    variant="permanent"
-                    className="no-print"
-                    sx={{
-                        width: DRAWER_WIDTH,
-                        flexShrink: 0,
-                        '& .MuiDrawer-paper': {
-                            width: DRAWER_WIDTH,
-                            boxSizing: 'border-box',
-                            borderRight: '1px solid',
-                            borderColor: 'divider',
-                            bgcolor: '#FFFFFF',
-                        },
-                    }}
+            <SkipLink />
+            {isDesktop && <SideNav account={account} unread={unread} />}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+                {!isDesktop && (
+                    <AppBar position="sticky" className="no-print">
+                        <Toolbar disableGutters sx={{ px: 2, gap: 1 }}>
+                            <Logo to={homePath} />
+                            <Box sx={{ flex: 1 }} />
+                            <NotificationBell area="provider" />
+                            <AccountButton account={account} />
+                        </Toolbar>
+                    </AppBar>
+                )}
+                <Box
+                    component="main"
+                    id="main"
+                    tabIndex={-1}
+                    className="print-main"
+                    sx={{ outline: 0, pb: { xs: `${layout.bottomNavHeight}px`, md: 0 } }}
                 >
-                    {drawer}
-                </Drawer>
-            )}
-
-            {/* Side Drawer - Mobile */}
-            <Drawer
-                variant="temporary"
-                className="no-print"
-                open={drawerOpen}
-                onClose={() => setDrawerOpen(false)}
-                ModalProps={{ keepMounted: true }}
-                sx={{
-                    display: { xs: 'block', md: 'none' },
-                    '& .MuiDrawer-paper': {
-                        width: DRAWER_WIDTH,
-                        boxSizing: 'border-box',
-                        bgcolor: '#FFFFFF',
-                    },
-                }}
-            >
-                {drawer}
-            </Drawer>
-
-            {/* Main Content */}
-            <Box
-                component="main"
-                className="print-main"
-                sx={{
-                    flexGrow: 1,
-                    width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-                    minHeight: '100vh',
-                    bgcolor: 'background.default',
-                    pb: { xs: 8, md: 0 },
-                }}
-            >
-                <Toolbar className="no-print" />
-                <Container maxWidth="xl" sx={{ py: { xs: 2.5, sm: 4 }, px: { xs: 2, sm: 3 } }}>
-                    <Outlet />
-                </Container>
+                    <Content maxWidth={layout.contentMaxWidth + 2 * layout.gutter.md} />
+                </Box>
             </Box>
-
-            {/* Bottom Navigation - Mobile */}
-            {isMobile && (
-                <Paper
+            {!isDesktop && (
+                <Box
+                    component="nav"
+                    aria-label="Provider"
                     className="no-print"
                     sx={{
                         position: 'fixed',
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        zIndex: 1000,
-                        borderTop: '1px solid',
-                        borderColor: 'divider',
+                        zIndex: theme.zIndex.appBar,
+                        borderTop: hairline,
+                        backdropFilter: 'blur(8px)',
+                        pb: 'env(safe-area-inset-bottom)',
+                        bgcolor: 'rgba(255, 255, 255, 0.96)',
                     }}
-                    elevation={0}
                 >
-                    <BottomNavigation
-                        value={getCurrentNavIndex()}
-                        onChange={(_, newValue) => {
-                            navigate(navItems[newValue].path);
-                        }}
-                        showLabels
-                        sx={{
-                            '& .MuiBottomNavigationAction-root': { minWidth: 0, px: 0.5 },
-                        }}
-                    >
-                        {navItems.map((item) => (
+                    <BottomNavigation value={navIndex} showLabels sx={{ bgcolor: 'transparent' }}>
+                        {providerNavItems.map((item) => (
                             <BottomNavigationAction
                                 key={item.path}
-                                label={item.label}
-                                icon={item.icon}
+                                label={item.short}
+                                aria-label={item.label}
+                                aria-current={
+                                    isActivePath(pathname, item.path, homePath) ? 'page' : undefined
+                                }
+                                onClick={() => navigate(item.path)}
+                                icon={
+                                    item.countsUnread && unread > 0 ? (
+                                        <Badge badgeContent={unread} color="primary" max={99}>
+                                            {item.icon}
+                                        </Badge>
+                                    ) : (
+                                        item.icon
+                                    )
+                                }
                             />
                         ))}
                     </BottomNavigation>
-                </Paper>
+                </Box>
             )}
         </Box>
+    );
+}
+
+export default function DashboardLayout({ userType }: DashboardLayoutProps) {
+    const account = useAccount(userType);
+    return userType === 'provider' ? (
+        <ProviderShell account={account} />
+    ) : (
+        <CustomerShell account={account} />
     );
 }

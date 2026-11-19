@@ -1,27 +1,12 @@
 import { Box } from '@mui/material';
+import { Count } from '@/components/ui/StatusPill';
 
 // Tab label with a small count pill.
 export default function TabLabel({ label, count }: { label: string; count?: number }) {
     return (
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
             {label}
-            {count !== undefined && (
-                <Box
-                    component="span"
-                    sx={{
-                        minWidth: 22,
-                        px: 0.75,
-                        py: 0.125,
-                        borderRadius: 10,
-                        bgcolor: 'action.hover',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        lineHeight: '18px',
-                    }}
-                >
-                    {count}
-                </Box>
-            )}
+            {count !== undefined && <Count value={count} />}
         </Box>
     );
 }

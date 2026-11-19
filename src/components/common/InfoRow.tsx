@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
+import { color, font } from '@/theme/tokens';
 
 interface InfoRowProps {
     icon: ReactNode;
@@ -7,30 +8,42 @@ interface InfoRowProps {
     children: ReactNode;
 }
 
+// Icon, label above value. For plain label/value sets prefer DataList from '@/components/ui'.
 export default function InfoRow({ icon, label, children }: InfoRowProps) {
     return (
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
             <Box
+                aria-hidden="true"
                 sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 2,
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    width: 32,
+                    height: 32,
+                    borderRadius: 1,
+                    bgcolor: color.canvas,
+                    border: '1px solid',
+                    borderColor: color.line,
+                    color: color.ink600,
+                    display: 'grid',
+                    placeItems: 'center',
                     flexShrink: 0,
-                    '& svg': { fontSize: 20 },
+                    '& svg': { fontSize: 18 },
                 }}
             >
                 {icon}
             </Box>
             <Box sx={{ minWidth: 0 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                <Box sx={{ fontSize: font.size.xs, fontWeight: 600, color: color.ink500 }}>
                     {label}
-                </Typography>
-                <Typography sx={{ wordBreak: 'break-word' }}>{children}</Typography>
+                </Box>
+                <Box
+                    sx={{
+                        fontSize: font.size.md,
+                        fontWeight: 600,
+                        overflowWrap: 'anywhere',
+                        fontVariantNumeric: 'tabular-nums',
+                    }}
+                >
+                    {children}
+                </Box>
             </Box>
         </Box>
     );
@@ -39,7 +52,7 @@ export default function InfoRow({ icon, label, children }: InfoRowProps) {
 export function PriceRow({
     label,
     value,
-    color,
+    color: valueColor,
     strong,
 }: {
     label: string;
@@ -48,21 +61,39 @@ export function PriceRow({
     strong?: boolean;
 }) {
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, py: 0.75 }}>
-            <Typography
-                color={strong ? 'text.primary' : 'text.secondary'}
-                fontWeight={strong ? 700 : 400}
-                variant={strong ? 'h6' : 'body1'}
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                gap: 2,
+                py: 1,
+                fontVariantNumeric: 'tabular-nums',
+            }}
+        >
+            <Box
+                sx={{
+                    fontSize: font.size.md,
+                    fontWeight: strong ? 700 : 500,
+                    color: strong ? color.ink900 : color.ink500,
+                }}
             >
                 {label}
-            </Typography>
-            <Typography
-                fontWeight={strong ? 700 : 500}
-                variant={strong ? 'h6' : 'body1'}
-                color={color ?? (strong ? 'primary' : 'text.primary')}
+            </Box>
+            <Box
+                sx={{
+                    color: valueColor ?? color.ink900,
+                    ...(strong
+                        ? {
+                              fontSize: { xs: font.size['2xl'], sm: font.size['3xl'] },
+                              fontWeight: 800,
+                              letterSpacing: font.tracking.head,
+                          }
+                        : { fontSize: font.size.md, fontWeight: 600 }),
+                }}
             >
                 {value}
-            </Typography>
+            </Box>
         </Box>
     );
 }
