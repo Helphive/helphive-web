@@ -168,9 +168,12 @@ export default function ProviderOnboarding() {
 
     const handleNext = async () => {
         if (activeStep === 0) {
-            const valid = await trigger(['firstName', 'lastName', 'email', 'phone'], {
-                shouldFocus: true,
-            });
+            const valid = await trigger(
+                ['firstName', 'lastName', 'email', 'phone', 'state', 'city', 'street'],
+                {
+                    shouldFocus: true,
+                }
+            );
             if (!valid) return;
         } else if (activeStep === 1 && !validateDocuments()) {
             return;
@@ -190,9 +193,9 @@ export default function ProviderOnboarding() {
         formData.append('email', data.email);
         formData.append('phone', data.phone);
         formData.append('country', data.country || 'UK');
-        formData.append('state', data.state || '');
-        formData.append('city', data.city || '');
-        formData.append('street', data.street || '');
+        formData.append('state', data.state.trim());
+        formData.append('city', data.city.trim());
+        formData.append('street', data.street.trim());
 
         if (files.id) formData.append('id', files.id);
         if (files.dbs) formData.append('dbs', files.dbs);
@@ -378,18 +381,33 @@ export default function ProviderOnboarding() {
                             />
                             <TextField
                                 label="State or county"
+                                required
                                 autoComplete="address-level1"
-                                {...register('state')}
+                                {...register('state', {
+                                    validate: (v) => !!v.trim() || 'Enter your state or county',
+                                })}
+                                error={!!errors.state}
+                                helperText={errors.state?.message}
                             />
                             <TextField
                                 label="City"
+                                required
                                 autoComplete="address-level2"
-                                {...register('city')}
+                                {...register('city', {
+                                    validate: (v) => !!v.trim() || 'Enter your city',
+                                })}
+                                error={!!errors.city}
+                                helperText={errors.city?.message}
                             />
                             <TextField
                                 label="Street address"
+                                required
                                 autoComplete="street-address"
-                                {...register('street')}
+                                {...register('street', {
+                                    validate: (v) => !!v.trim() || 'Enter your street address',
+                                })}
+                                error={!!errors.street}
+                                helperText={errors.street?.message}
                             />
                         </Box>
                     )}
