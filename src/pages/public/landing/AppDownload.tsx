@@ -1,11 +1,44 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Link, Typography } from '@mui/material';
 import { Apple, Download } from '@mui/icons-material';
-import { color, font, radius } from '@/theme/tokens';
+import { color, font } from '@/theme/tokens';
 import { HoneycombBackdrop } from './Backdrops';
 import { IOS_UNAVAILABLE_MESSAGE } from './constants';
+import { revealChild } from './motion';
 import PhoneImage from './PhoneImage';
 import { Section } from './Section';
+
+/** Three whole phones, fanned: chat in front, booking and provider screens tucked behind. */
+function PhoneFan() {
+    const side = { xs: 118, sm: 170, lg: 186 };
+    const overlap = { xs: '-24px', sm: '-36px', lg: '-40px' };
+    return (
+        <Box
+            data-reveal=""
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                // Room for the contact shadows under the phones.
+                pb: 2,
+            }}
+        >
+            <Box {...revealChild(1)} sx={{ mr: overlap, mt: { xs: 5, sm: 8 }, zIndex: 1 }}>
+                <PhoneImage screen="book-service" sx={{ width: side }} />
+            </Box>
+            <Box {...revealChild(0)} sx={{ zIndex: 2 }}>
+                <PhoneImage
+                    screen="chat"
+                    decorative
+                    sx={{ width: { xs: 146, sm: 210, lg: 228 } }}
+                />
+            </Box>
+            <Box {...revealChild(2)} sx={{ ml: overlap, mt: { xs: 5, sm: 8 }, zIndex: 1 }}>
+                <PhoneImage screen="provider-home" decorative sx={{ width: side }} />
+            </Box>
+        </Box>
+    );
+}
 
 export default function AppDownload({
     onAndroid,
@@ -15,89 +48,93 @@ export default function AppDownload({
     onIos: () => void;
 }) {
     return (
-        <Section id="get-the-app" aria-labelledby="app-title" sx={{ py: { xs: 4, md: 6 } }}>
+        <Section
+            id="get-the-app"
+            tone="coral"
+            aria-labelledby="app-title"
+            decoration={<HoneycombBackdrop focus="78% 55%" stroke={color.coral100} wash={false} />}
+            sx={{ py: { xs: 7, md: 10 } }}
+        >
             <Box
                 sx={{
-                    position: 'relative',
-                    overflow: 'hidden',
                     display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 460px' },
-                    bgcolor: color.coral50,
-                    border: `1px solid ${color.coral100}`,
-                    borderRadius: `${radius.md}px`,
+                    gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 560px' },
+                    gap: { xs: 6, lg: 6 },
+                    alignItems: 'center',
                 }}
             >
-                <HoneycombBackdrop focus="85% 60%" stroke={color.coral100} />
-                <Box sx={{ position: 'relative', p: { xs: 2.5, md: 4 }, alignSelf: 'center' }}>
+                <Box
+                    data-reveal=""
+                    sx={{
+                        textAlign: { xs: 'center', lg: 'left' },
+                        maxWidth: { xs: 620, lg: 'none' },
+                        mx: { xs: 'auto', lg: 0 },
+                    }}
+                >
                     <Typography
                         id="app-title"
-                        variant="h3"
-                        component="h2"
-                        sx={{ fontSize: { xs: font.size['2xl'], sm: font.size['3xl'] } }}
+                        variant="h2"
+                        sx={{
+                            fontSize: font.size['4xl'],
+                            letterSpacing: font.tracking.display,
+                            lineHeight: 1.1,
+                        }}
                     >
-                        Take HelpHive with you.
+                        Take HelpHive with you
                     </Typography>
-                    <Typography sx={{ mt: 1, maxWidth: '54ch', color: color.ink700 }}>
-                        The Android APK is available directly from the official HelpHive GitHub
-                        release. Install it on your device to book, track, and manage work on the
-                        go.
+                    <Typography
+                        sx={{
+                            mt: 2,
+                            maxWidth: '48ch',
+                            mx: { xs: 'auto', lg: 0 },
+                            color: color.ink700,
+                            fontSize: { xs: font.size.lg, md: font.size.xl },
+                            lineHeight: 1.55,
+                        }}
+                    >
+                        Book, track and manage work from your phone. The Android APK comes straight
+                        from the official HelpHive GitHub release.
                     </Typography>
                     <Box
                         sx={{
-                            mt: 2.5,
+                            mt: 4,
                             display: 'flex',
                             flexDirection: { xs: 'column', sm: 'row' },
                             flexWrap: 'wrap',
+                            justifyContent: { xs: 'center', lg: 'flex-start' },
                             gap: 1.5,
                         }}
                     >
-                        <Button variant="contained" startIcon={<Download />} onClick={onAndroid}>
+                        <Button
+                            variant="contained"
+                            size="large"
+                            startIcon={<Download />}
+                            onClick={onAndroid}
+                        >
                             Download Android APK
                         </Button>
                         <Button
                             variant="outlined"
+                            size="large"
                             startIcon={<Apple />}
                             onClick={onIos}
                             sx={{ bgcolor: color.surface }}
                         >
                             Get the iOS app
                         </Button>
-                        <Button
+                    </Box>
+                    <Typography variant="body2" sx={{ mt: 2, color: color.ink700 }}>
+                        {IOS_UNAVAILABLE_MESSAGE}{' '}
+                        <Link
                             component={RouterLink}
                             to="/login"
-                            variant="outlined"
-                            sx={{ bgcolor: color.surface }}
+                            sx={{ color: color.coral700, fontWeight: 700, whiteSpace: 'nowrap' }}
                         >
-                            Open web app
-                        </Button>
-                    </Box>
-                    <Typography variant="body2" sx={{ mt: 1.5, color: color.ink600 }}>
-                        {IOS_UNAVAILABLE_MESSAGE}
+                            Open the web app
+                        </Link>
                     </Typography>
                 </Box>
-                <Box
-                    sx={{
-                        position: 'relative',
-                        height: { xs: 250, md: 340 },
-                        overflow: 'hidden',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'flex-start',
-                        gap: { xs: 1, md: 1.5 },
-                        pt: { xs: 0, md: 4 },
-                        px: 2,
-                    }}
-                >
-                    <PhoneImage
-                        screen="book-service"
-                        sx={{ width: { xs: 100, md: 140 }, mt: { xs: 4, md: 5 } }}
-                    />
-                    <PhoneImage screen="chat" sx={{ width: { xs: 118, md: 168 } }} />
-                    <PhoneImage
-                        screen="provider-home"
-                        sx={{ width: { xs: 100, md: 140 }, mt: { xs: 4, md: 5 } }}
-                    />
-                </Box>
+                <PhoneFan />
             </Box>
         </Section>
     );

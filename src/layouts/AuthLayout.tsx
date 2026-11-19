@@ -13,6 +13,8 @@ const FACTS = ['Verified providers', 'Stripe-powered payments', 'Live job status
 function BrandPanel() {
     return (
         <Box
+            component="aside"
+            aria-label="About HelpHive"
             sx={{
                 position: 'relative',
                 overflow: 'hidden',

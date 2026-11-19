@@ -13,27 +13,16 @@ export const formatDate = (date?: string | Date | null) =>
     date ? dayjs(date).format('D MMM YYYY') : '—';
 
 export const formatDateTime = (date?: string | Date | null) =>
-    date ? dayjs(date).format('D MMM YYYY, h:mm A') : '—';
+    date ? dayjs(date).format('ddd D MMM YYYY, HH:mm') : '—';
+
+/** Day of a shift, "Fri 24 Jan"; adds the year when it is not this year ("Fri 24 Jan 2025"). */
+export const formatDay = (date?: string | Date | dayjs.Dayjs | null) => {
+    if (!date) return '—';
+    const d = dayjs(date);
+    return d.format(d.isSame(dayjs(), 'year') ? 'ddd D MMM' : 'ddd D MMM YYYY');
+};
 
 export const formatTimeAgo = (date?: string | Date | null) => (date ? dayjs(date).fromNow() : '');
-
-// Colors mirror the mobile app's STATUS_META.
-export const STATUS_META: Record<
-    DisplayStatus,
-    { label: string; color: string; background: string }
-> = {
-    scheduled: { label: 'Scheduled', color: '#B54708', background: '#FFFAEB' },
-    accepted: { label: 'Accepted', color: '#175CD3', background: '#EFF8FF' },
-    awaiting_start_approval: {
-        label: 'Awaiting approval',
-        color: '#6941C6',
-        background: '#F4F3FF',
-    },
-    in_progress: { label: 'In progress', color: '#FF5740', background: '#FFF1EE' },
-    completed: { label: 'Completed', color: '#067647', background: '#ECFDF3' },
-    cancelled: { label: 'Cancelled', color: '#B42318', background: '#FEF3F2' },
-    expired: { label: 'Expired', color: '#475467', background: '#F2F4F7' },
-};
 
 // Mirrors the backend's derived displayStatus for objects that lack it.
 export const getDisplayStatus = (

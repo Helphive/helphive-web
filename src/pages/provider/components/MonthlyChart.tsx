@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Box } from '@mui/material';
+import { BarChartOutlined } from '@mui/icons-material';
 import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -90,7 +91,8 @@ export default function MonthlyChart({ data, height = 240 }: MonthlyChartProps) 
         return (
             <EmptyState
                 bare
-                title="No earnings in the last 6 months"
+                icon={<BarChartOutlined />}
+                title={`No earnings in the last ${data.length} months`}
                 description="Completed jobs show up here as monthly totals."
                 sx={{ height, justifyContent: 'center', py: 0 }}
             />

@@ -1,39 +1,44 @@
 import type { ReactNode } from 'react';
 import { Box, Typography, type SxProps, type Theme } from '@mui/material';
-import { color, hairline, layout } from '@/theme/tokens';
-import { sectionGutter } from './constants';
+import { font, hairline, layout } from '@/theme/tokens';
+import { HEADER_HEIGHT, sectionGutter } from './constants';
+import { TONES, type SectionTone } from './tones';
 
 /** Full-width band with a centred 1200px column. */
 export function Section({
     id,
+    tone = 'surface',
     bordered = true,
-    bg = color.surface,
     decoration,
     children,
     sx,
     'aria-labelledby': labelledBy,
 }: {
     id?: string;
+    tone?: SectionTone;
     bordered?: boolean;
-    bg?: string;
     /** Absolutely positioned background layers (patterns, washes), behind the content. */
     decoration?: ReactNode;
     children: ReactNode;
     sx?: SxProps<Theme>;
     'aria-labelledby'?: string;
 }) {
+    const t = TONES[tone];
     return (
         <Box
             component="section"
             id={id}
             aria-labelledby={labelledBy}
+            // Focus target for the header's in-page links.
+            tabIndex={id ? -1 : undefined}
             sx={{
-                bgcolor: bg,
-                borderTop: bordered ? hairline : 0,
-                // Keep anchored headings clear of the sticky header (68px).
-                scrollMarginTop: '68px',
+                bgcolor: t.bg,
+                color: t.fg,
+                borderTop: bordered && tone !== 'ink' ? hairline : 0,
+                scrollMarginTop: `${HEADER_HEIGHT}px`,
                 position: 'relative',
                 overflow: 'hidden',
+                '&:focus': { outline: 'none' },
             }}
         >
             {decoration}
@@ -44,7 +49,7 @@ export function Section({
                         maxWidth: layout.contentMaxWidth,
                         mx: 'auto',
                         px: sectionGutter,
-                        py: { xs: 5, md: 6 },
+                        py: { xs: 7, md: 12 },
                     },
                     ...(Array.isArray(sx) ? sx : [sx]),
                 ]}
@@ -55,36 +60,62 @@ export function Section({
     );
 }
 
+/** Section heading: a large title with an optional lead paragraph below it. */
 export function SectionHead({
     id,
     title,
     description,
+    tone = 'surface',
+    align = 'left',
+    maxWidth = '22ch',
+    sx,
 }: {
     id: string;
     title: string;
-    description?: string;
+    description?: ReactNode;
+    tone?: SectionTone;
+    align?: 'left' | 'center';
+    maxWidth?: string;
+    sx?: SxProps<Theme>;
 }) {
     return (
         <Box
-            sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                gap: { xs: 1, md: 3 },
-                mb: { xs: 3, md: 4 },
-                flexWrap: 'wrap',
-            }}
+            data-reveal=""
+            sx={[
+                {
+                    mb: { xs: 4, md: 6 },
+                    textAlign: align,
+                    mx: align === 'center' ? 'auto' : 0,
+                },
+                ...(Array.isArray(sx) ? sx : [sx]),
+            ]}
         >
             <Typography
                 id={id}
-                variant="h3"
-                component="h2"
-                sx={{ fontSize: { xs: '1.25rem', sm: '1.75rem' } }}
+                variant="h2"
+                sx={{
+                    color: 'inherit',
+                    fontSize: font.size['4xl'],
+                    letterSpacing: font.tracking.display,
+                    lineHeight: 1.1,
+                    maxWidth,
+                    mx: align === 'center' ? 'auto' : 0,
+                    textWrap: 'balance',
+                }}
             >
                 {title}
             </Typography>
             {description && (
-                <Typography color="text.secondary" sx={{ maxWidth: '52ch' }}>
+                <Typography
+                    sx={{
+                        mt: 2,
+                        maxWidth: '54ch',
+                        mx: align === 'center' ? 'auto' : 0,
+                        color: TONES[tone].muted,
+                        fontSize: { xs: font.size.lg, md: font.size.xl },
+                        lineHeight: 1.55,
+                    }}
+                >
                     {description}
                 </Typography>
             )}

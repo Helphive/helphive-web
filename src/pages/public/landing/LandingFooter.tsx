@@ -1,9 +1,10 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Link, Typography } from '@mui/material';
 import { Logo } from '@/components/ui';
-import { demoLoginPath } from '@/pages/auth/demoAccounts';
+import { demoLoginPath } from '@/features/auth/demoAccounts';
 import { color, font, hairline, layout } from '@/theme/tokens';
 import { sectionGutter } from './constants';
+import { handleHashClick } from './motion';
 
 interface FooterLink {
     label: string;
@@ -26,7 +27,11 @@ function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) 
                                 {link.label}
                             </Link>
                         ) : link.href ? (
-                            <Link href={link.href} color={color.ink600}>
+                            <Link
+                                href={link.href}
+                                color={color.ink600}
+                                onClick={(event) => handleHashClick(event, link.href ?? '')}
+                            >
                                 {link.label}
                             </Link>
                         ) : (
@@ -97,6 +102,7 @@ export default function LandingFooter({
                             { label: 'Book a service', to: '/signup' },
                             { label: 'Become a provider', to: '/provider-signup' },
                             { label: 'How it works', href: '#how-it-works' },
+                            { label: 'Questions', href: '#faq' },
                         ]}
                     />
                     <FooterColumn

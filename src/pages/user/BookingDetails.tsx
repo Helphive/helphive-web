@@ -45,7 +45,10 @@ export default function BookingDetails() {
     const [getBooking] = useGetBookingByIdMutation();
     const [cancelBooking, { isLoading: isCancelling }] = useCancelBookingMutation();
     const [approveStartJob, { isLoading: isApproving }] = useApproveStartJobRequestMutation();
-    const { booking, payment, error, loading, reload } = useBookingLoader(bookingId, getBooking);
+    const { booking, payment, error, loading, reloading, reload } = useBookingLoader(
+        bookingId,
+        getBooking
+    );
 
     const handleCancel = async () => {
         try {
@@ -83,6 +86,7 @@ export default function BookingDetails() {
                     title="Could not load this booking"
                     message={error || 'This booking was not found. It may have been removed.'}
                     onRetry={() => void reload()}
+                    retrying={reloading}
                     action={
                         <Button component={RouterLink} to="/user?tab=active" variant="text">
                             Go to bookings

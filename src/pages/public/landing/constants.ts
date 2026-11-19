@@ -7,9 +7,13 @@ export const IOS_UNAVAILABLE_MESSAGE =
 export const NAV_LINKS = [
     { label: 'Services', href: '#services' },
     { label: 'How it works', href: '#how-it-works' },
-    { label: 'Become a provider', href: '#providers' },
+    { label: 'For teams', href: '#teams' },
+    { label: 'For providers', href: '#providers' },
     { label: 'Get the app', href: '#get-the-app' },
 ] as const;
+
+/** Sticky landing header height, px. Sections use it as their scroll margin. */
+export const HEADER_HEIGHT = 68;
 
 /** Starts the APK download by clicking a temporary link, as the page always has. */
 export function triggerAndroidDownload() {

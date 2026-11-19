@@ -20,7 +20,7 @@ import {
 } from '@/components/ui';
 import type { Booking } from '@/types';
 import { color, font, hairline } from '@/theme/tokens';
-import { getDisplayStatus, pluralHours } from '@/utils/format';
+import { getDisplayStatus, pluralHours, formatDay } from '@/utils/format';
 
 export type ListTab = 'active' | 'scheduled' | 'history';
 
@@ -113,7 +113,7 @@ function BookingRow({ booking, first }: { booking: Booking; first: boolean }) {
                     spacing={{ xs: 0.25, sm: 2 }}
                     sx={{ minWidth: 0 }}
                 >
-                    <Meta icon={<CalendarTodayOutlined />}>{start.format('ddd D MMM')}</Meta>
+                    <Meta icon={<CalendarTodayOutlined />}>{formatDay(start)}</Meta>
                     <Meta icon={<ScheduleOutlined />}>
                         {start.format('HH:mm')}, {pluralHours(booking.hours)}
                     </Meta>

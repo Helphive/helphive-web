@@ -11,7 +11,7 @@ import { setCredentials } from '@/features/auth/authSlice';
 import { color, hairline } from '@/theme/tokens';
 import { AuthError, AuthHeading, AuthLinkLine, AuthLinks, SubmitButton } from './authForm';
 import { authErrorMessage, emailRules } from './authRules';
-import { DEMO_ACCOUNTS, type DemoAccount, type DemoKey } from './demoAccounts';
+import { DEMO_ACCOUNTS, type DemoAccount, type DemoKey } from '@/features/auth/demoAccounts';
 
 interface LoginFormData {
     email: string;
@@ -31,7 +31,9 @@ export default function LoginPage() {
     const [login, { isLoading }] = useLoginMutation();
     const [error, setError] = useState<string | null>(null);
     const [demoKey, setDemoKey] = useState<DemoKey | null>(null);
-    const autoStarted = useRef(false);
+    const [suggested, setSuggested] = useState<DemoKey | null>(null);
+    const handledParam = useRef(false);
+    const demoButtons = useRef<Partial<Record<DemoKey, HTMLButtonElement | null>>>({});
 
     const {
         register,
@@ -75,19 +77,25 @@ export default function LoginPage() {
         setDemoKey(null);
     };
 
-    // /login?demo=user or ?demo=provider signs in once. The ref stops a second run (StrictMode,
-    // re-renders) and the param is dropped so a refresh or a failed attempt never loops.
-    // Signed-in visitors never reach this page: AuthLayout redirects them to /home first.
+    // /login?demo=user or ?demo=provider never signs in by itself (a link must not drop a visitor
+    // into a shared account). It only points at the matching demo button: scrolls it into view,
+    // focuses it and highlights it. The param is read once and dropped, so nothing can loop.
     const demoParam = searchParams.get('demo');
     useEffect(() => {
-        if (!demoParam || autoStarted.current) return;
-        const account = DEMO_ACCOUNTS.find((a) => a.key === demoParam);
-        if (!account) return;
-        autoStarted.current = true;
+        if (!demoParam || handledParam.current) return;
+        handledParam.current = true;
         setSearchParams({}, { replace: true });
-        void startDemo(account);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [demoParam]);
+        const account = DEMO_ACCOUNTS.find((a) => a.key === demoParam);
+        if (account) setSuggested(account.key);
+    }, [demoParam, setSearchParams]);
+
+    useEffect(() => {
+        if (!suggested) return;
+        const button = demoButtons.current[suggested];
+        button?.scrollIntoView({ block: 'center' });
+        button?.focus();
+    }, [suggested]);
+    const suggestedAccount = DEMO_ACCOUNTS.find((a) => a.key === suggested);
 
     return (
         <Box>
@@ -143,8 +151,19 @@ export default function LoginPage() {
                     Try a demo account
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    Shared logins for trying HelpHive without signing up.
+                    Shared logins for trying HelpHive without signing up. Anyone can use them, so
+                    don't enter real details.
                 </Typography>
+                {suggestedAccount && (
+                    <Typography
+                        variant="body2"
+                        role="status"
+                        sx={{ mt: 1.5, fontWeight: 600, color: 'text.primary' }}
+                    >
+                        Continue as the {suggestedAccount.label.toLowerCase()}: select the
+                        highlighted button.
+                    </Typography>
+                )}
                 <Box
                     sx={{
                         mt: 1.5,
@@ -156,9 +175,13 @@ export default function LoginPage() {
                     {DEMO_ACCOUNTS.map((account) => {
                         const Icon = DEMO_ICONS[account.key];
                         const busy = demoKey === account.key;
+                        const highlighted = suggested === account.key;
                         return (
                             <Button
                                 key={account.key}
+                                ref={(el) => {
+                                    demoButtons.current[account.key] = el;
+                                }}
                                 variant="outlined"
                                 disabled={isLoading}
                                 onClick={() => startDemo(account)}
@@ -166,7 +189,15 @@ export default function LoginPage() {
                                     busy ? <CircularProgress size={16} color="inherit" /> : <Icon />
                                 }
                                 aria-label={`${account.label}: ${account.description}`}
-                                sx={{ justifyContent: 'flex-start' }}
+                                sx={{
+                                    justifyContent: 'flex-start',
+                                    // Selected is an ink outline across the design system.
+                                    ...(highlighted && {
+                                        borderColor: color.ink900,
+                                        boxShadow: `inset 0 0 0 1px ${color.ink900}`,
+                                        '&:hover': { borderColor: color.ink900 },
+                                    }),
+                                }}
                             >
                                 {busy ? 'Signing in' : account.label}
                             </Button>

@@ -33,7 +33,7 @@ export default function MyOrderDetails() {
     const [startBooking, { isLoading: isStarting }] = useStartBookingMutation();
     const [completeBooking, { isLoading: isCompleting }] = useCompleteBookingMutation();
     const [cancelBooking, { isLoading: isCancelling }] = useCancelBookingMutation();
-    const { booking, error, loading, reload } = useBookingLoader(bookingId, getBooking);
+    const { booking, error, loading, reloading, reload } = useBookingLoader(bookingId, getBooking);
 
     // Unassigned bookings (e.g. opened from a notification) are accepted on the open-orders page.
     const unassigned = !!booking && !booking.providerId && booking.status === 'pending';
@@ -70,6 +70,7 @@ export default function MyOrderDetails() {
                     title="Could not load this order"
                     message={error || 'This order was not found. It may have been removed.'}
                     onRetry={() => void reload()}
+                    retrying={reloading}
                     action={
                         <Button component={RouterLink} to="/provider/my-orders" variant="outlined">
                             My orders

@@ -1,124 +1,241 @@
 import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Typography } from '@mui/material';
-import { Panel } from '@/components/ui';
-import { demoLoginPath, type DemoKey } from '@/pages/auth/demoAccounts';
-import { color, radius } from '@/theme/tokens';
-import { coralWash } from './backgrounds';
-import PhoneImage, { type PhoneScreen } from './PhoneImage';
+import { ArrowForward, Check } from '@mui/icons-material';
+import { demoLoginPath } from '@/features/auth/demoAccounts';
+import { color, font, hairline, radius } from '@/theme/tokens';
+import { HoneycombBackdrop, InkBackdrop } from './Backdrops';
+import { revealChild } from './motion';
+import PhoneImage from './PhoneImage';
 import { Section, SectionHead } from './Section';
+import { toneMuted, type SectionTone } from './tones';
 
-function AudiencePanel({
-    title,
-    text,
-    action,
-    demo,
-    demoLabel,
-    screen,
-}: {
+interface Point {
     title: string;
     text: string;
-    action: ReactNode;
-    demo: DemoKey;
-    demoLabel: string;
-    screen: PhoneScreen;
-}) {
+}
+
+function Points({ points, tone }: { points: Point[]; tone: SectionTone }) {
+    const dark = tone === 'ink';
     return (
-        <Panel title={title} titleComponent="h3" flush>
-            <Box
-                sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 1fr) 210px' },
-                    alignItems: 'stretch',
-                }}
-            >
-                <Box sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column' }}>
-                    <Typography color="text.secondary">{text}</Typography>
-                    <Box sx={{ mt: 2.5 }}>{action}</Box>
-                    <Link
-                        component={RouterLink}
-                        to={demoLoginPath(demo)}
+        <Box
+            component="ul"
+            data-reveal=""
+            sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid', gap: 2.5 }}
+        >
+            {points.map((point, index) => (
+                <Box
+                    component="li"
+                    key={point.title}
+                    {...revealChild(index)}
+                    sx={{ display: 'grid', gridTemplateColumns: '28px minmax(0, 1fr)', gap: 1.5 }}
+                >
+                    <Box
+                        aria-hidden="true"
                         sx={{
-                            mt: 2,
-                            color: color.coral700,
-                            fontSize: '0.8125rem',
-                            alignSelf: 'flex-start',
+                            width: 28,
+                            height: 28,
+                            display: 'grid',
+                            placeItems: 'center',
+                            borderRadius: `${radius.sm}px`,
+                            bgcolor: dark ? color.ink700 : color.coral50,
+                            color: dark ? color.coral100 : color.coral700,
                         }}
                     >
-                        {demoLabel}
-                    </Link>
+                        <Check sx={{ fontSize: 18 }} />
+                    </Box>
+                    <Box>
+                        <Typography sx={{ fontWeight: 700, color: 'inherit' }}>
+                            {point.title}
+                        </Typography>
+                        <Typography sx={{ mt: 0.25, color: toneMuted(tone) }}>
+                            {point.text}
+                        </Typography>
+                    </Box>
                 </Box>
-                <Box
-                    sx={{
-                        position: 'relative',
-                        height: { xs: 260, sm: 'auto' },
-                        minHeight: { sm: 300 },
-                        overflow: 'hidden',
-                        backgroundImage: coralWash('50% 80%'),
-                        bgcolor: color.coral50,
-                        borderTop: { xs: `1px solid ${color.coral100}`, sm: 0 },
-                        borderLeft: { xs: 0, sm: `1px solid ${color.coral100}` },
-                        borderRadius: {
-                            xs: `0 0 ${radius.md}px ${radius.md}px`,
-                            sm: `0 0 ${radius.md}px 0`,
-                        },
-                    }}
-                >
-                    <PhoneImage
-                        screen={screen}
-                        sx={{
-                            position: 'absolute',
-                            top: 24,
-                            left: '50%',
-                            width: 170,
-                            transform: 'translateX(-50%)',
-                        }}
-                    />
-                </Box>
-            </Box>
-        </Panel>
+            ))}
+        </Box>
     );
 }
 
-export default function Audiences() {
+function Actions({ children }: { children: ReactNode }) {
     return (
-        <Section id="providers" aria-labelledby="audience-title" bg={color.canvas}>
-            <SectionHead
-                id="audience-title"
-                title="Made for both sides of the shift"
-                description="HelpHive keeps requests, people, status, payments, and support connected."
-            />
+        <Box
+            data-reveal=""
+            sx={{
+                mt: { xs: 4, md: 5 },
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                columnGap: 3,
+                rowGap: 2,
+            }}
+        >
+            {children}
+        </Box>
+    );
+}
+
+const demoLink = (dark: boolean) => ({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 0.5,
+    fontWeight: 700,
+    fontSize: font.size.md,
+    color: dark ? color.coral100 : color.coral700,
+});
+
+/** For operations teams: the booking-details phone on a framed honeycomb stage, copy on the right. */
+export function ForTeams() {
+    return (
+        <Section id="teams" tone="canvas" aria-labelledby="teams-title">
             <Box
                 sx={{
                     display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-                    gap: 2.5,
+                    gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 5fr) minmax(0, 6fr)' },
+                    gap: { xs: 5, md: 10 },
+                    alignItems: 'center',
                 }}
             >
-                <AudiencePanel
-                    title="For operations teams"
-                    text="Fill short-notice hospitality shifts with a focused marketplace built around real job categories. Clear booking statuses and structured records make it easier to resolve issues quickly."
-                    action={
-                        <Button component={RouterLink} to="/signup" variant="contained">
+                <Box
+                    data-reveal=""
+                    sx={{
+                        order: { xs: 2, md: 1 },
+                        position: 'relative',
+                        overflow: 'hidden',
+                        display: 'grid',
+                        placeItems: 'center',
+                        py: { xs: 5, md: 7 },
+                        bgcolor: color.surface,
+                        border: hairline,
+                        borderRadius: `${radius.lg}px`,
+                    }}
+                >
+                    <HoneycombBackdrop focus="50% 55%" />
+                    <PhoneImage
+                        screen="booking-details"
+                        sx={{ width: { xs: 210, sm: 240, md: 260 } }}
+                    />
+                </Box>
+                <Box sx={{ order: { xs: 1, md: 2 } }}>
+                    <SectionHead
+                        id="teams-title"
+                        title="For operations teams"
+                        description="Fill short-notice hospitality shifts without chasing calls and spreadsheets. Every booking keeps its people, status and payment in one record."
+                        sx={{ mb: { xs: 3.5, md: 4.5 } }}
+                    />
+                    <Points
+                        tone="canvas"
+                        points={[
+                            {
+                                title: 'Book by role and shift',
+                                text: 'Set the date, start time, hours and your hourly rate.',
+                            },
+                            {
+                                title: 'Know who is coming',
+                                text: 'See which provider accepted and where each booking stands.',
+                            },
+                            {
+                                title: 'Approve the start',
+                                text: 'The provider asks to start the job; you approve it from the booking.',
+                            },
+                        ]}
+                    />
+                    <Actions>
+                        <Button
+                            component={RouterLink}
+                            to="/signup"
+                            variant="contained"
+                            size="large"
+                            endIcon={<ArrowForward />}
+                        >
                             Book a service
                         </Button>
-                    }
-                    demo="user"
-                    demoLabel="Try the demo customer"
-                    screen="booking-details"
-                />
-                <AudiencePanel
-                    title="For providers"
-                    text="Keep upcoming work, completed jobs, and earnings in one place without chasing message threads."
-                    action={
-                        <Button component={RouterLink} to="/provider-signup" variant="outlined">
+                        <Link
+                            component={RouterLink}
+                            to={demoLoginPath('user')}
+                            sx={demoLink(false)}
+                        >
+                            Try the demo customer
+                        </Link>
+                    </Actions>
+                </Box>
+            </Box>
+        </Section>
+    );
+}
+
+/** For providers: the deep ink section, copy on the left, provider-home phone lit on the right. */
+export function ForProviders() {
+    return (
+        <Section
+            id="providers"
+            tone="ink"
+            aria-labelledby="providers-title"
+            decoration={<InkBackdrop focus="78% 45%" />}
+        >
+            <Box
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 6fr) minmax(0, 5fr)' },
+                    gap: { xs: 6, md: 10 },
+                    alignItems: 'center',
+                }}
+            >
+                <Box>
+                    <SectionHead
+                        id="providers-title"
+                        tone="ink"
+                        title="For providers: pick up work that fits your day"
+                        description="Room attendants, public area attendants and linen porters keep upcoming work, completed jobs and earnings in one place."
+                        maxWidth="18ch"
+                        sx={{ mb: { xs: 3.5, md: 4.5 } }}
+                    />
+                    <Points
+                        tone="ink"
+                        points={[
+                            {
+                                title: 'Apply once',
+                                text: 'Add a profile photo, ID document, DBS certificate and CV. Our team reviews applications, usually within 1 to 2 business days.',
+                            },
+                            {
+                                title: 'Choose your roles',
+                                text: 'Offer the work you are qualified to do, then accept open orders.',
+                            },
+                            {
+                                title: 'Get paid through Stripe',
+                                text: 'Earnings are released when a job is completed. Withdraw them to the bank account you connect.',
+                            },
+                        ]}
+                    />
+                    <Actions>
+                        <Button
+                            component={RouterLink}
+                            to="/provider-signup"
+                            variant="contained"
+                            size="large"
+                            endIcon={<ArrowForward />}
+                        >
                             Become a provider
                         </Button>
-                    }
-                    demo="provider"
-                    demoLabel="Try the demo provider"
-                    screen="provider-home"
-                />
+                        <Link
+                            component={RouterLink}
+                            to={demoLoginPath('provider')}
+                            sx={demoLink(true)}
+                        >
+                            Try the demo provider
+                        </Link>
+                    </Actions>
+                </Box>
+                <Box data-reveal="" sx={{ display: 'grid', placeItems: 'center' }}>
+                    <PhoneImage
+                        screen="provider-home"
+                        sx={{
+                            width: { xs: 220, sm: 250, md: 290 },
+                            '&::after': { opacity: 0.9 },
+                        }}
+                    />
+                </Box>
             </Box>
         </Section>
     );

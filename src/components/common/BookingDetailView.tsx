@@ -10,7 +10,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { Booking, DisplayStatus, User } from '@/types';
-import { formatDateTime, formatMoney, getDisplayStatus } from '@/utils/format';
+import { formatDateTime, formatMoney, getDisplayStatus, formatDay } from '@/utils/format';
 import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
 import { color, font } from '@/theme/tokens';
 import Panel from '@/components/ui/Panel';
@@ -46,6 +46,7 @@ function CounterpartPanel({ title, person, emptyText }: CounterpartProps) {
                     <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
                         <Avatar
                             src={getProfileImageUrl(user.profile)}
+                            alt=""
                             sx={{ width: 44, height: 44 }}
                         >
                             {getInitials(user.firstName, user.lastName)}
@@ -162,7 +163,7 @@ export default function BookingDetailView({
                     </Stack>
                     <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
                         <DataList variant="grid" columns={4}>
-                            <DataRow label="Date" value={start.format('ddd D MMM')} />
+                            <DataRow label="Date" value={formatDay(start)} />
                             <DataRow label="Start" value={start.format('HH:mm')} />
                             <DataRow label="Hours" value={booking.hours || 0} />
                             <DataRow label="Rate" value={`${formatMoney(booking.rate)}/hr`} />
@@ -170,7 +171,17 @@ export default function BookingDetailView({
                     </Box>
                     <Box sx={{ px: { xs: 2, sm: 2.5 }, py: 2 }}>
                         <ShiftRuler
-                            blocks={[{ start: booking.startDate, hours: booking.hours || 1 }]}
+                            blocks={[
+                                {
+                                    start: booking.startDate,
+                                    hours: booking.hours || 1,
+                                    // A shift that will not happen is drawn soft, not in focus.
+                                    tone:
+                                        status === 'cancelled' || status === 'expired'
+                                            ? 'soft'
+                                            : 'coral',
+                                },
+                            ]}
                         />
                         <Typography variant="body2" sx={{ mt: 2, fontWeight: 600 }}>
                             {booking.address}

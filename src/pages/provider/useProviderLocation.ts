@@ -25,7 +25,9 @@ export function useProviderLocation(user: User | null | undefined) {
                 setLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
             },
             () => {
-                setError('Unable to get your location. Please enable location services.');
+                setError(
+                    'Could not get your location. Turn on location services to see orders near you.'
+                );
             }
         );
     }, []);

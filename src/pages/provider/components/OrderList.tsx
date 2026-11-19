@@ -17,7 +17,7 @@ import {
 import { CalendarTodayOutlined, LocationOnOutlined, ScheduleOutlined } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import type { Booking } from '@/types';
-import { formatMoney, getDisplayStatus, pluralHours } from '@/utils/format';
+import { formatMoney, getDisplayStatus, pluralHours, formatDay } from '@/utils/format';
 import { color, font, hairline } from '@/theme/tokens';
 import { BookingStatusPill, ServiceIcon, srOnly } from '@/components/ui';
 import { orderEarnings } from '../orderUtils';
@@ -85,7 +85,7 @@ function StackedRows({ orders, getLink, showStatus, label }: OrderListProps) {
                                 </Typography>
                                 <Stack spacing={0.5} sx={{ mt: 0.5 }}>
                                     <Meta icon={<CalendarTodayOutlined />}>
-                                        {start.format('ddd D MMM')}, {start.format('HH:mm')}
+                                        {formatDay(start)}, {start.format('HH:mm')}
                                     </Meta>
                                     <Meta icon={<ScheduleOutlined />}>
                                         {pluralHours(order.hours)} at {formatMoney(order.rate)}/hr
@@ -174,7 +174,7 @@ function OrderTable({ orders, getLink, showStatus, label }: OrderListProps) {
                                     </Stack>
                                 </TableCell>
                                 <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                    {start.format('ddd D MMM')}, {start.format('HH:mm')}
+                                    {formatDay(start)}, {start.format('HH:mm')}
                                 </TableCell>
                                 <TableCell align="right">{order.hours}</TableCell>
                                 <TableCell align="right">{formatMoney(order.rate)}/hr</TableCell>

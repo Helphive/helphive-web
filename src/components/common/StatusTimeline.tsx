@@ -1,7 +1,8 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import type { Booking } from '@/types';
-import { STATUS_META, formatDateTime, getDisplayStatus } from '@/utils/format';
+import { formatDateTime, getDisplayStatus } from '@/utils/format';
+import { BOOKING_STATUS } from '@/components/ui/status';
 import { color } from '@/theme/tokens';
 
 type StepState = 'done' | 'current' | 'pending' | 'error';
@@ -22,7 +23,7 @@ function buildTimeline(booking: Booking): Step[] {
         if (booking.startedAt)
             steps.push({ label: 'Started', date: booking.startedAt, state: 'done' });
         steps.push({
-            label: STATUS_META[status].label,
+            label: BOOKING_STATUS[status].label,
             date: booking.cancelledAt || booking.updatedAt,
             state: 'error',
         });

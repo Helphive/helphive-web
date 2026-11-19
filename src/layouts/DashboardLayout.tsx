@@ -23,6 +23,7 @@ import {
     AssignmentOutlined,
     CalendarMonthOutlined,
     HomeOutlined,
+    InfoOutlined,
     Logout,
     NotificationsNoneOutlined,
     PersonOutline,
@@ -32,6 +33,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectCurrentUser, logout } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/features/auth/authApi';
+import { isDemoEmail } from '@/features/auth/demoAccounts';
 import NotificationBell from '@/features/notifications/NotificationBell';
 import { useGetUnreadCountQuery } from '@/features/notifications/notificationsApi';
 import { Count, ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
@@ -109,7 +111,7 @@ function SkipLink() {
                 py: 1,
                 borderRadius: `${radius.sm}px`,
                 bgcolor: color.ink900,
-                color: '#FFFFFF',
+                color: color.surface,
                 fontWeight: 700,
                 fontSize: font.size.md,
                 textDecoration: 'none',
@@ -117,6 +119,38 @@ function SkipLink() {
             }}
         >
             Skip to content
+        </Box>
+    );
+}
+
+// Persistent strip under the top bar while a shared demo account is signed in.
+function DemoNotice({ email }: { email?: string | null }) {
+    if (!isDemoEmail(email)) return null;
+    return (
+        <Box
+            role="note"
+            aria-label="Demo account"
+            className="no-print"
+            sx={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: { md: 'center' },
+                gap: 1,
+                px: { xs: `${layout.gutter.xs}px`, sm: `${layout.gutter.sm}px` },
+                py: 1,
+                bgcolor: color.amber50,
+                borderBottom: `1px solid ${color.amber200}`,
+                color: color.amber700,
+                fontSize: font.size.sm,
+                fontWeight: 600,
+                lineHeight: 1.45,
+            }}
+        >
+            <InfoOutlined sx={{ fontSize: 18, mt: '1px', flexShrink: 0 }} aria-hidden />
+            <span>
+                You're using a shared demo account. Anyone can sign in to it, so don't enter real
+                personal or payment details.
+            </span>
         </Box>
     );
 }
@@ -183,7 +217,13 @@ function AccountMenu({
             }}
             slotProps={{ paper: { sx: { minWidth: 240, mt: above ? -1 : 0.5 } } }}
         >
-            <Box sx={{ px: 1.5, pt: 1, pb: 1.25 }}>
+            {/* role="group" keeps the menu's children valid; the name is in the button too. */}
+            <Box
+                component="li"
+                role="group"
+                aria-label={account.name}
+                sx={{ px: 1.5, pt: 1, pb: 1.25 }}
+            >
                 <Typography variant="subtitle2" noWrap>
                     {account.name}
                 </Typography>
@@ -231,7 +271,7 @@ function AccountButton({ account }: { account: Account }) {
                 aria-expanded={Boolean(anchorEl)}
                 sx={{ borderRadius: '50%' }}
             >
-                <Avatar src={account.avatarSrc} alt="" sx={{ width: 32, height: 32 }}>
+                <Avatar src={account.avatarSrc} alt="" aria-hidden sx={{ width: 32, height: 32 }}>
                     {account.initials}
                 </Avatar>
             </IconButton>
@@ -338,6 +378,7 @@ function CustomerShell({ account }: { account: Account }) {
                 className="print-main"
                 sx={{ outline: 0 }}
             >
+                <DemoNotice email={account.user?.email} />
                 <Content maxWidth={layout.contentMaxWidth + 2 * layout.gutter.md} />
             </Box>
         </Box>
@@ -426,7 +467,6 @@ function SideNav({ account, unread }: { account: Account; unread: number }) {
             </Box>
             <ButtonBase
                 onClick={(e) => setAnchorEl(e.currentTarget)}
-                aria-label={`Account menu for ${account.name}`}
                 aria-haspopup="menu"
                 aria-expanded={Boolean(anchorEl)}
                 sx={{
@@ -442,7 +482,7 @@ function SideNav({ account, unread }: { account: Account; unread: number }) {
                     '&:hover': { bgcolor: color.canvas },
                 }}
             >
-                <Avatar src={account.avatarSrc} alt="" sx={{ width: 32, height: 32 }}>
+                <Avatar src={account.avatarSrc} alt="" aria-hidden sx={{ width: 32, height: 32 }}>
                     {account.initials}
                 </Avatar>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
@@ -499,6 +539,7 @@ function ProviderShell({ account }: { account: Account }) {
                     className="print-main"
                     sx={{ outline: 0, pb: { xs: `${layout.bottomNavHeight}px`, md: 0 } }}
                 >
+                    <DemoNotice email={account.user?.email} />
                     <Content maxWidth={layout.contentMaxWidth + 2 * layout.gutter.md} />
                 </Box>
             </Box>
@@ -524,7 +565,6 @@ function ProviderShell({ account }: { account: Account }) {
                             <BottomNavigationAction
                                 key={item.path}
                                 label={item.short}
-                                aria-label={item.label}
                                 aria-current={
                                     isActivePath(pathname, item.path, homePath) ? 'page' : undefined
                                 }

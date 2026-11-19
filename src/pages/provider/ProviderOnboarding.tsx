@@ -10,8 +10,8 @@ import {
 } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { useRequestProviderAccountMutation } from '@/features/provider/providerApi';
-import { useAppSelector } from '@/store/hooks';
-import { selectCurrentUser } from '@/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { selectCurrentUser, updateUser } from '@/features/auth/authSlice';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
     DataList,
@@ -114,6 +114,7 @@ export default function ProviderOnboarding() {
     useDocumentTitle('Become a provider');
     const navigate = useNavigate();
     const user = useAppSelector(selectCurrentUser);
+    const dispatch = useAppDispatch();
     const [activeStep, setActiveStep] = useState(0);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -205,12 +206,15 @@ export default function ProviderOnboarding() {
         try {
             setSubmitError(null);
             await submitApplication(formData).unwrap();
+            // The server now holds the application as pending; mirror that so the route guards
+            // send the provider to the review page instead of back to this form.
+            dispatch(updateUser({ providerStatus: 'pending' }));
             setSuccess(true);
         } catch (err) {
             setSubmitError(
                 getErrorMessage(
                     err,
-                    'Could not submit your application. Check your connection and try again.'
+                    'Could not send your application. Check your connection and try again.'
                 )
             );
         }
@@ -230,9 +234,9 @@ export default function ProviderOnboarding() {
         return (
             <StatusScreen
                 tone="green"
-                statusLabel="Submitted"
+                statusLabel="Sent"
                 icon={<CheckCircleOutline />}
-                title="Application submitted"
+                title="Application sent"
                 description="Thank you. Your provider application is with our team for review."
                 next={[
                     'Our team reviews your documents, usually within 1-2 business days.',
@@ -310,7 +314,7 @@ export default function ProviderOnboarding() {
                                         ) : undefined
                                     }
                                 >
-                                    Submit application
+                                    Send application
                                 </Button>
                             )}
                         </>
