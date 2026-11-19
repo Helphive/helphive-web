@@ -5,6 +5,9 @@ import { getErrorMessage } from '@/utils/format';
 export interface BookingPayment {
     amount: number;
     status: string;
+    // Present only when a refund was actually issued. refundStatus alone is not a signal: older payments carry
+    // "pending" by default even though nothing was refunded.
+    refundId?: string | null;
     refundStatus?: string | null;
     refundAmount?: number;
 }

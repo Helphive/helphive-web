@@ -25,7 +25,15 @@ import { getDisplayStatus, getErrorMessage } from '@/utils/format';
 
 function PaymentPill({ payment }: { payment: BookingPayment | null }) {
     if (!payment) return null;
-    if (payment.refundStatus) return <StatusPill tone="blue">Refunded</StatusPill>;
+    if (payment.refundId) {
+        if (payment.refundStatus === 'succeeded') {
+            return <StatusPill tone="blue">Refunded</StatusPill>;
+        }
+        if (payment.refundStatus === 'failed' || payment.refundStatus === 'cancelled') {
+            return <StatusPill tone="red">Refund failed</StatusPill>;
+        }
+        return <StatusPill tone="amber">Refund pending</StatusPill>;
+    }
     return payment.status === 'completed' ? (
         <StatusPill tone="green">Paid</StatusPill>
     ) : (
@@ -124,7 +132,7 @@ export default function BookingDetails() {
                 </Box>
                 <Money amount={payment?.amount ?? subtotal} size="xl" />
             </Box>
-            {!!payment?.refundAmount && (
+            {!!payment?.refundId && !!payment.refundAmount && (
                 <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 13 }}>
                     Refunded <Money amount={payment.refundAmount} />
                 </Box>
