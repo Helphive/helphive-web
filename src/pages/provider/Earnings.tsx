@@ -1,72 +1,86 @@
 import { useMemo, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import {
-    Box,
-    Typography,
-    Card,
-    CardContent,
-    Button,
-    CircularProgress,
-    Alert,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Chip,
-    IconButton,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-} from '@mui/material';
-import Grid from '@mui/material/Grid2';
-import { AccountBalanceWallet, OpenInNew, Download, ReceiptLong } from '@mui/icons-material';
-import { Bar } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
-} from 'chart.js';
-import dayjs from 'dayjs';
+import { Box, Button, CircularProgress, Skeleton } from '@mui/material';
+import { AccountBalanceWallet, OpenInNew, ReceiptLong } from '@mui/icons-material';
 import {
     useGetEarningsQuery,
     useCreatePayoutMutation,
     useLazyGetStripeConnectOnboardingQuery,
     useLazyGetStripeExpressLoginLinkQuery,
 } from '@/features/provider/providerApi';
-
-import PageHeader from '@/components/common/PageHeader';
+import { EmptyState, ErrorState, ListSkeleton, PageHeader, Panel } from '@/components/ui';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatMoney, getErrorMessage } from '@/utils/format';
+import { color, font, hairline } from '@/theme/tokens';
+import EarningsStats from './components/EarningsStats';
+import { EarningsHistoryList, PayoutTable } from './components/EarningsTables';
+import MonthlyChart from './components/MonthlyChart';
+import PayoutDialog from './components/PayoutDialog';
+import { monthlyStats, summarizeEarnings } from './orderUtils';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+const HISTORY_LIMIT = 20;
+
+interface StripeRowProps {
+    title: string;
+    description: string;
+    label: string;
+    busy: boolean;
+    onClick: () => void;
+    divider?: boolean;
+}
+
+function StripeRow({ title, description, label, busy, onClick, divider }: StripeRowProps) {
+    return (
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                justifyContent: 'space-between',
+                gap: 1.5,
+                px: { xs: 2, sm: 2.5 },
+                py: 2,
+                borderTop: divider ? hairline : 0,
+            }}
+        >
+            <Box sx={{ minWidth: 0, maxWidth: '60ch' }}>
+                <Box sx={{ fontWeight: 700, fontSize: font.size.md }}>{title}</Box>
+                <Box sx={{ fontSize: font.size.sm, color: color.ink600, mt: 0.25 }}>
+                    {description}
+                </Box>
+            </Box>
+            <Button
+                variant="outlined"
+                onClick={onClick}
+                disabled={busy}
+                startIcon={busy ? <CircularProgress size={16} /> : undefined}
+                endIcon={busy ? undefined : <OpenInNew />}
+                sx={{ flexShrink: 0 }}
+            >
+                {label}
+            </Button>
+        </Box>
+    );
+}
 
 export default function Earnings() {
     useDocumentTitle('Earnings');
     const snackbar = useSnackbar();
-    const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
-    const [payoutAmount, setPayoutAmount] = useState('');
-    const [error, setError] = useState<string | null>(null);
+    const [payoutOpen, setPayoutOpen] = useState(false);
+    const [payoutError, setPayoutError] = useState<string | null>(null);
 
-    const { data: earningsData, isLoading, refetch } = useGetEarningsQuery();
+    const { data: earningsData, error, isLoading, refetch } = useGetEarningsQuery();
     const [createPayout, { isLoading: isCreatingPayout }] = useCreatePayoutMutation();
-    const [getOnboardingLink] = useLazyGetStripeConnectOnboardingQuery();
-    const [getLoginLink] = useLazyGetStripeExpressLoginLinkQuery();
+    const [getOnboardingLink, { isFetching: loadingOnboarding }] =
+        useLazyGetStripeConnectOnboardingQuery();
+    const [getLoginLink, { isFetching: loadingLogin }] = useLazyGetStripeExpressLoginLinkQuery();
 
     const handleWithdrawMethods = async () => {
         try {
             const result = await getOnboardingLink().unwrap();
             window.open(result.url, '_blank');
         } catch {
-            setError('Failed to get Stripe onboarding link');
+            snackbar.error('Could not open Stripe payout setup. Try again in a moment.');
         }
     };
 
@@ -75,340 +89,189 @@ export default function Earnings() {
             const result = await getLoginLink().unwrap();
             window.open(result.url, '_blank');
         } catch {
-            setError('Failed to get Stripe dashboard link');
+            snackbar.error('Could not open the Stripe dashboard. Try again in a moment.');
         }
     };
 
-    const handlePayout = async () => {
-        const amount = parseFloat(payoutAmount);
-        if (isNaN(amount) || amount <= 0) {
-            setError('Please enter a valid amount');
-            return;
-        }
-
-        if (earningsData && amount > earningsData.availableBalance) {
-            setError('Insufficient balance');
-            return;
-        }
-
+    const handlePayout = async (amount: number) => {
         try {
-            setError(null);
+            setPayoutError(null);
             await createPayout({ amount }).unwrap();
-            setPayoutDialogOpen(false);
-            setPayoutAmount('');
+            setPayoutOpen(false);
             snackbar.success('Payout requested');
-            refetch();
+            void refetch();
         } catch (err) {
-            const message = getErrorMessage(err, 'Failed to create payout');
-            setError(message);
+            const message = getErrorMessage(err, 'Could not request the payout');
+            setPayoutError(message);
             snackbar.error(message);
         }
     };
 
-    // Totals and the monthly chart are derived from the earning rows the API returns.
-    const summary = useMemo(() => {
-        const rows = earningsData?.earnings ?? [];
-        const totalEarnings =
-            earningsData?.totalEarnings ??
-            rows.filter((e) => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
-        const pendingBalance =
-            earningsData?.pendingBalance ??
-            rows.filter((e) => e.status === 'pending').reduce((sum, e) => sum + e.amount, 0);
-        let monthlyEarnings = earningsData?.monthlyEarnings;
-        if (!monthlyEarnings) {
-            const months = Array.from({ length: 6 }, (_, i) => dayjs().subtract(5 - i, 'month'));
-            monthlyEarnings = months.map((m) => ({
-                month: m.format('MMM'),
-                amount: rows
-                    .filter((e) => e.status !== 'cancelled' && dayjs(e.date).isSame(m, 'month'))
-                    .reduce((sum, e) => sum + e.amount, 0),
-            }));
-        }
-        return { totalEarnings, pendingBalance, monthlyEarnings };
-    }, [earningsData]);
+    const summary = useMemo(() => summarizeEarnings(earningsData), [earningsData]);
+    const stats = useMemo(() => monthlyStats(summary.monthlyEarnings), [summary.monthlyEarnings]);
 
-    const chartData = {
-        labels: summary.monthlyEarnings.map((e) => e.month),
-        datasets: [
-            {
-                label: 'Earnings ($)',
-                data: summary.monthlyEarnings.map((e) => e.amount),
-                backgroundColor: '#FF5740',
-                borderRadius: 8,
-            },
-        ],
-    };
-
-    const chartOptions = {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false,
-            },
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: (value: number | string) => `$${value}`,
-                },
-            },
-        },
-    };
-
-    if (isLoading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
+    const available = earningsData?.availableBalance ?? 0;
+    const failed = !!error && !earningsData;
+    const earnings = earningsData?.earnings ?? [];
+    const payouts = earningsData?.payouts ?? [];
 
     return (
-        <Box>
-            <PageHeader title="Earnings" subtitle="Track your income and withdraw funds" />
+        <>
+            <PageHeader
+                title="Earnings"
+                subtitle="Track your income and withdraw it to your bank account"
+            />
 
-            {error && (
-                <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-                    {error}
-                </Alert>
-            )}
+            <Box sx={{ display: 'grid', gap: 2.5 }}>
+                {failed ? (
+                    <ErrorState
+                        title="Could not load your earnings"
+                        message={getErrorMessage(error, 'Check your connection and try again.')}
+                        onRetry={() => void refetch()}
+                    />
+                ) : (
+                    <EarningsStats
+                        loading={isLoading}
+                        failed={false}
+                        onRetry={() => void refetch()}
+                        available={available}
+                        pending={summary.pendingBalance}
+                        total={summary.totalEarnings}
+                        availableHint={
+                            available > 0
+                                ? 'Ready to withdraw'
+                                : 'Available after jobs are completed'
+                        }
+                        availableAction={
+                            <Button
+                                size="small"
+                                variant="contained"
+                                disabled={available <= 0}
+                                onClick={() => {
+                                    setPayoutError(null);
+                                    setPayoutOpen(true);
+                                }}
+                            >
+                                Withdraw
+                            </Button>
+                        }
+                    />
+                )}
 
-            <Grid container spacing={3} sx={{ mb: 4, maxWidth: 1000 }}>
-                {/* Total Earnings */}
-                <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-                    <Card>
-                        <CardContent>
-                            <Typography color="text.secondary" gutterBottom>
-                                Total Earnings
-                            </Typography>
-                            <Typography variant="h4" fontWeight={700}>
-                                {formatMoney(summary.totalEarnings)}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                {/* Available Balance */}
-                <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-                    <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
-                        <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                <AccountBalanceWallet />
-                                <Typography>Available Balance</Typography>
-                            </Box>
-                            <Typography variant="h4" fontWeight={700}>
-                                {formatMoney(earningsData?.availableBalance)}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                {/* Pending Balance */}
-                <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
-                    <Card>
-                        <CardContent>
-                            <Typography color="text.secondary" gutterBottom>
-                                Pending Balance
-                            </Typography>
-                            <Typography variant="h4" fontWeight={700}>
-                                {formatMoney(summary.pendingBalance)}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
-
-            {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
-                <Button
-                    variant="outlined"
-                    startIcon={<OpenInNew />}
-                    onClick={handleWithdrawMethods}
+                <Panel
+                    title="Payout account"
+                    subtitle="Payouts are handled by Stripe, our payments partner."
+                    flush
                 >
-                    Withdraw Methods
-                </Button>
-                <Button
-                    variant="contained"
-                    startIcon={<Download />}
-                    onClick={() => setPayoutDialogOpen(true)}
-                    disabled={!earningsData?.availableBalance || earningsData.availableBalance <= 0}
-                >
-                    Withdraw
-                </Button>
-                <Button variant="outlined" onClick={handleViewDashboard}>
-                    View Stripe Dashboard
-                </Button>
+                    <StripeRow
+                        title="Set up or update payout details"
+                        description="Add the bank account and identity details Stripe needs to pay you. Opens Stripe in a new tab."
+                        label="Set up payouts"
+                        busy={loadingOnboarding}
+                        onClick={() => void handleWithdrawMethods()}
+                    />
+                    <StripeRow
+                        divider
+                        title="View your Stripe dashboard"
+                        description="See transfers and payouts to your bank, and manage your account in Stripe. Opens in a new tab."
+                        label="Open Stripe dashboard"
+                        busy={loadingLogin}
+                        onClick={() => void handleViewDashboard()}
+                    />
+                </Panel>
+
+                {!failed && (
+                    <>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gap: 2.5,
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    lg: 'minmax(0, 1.35fr) minmax(0, 1fr)',
+                                },
+                                alignItems: 'start',
+                            }}
+                        >
+                            <Panel
+                                title="Monthly earnings"
+                                footer={
+                                    stats && !isLoading ? (
+                                        <>
+                                            <span>
+                                                Best month: <strong>{stats.best.month}</strong>
+                                            </span>
+                                            <span>{formatMoney(stats.average)} average</span>
+                                        </>
+                                    ) : undefined
+                                }
+                            >
+                                {isLoading ? (
+                                    <Skeleton variant="rounded" height={260} />
+                                ) : (
+                                    <MonthlyChart data={summary.monthlyEarnings} height={260} />
+                                )}
+                            </Panel>
+
+                            <Panel title="Payout history" flush>
+                                {isLoading ? (
+                                    <Box sx={{ p: 2.5 }}>
+                                        <Skeleton height={28} />
+                                        <Skeleton height={28} />
+                                        <Skeleton height={28} />
+                                    </Box>
+                                ) : payouts.length > 0 ? (
+                                    <PayoutTable payouts={payouts} />
+                                ) : (
+                                    <EmptyState
+                                        bare
+                                        icon={<AccountBalanceWallet />}
+                                        title="No payouts yet"
+                                        description="Payouts you request appear here with their status."
+                                        sx={{ py: 4 }}
+                                    />
+                                )}
+                            </Panel>
+                        </Box>
+
+                        {isLoading ? (
+                            <ListSkeleton rows={4} label="Loading earnings history" />
+                        ) : (
+                            <Panel
+                                title="Earnings history"
+                                subtitle={
+                                    earnings.length > HISTORY_LIMIT
+                                        ? `Showing your ${HISTORY_LIMIT} most recent earnings`
+                                        : undefined
+                                }
+                                flush
+                            >
+                                {earnings.length > 0 ? (
+                                    <EarningsHistoryList
+                                        earnings={earnings.slice(0, HISTORY_LIMIT)}
+                                    />
+                                ) : (
+                                    <EmptyState
+                                        bare
+                                        icon={<ReceiptLong />}
+                                        title="No earnings yet"
+                                        description="Earnings from completed jobs appear here, each with a receipt."
+                                    />
+                                )}
+                            </Panel>
+                        )}
+                    </>
+                )}
             </Box>
 
-            <Grid container spacing={3} sx={{ maxWidth: 1200 }}>
-                {/* Monthly Chart */}
-                <Grid size={{ xs: 12, lg: 8 }}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                                Monthly Earnings
-                            </Typography>
-                            <Box sx={{ height: 300 }}>
-                                <Bar data={chartData} options={chartOptions} />
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                {/* Payout History */}
-                <Grid size={{ xs: 12, lg: 4 }}>
-                    <Card sx={{ height: '100%' }}>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                                Payout History
-                            </Typography>
-                            {earningsData?.payouts && earningsData.payouts.length > 0 ? (
-                                <TableContainer>
-                                    <Table size="small">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Date</TableCell>
-                                                <TableCell align="right">Amount</TableCell>
-                                                <TableCell align="right">Status</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {earningsData.payouts.map((payout) => (
-                                                <TableRow key={payout._id}>
-                                                    <TableCell>
-                                                        {dayjs(payout.createdAt).format('MMM D')}
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        {formatMoney(payout.amount)}
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        <Chip
-                                                            label={payout.status}
-                                                            size="small"
-                                                            color={
-                                                                payout.status === 'paid'
-                                                                    ? 'success'
-                                                                    : payout.status === 'failed'
-                                                                      ? 'error'
-                                                                      : 'default'
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                            ) : (
-                                <Typography color="text.secondary" textAlign="center">
-                                    No payouts yet
-                                </Typography>
-                            )}
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
-
-            {/* Earnings by job, each linking to its receipt */}
-            <Card sx={{ mt: 3, maxWidth: 1200 }}>
-                <CardContent>
-                    <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                        Recent earnings
-                    </Typography>
-                    {earningsData?.earnings && earningsData.earnings.length > 0 ? (
-                        <TableContainer>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Date</TableCell>
-                                        <TableCell>Job</TableCell>
-                                        <TableCell align="right">Amount</TableCell>
-                                        <TableCell align="right">Status</TableCell>
-                                        <TableCell align="right">Receipt</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {earningsData.earnings.slice(0, 20).map((earning) => (
-                                        <TableRow key={earning._id} hover>
-                                            <TableCell>
-                                                {dayjs(earning.date).format('MMM D, YYYY')}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    component={RouterLink}
-                                                    to={`/provider/my-orders/${earning.bookingId}`}
-                                                    variant="body2"
-                                                    color="primary"
-                                                    sx={{ textDecoration: 'none' }}
-                                                >
-                                                    HH-{earning.bookingId.slice(-8).toUpperCase()}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {formatMoney(earning.amount)}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Chip
-                                                    label={earning.status}
-                                                    size="small"
-                                                    color={
-                                                        earning.status === 'completed'
-                                                            ? 'success'
-                                                            : earning.status === 'cancelled'
-                                                              ? 'error'
-                                                              : 'default'
-                                                    }
-                                                />
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <IconButton
-                                                    size="small"
-                                                    component={RouterLink}
-                                                    to={`/provider/orders/${earning.bookingId}/receipt`}
-                                                    aria-label="View receipt"
-                                                >
-                                                    <ReceiptLong fontSize="small" />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    ) : (
-                        <Typography color="text.secondary" textAlign="center">
-                            Earnings from completed jobs will appear here
-                        </Typography>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Payout Dialog */}
-            <Dialog open={payoutDialogOpen} onClose={() => setPayoutDialogOpen(false)}>
-                <DialogTitle>Withdraw Funds</DialogTitle>
-                <DialogContent>
-                    <Typography sx={{ mb: 3 }}>
-                        Available balance: {formatMoney(earningsData?.availableBalance)}
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        label="Amount"
-                        type="number"
-                        value={payoutAmount}
-                        onChange={(e) => setPayoutAmount(e.target.value)}
-                        InputProps={{
-                            startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
-                        }}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setPayoutDialogOpen(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handlePayout} disabled={isCreatingPayout}>
-                        {isCreatingPayout ? <CircularProgress size={24} /> : 'Withdraw'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+            <PayoutDialog
+                open={payoutOpen}
+                availableBalance={available}
+                loading={isCreatingPayout}
+                submitError={payoutError}
+                onSubmit={(amount) => void handlePayout(amount)}
+                onClose={() => setPayoutOpen(false)}
+            />
+        </>
     );
 }

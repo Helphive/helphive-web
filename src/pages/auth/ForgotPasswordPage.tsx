@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
-import { CheckCircle, ArrowBack } from '@mui/icons-material';
+import { Box, Button, Link, Stack, TextField } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useGetPasswordResetMutation } from '@/features/auth/authApi';
+import { AuthError, AuthHeading, AuthSuccess, SubmitButton } from './authForm';
+import { authErrorMessage, emailRules } from './authRules';
 
 interface ForgotPasswordFormData {
     email: string;
 }
 
 export default function ForgotPasswordPage() {
+    useDocumentTitle('Reset password');
     const [getPasswordReset, { isLoading }] = useGetPasswordResetMutation();
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [sentTo, setSentTo] = useState<string | null>(null);
 
     const {
         register,
@@ -24,89 +28,67 @@ export default function ForgotPasswordPage() {
         try {
             setError(null);
             await getPasswordReset({ email: data.email }).unwrap();
-            setSuccess(true);
+            setSentTo(data.email);
         } catch (err) {
-            const error = err as { status?: number; data?: { message?: string } };
-            if (error.status === 404) {
-                setError('No account found with this email address');
-            } else {
-                setError(error.data?.message || 'An error occurred. Please try again.');
-            }
+            setError(
+                authErrorMessage(err, {
+                    404: 'We could not find an account with that email. Check the address, or create an account.',
+                })
+            );
         }
     };
 
-    if (success) {
+    if (sentTo) {
         return (
-            <Box sx={{ textAlign: 'center' }}>
-                <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
-                <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
-                    Email Sent!
-                </Typography>
-                <Typography color="text.secondary" sx={{ mb: 4 }}>
-                    We've sent password reset instructions to your email. Please check your inbox
-                    and follow the link to reset your password.
-                </Typography>
-                <Button
-                    component={RouterLink}
-                    to="/login"
-                    variant="contained"
-                    size="large"
-                    sx={{ px: 4 }}
-                >
-                    Back to Login
-                </Button>
-            </Box>
+            <AuthSuccess
+                title="Check your email"
+                actions={
+                    <>
+                        <Button component={RouterLink} to="/login" variant="contained" size="large">
+                            Back to sign in
+                        </Button>
+                        <Button onClick={() => setSentTo(null)}>Use a different email</Button>
+                    </>
+                }
+            >
+                We sent a password reset link to <strong>{sentTo}</strong>. Open the link in that
+                email to choose a new password.
+            </AuthSuccess>
         );
     }
 
     return (
         <Box>
-            <Button component={RouterLink} to="/login" startIcon={<ArrowBack />} sx={{ mb: 3 }}>
-                Back to Login
-            </Button>
-
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-                <Typography variant="h4" fontWeight={700} color="primary" sx={{ mb: 1 }}>
-                    Forgot Password?
-                </Typography>
-                <Typography color="text.secondary">
-                    Enter your email and we'll send you reset instructions
-                </Typography>
-            </Box>
-
-            {error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
-                    {error}
-                </Alert>
-            )}
-
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <TextField
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    {...register('email', {
-                        required: 'Email is required',
-                        pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: 'Invalid email address',
-                        },
-                    })}
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    sx={{ mb: 3 }}
-                />
-
-                <Button
-                    type="submit"
-                    variant="contained"
-                    fullWidth
-                    size="large"
-                    disabled={isLoading}
-                    sx={{ py: 1.5 }}
-                >
-                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
-                </Button>
+            <Link
+                component={RouterLink}
+                to="/login"
+                variant="body2"
+                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mb: 3 }}
+            >
+                <ArrowBack sx={{ fontSize: 16 }} />
+                Back to sign in
+            </Link>
+            <AuthHeading
+                title="Reset your password"
+                subtitle="Enter your email and we will send you a link to choose a new password."
+            />
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                <AuthError message={error} />
+                <Stack spacing={2.5}>
+                    <TextField
+                        label="Email"
+                        type="email"
+                        required
+                        fullWidth
+                        autoComplete="email"
+                        {...register('email', emailRules)}
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
+                    />
+                    <SubmitButton busy={isLoading} busyLabel="Sending link">
+                        Send reset link
+                    </SubmitButton>
+                </Stack>
             </form>
         </Box>
     );

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Card, CardContent, Divider, TextField, Typography } from '@mui/material';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
+import { Alert, Button, TextField } from '@mui/material';
 import {
     useGetProviderBookingByIdMutation,
     useStartBookingMutation,
@@ -10,14 +10,13 @@ import {
     useCancelBookingMutation,
 } from '@/features/booking/bookingApi';
 import BookingDetailView from '@/components/common/BookingDetailView';
-import { PriceRow } from '@/components/common/InfoRow';
-import PageHeader from '@/components/common/PageHeader';
-import { DetailSkeleton, ErrorState } from '@/components/common/PageStates';
-import ConfirmDialog from '@/components/feedback/ConfirmDialog';
+import { ConfirmDialog, DetailSkeleton, ErrorState, PageHeader } from '@/components/ui';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useBookingLoader } from '@/hooks/useBookingLoader';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { PLATFORM_FEE_RATE, formatMoney, getDisplayStatus, getErrorMessage } from '@/utils/format';
+import { getDisplayStatus, getErrorMessage } from '@/utils/format';
+import EarningsBreakdown from './components/EarningsBreakdown';
+import { orderCode } from './orderUtils';
 
 type Dialog = 'start' | 'complete' | 'cancel' | null;
 
@@ -57,49 +56,31 @@ export default function MyOrderDetails() {
         }
     };
 
-    if (loading || unassigned) return <DetailSkeleton />;
+    if (loading || unassigned) return <DetailSkeleton label="Loading order" />;
 
     if (error || !booking) {
         return (
-            <ErrorState
-                title="Order details"
-                message={error || 'Order not found'}
-                backTo="/provider/my-orders"
-                backLabel="Back to my orders"
-                onRetry={reload}
-            />
+            <>
+                <PageHeader
+                    title="Order details"
+                    backTo="/provider/my-orders"
+                    backLabel="Back to my orders"
+                />
+                <ErrorState
+                    title="Could not load this order"
+                    message={error || 'This order was not found. It may have been removed.'}
+                    onRetry={() => void reload()}
+                    action={
+                        <Button component={RouterLink} to="/provider/my-orders" variant="outlined">
+                            My orders
+                        </Button>
+                    }
+                />
+            </>
         );
     }
 
     const status = getDisplayStatus(booking);
-    const subtotal = (booking.rate || 0) * (booking.hours || 0);
-    const platformFee = subtotal * PLATFORM_FEE_RATE;
-    const earnings = subtotal - platformFee;
-
-    const priceCard = (
-        <Card>
-            <CardContent>
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5 }}>
-                    Earnings breakdown
-                </Typography>
-                <PriceRow label="Hourly rate" value={formatMoney(booking.rate)} />
-                <PriceRow label="Hours" value={String(booking.hours || 0)} />
-                <PriceRow label="Subtotal" value={formatMoney(subtotal)} />
-                <PriceRow
-                    label={`Platform fee (${PLATFORM_FEE_RATE * 100}%)`}
-                    value={`-${formatMoney(platformFee)}`}
-                    color="error.main"
-                />
-                <Divider sx={{ my: 1 }} />
-                <PriceRow
-                    label="Your earnings"
-                    value={formatMoney(earnings)}
-                    color="success.main"
-                    strong
-                />
-            </CardContent>
-        </Card>
-    );
 
     const actions = (
         <>
@@ -147,14 +128,14 @@ export default function MyOrderDetails() {
     return (
         <>
             <PageHeader
-                title="Order details"
+                title={`Order ${orderCode(booking._id)}`}
                 backTo="/provider/my-orders"
                 backLabel="Back to my orders"
             />
             <BookingDetailView
                 booking={booking}
                 counterpart={{ title: 'Customer', person: booking.userId }}
-                priceCard={priceCard}
+                priceCard={<EarningsBreakdown booking={booking} />}
                 actions={actions}
                 receiptPath={`/provider/orders/${booking._id}/receipt`}
             />
@@ -169,7 +150,7 @@ export default function MyOrderDetails() {
                     run(
                         () => startBooking({ bookingId: bookingId! }).unwrap(),
                         'Start request sent to the customer',
-                        'Failed to start job'
+                        'Could not start the job'
                     )
                 }
                 onClose={() => setDialog(null)}
@@ -185,7 +166,7 @@ export default function MyOrderDetails() {
                     run(
                         () => completeBooking({ bookingId: bookingId! }).unwrap(),
                         'Job completed',
-                        'Failed to complete job'
+                        'Could not complete the job'
                     )
                 }
                 onClose={() => setDialog(null)}
@@ -206,7 +187,7 @@ export default function MyOrderDetails() {
                                 reason: cancelReason.trim() || undefined,
                             }).unwrap(),
                         'Order cancelled',
-                        'Failed to cancel order'
+                        'Could not cancel the order'
                     )
                 }
                 onClose={() => setDialog(null)}

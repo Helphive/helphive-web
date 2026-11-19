@@ -4,21 +4,18 @@ import { Box, Stack, Typography } from '@mui/material';
 import { Check } from '@mui/icons-material';
 import { useAppSelector } from '@/store/hooks';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
-import { ErrorBoundary, Logo, PageSkeleton, ShiftRuler } from '@/components/ui';
-import { color, font, hairline, hairlineStrong, radius, shadow } from '@/theme/tokens';
+import { ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
+import { HoneycombBackdrop } from '@/pages/public/landing/Backdrops';
+import { color, font, hairline } from '@/theme/tokens';
 
 const FACTS = ['Verified providers', 'Stripe-powered payments', 'Live job status'];
-
-// Illustrative day on the ruler; not real bookings.
-const EXAMPLE_DAY = [
-    { start: 7, end: 13, label: 'Room Attendant' },
-    { start: 15, end: 20, label: 'Linen Porter', tone: 'ink' as const },
-];
 
 function BrandPanel() {
     return (
         <Box
             sx={{
+                position: 'relative',
+                overflow: 'hidden',
                 display: { xs: 'none', md: 'flex' },
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -28,8 +25,11 @@ function BrandPanel() {
                 borderRight: hairline,
             }}
         >
-            <Logo to="/" />
-            <Box sx={{ maxWidth: 480 }}>
+            <HoneycombBackdrop focus="80% 75%" />
+            <Box sx={{ position: 'relative' }}>
+                <Logo to="/" size={34} />
+            </Box>
+            <Box sx={{ position: 'relative', maxWidth: { md: 360, lg: 300, xl: 330 } }}>
                 <Typography
                     component="p"
                     sx={{
@@ -41,30 +41,18 @@ function BrandPanel() {
                 >
                     Hospitality shifts, booked to the hour.
                 </Typography>
-                <Typography color="text.secondary" sx={{ mt: 2, maxWidth: '42ch' }}>
+                <Typography color="text.secondary" sx={{ mt: 2 }}>
                     Hotels and venues book room attendants, public area attendants and linen
                     porters. Providers pick up the shifts that fit their day.
                 </Typography>
-                <Box
-                    aria-hidden="true"
-                    sx={{
-                        mt: 5,
-                        p: 2.5,
-                        bgcolor: color.surface,
-                        border: hairlineStrong,
-                        borderRadius: `${radius.md}px`,
-                        boxShadow: shadow.float,
-                    }}
-                >
-                    <Typography variant="caption" component="p" sx={{ mb: 1.5 }}>
-                        A day on HelpHive
-                    </Typography>
-                    <ShiftRuler blocks={EXAMPLE_DAY} from={6} to={22} now={10.67} />
-                </Box>
             </Box>
-            <Stack direction="row" sx={{ gap: 3, flexWrap: 'wrap' }}>
+            <Stack
+                component="ul"
+                sx={{ position: 'relative', gap: 1, p: 0, m: 0, listStyle: 'none' }}
+            >
                 {FACTS.map((fact) => (
                     <Stack
+                        component="li"
                         key={fact}
                         direction="row"
                         spacing={0.75}
@@ -80,6 +68,22 @@ function BrandPanel() {
                     </Stack>
                 ))}
             </Stack>
+            <Box
+                component="img"
+                src="/images/app/phone-book-service.webp"
+                alt="HelpHive app, Book Service screen: choose services, set quantities and see the price before booking."
+                width={608}
+                height={1249}
+                decoding="async"
+                sx={{
+                    display: { xs: 'none', lg: 'block' },
+                    position: 'absolute',
+                    right: 24,
+                    bottom: -90,
+                    width: { lg: 220, xl: 270 },
+                    height: 'auto',
+                }}
+            />
         </Box>
     );
 }
@@ -112,7 +116,7 @@ export default function AuthLayout() {
                 }}
             >
                 <Box sx={{ display: { xs: 'flex', md: 'none' }, height: 44, alignItems: 'center' }}>
-                    <Logo to="/" />
+                    <Logo to="/" size={32} />
                 </Box>
                 <Box
                     sx={{
