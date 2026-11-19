@@ -25,8 +25,8 @@ export const BOOKING_STATUS: Record<DisplayStatus, { label: string; tone: Tone }
 // Visually hidden but read by screen readers.
 export const srOnly = {
     position: 'absolute',
-    width: 1,
-    height: 1,
+    width: '1px',
+    height: '1px',
     padding: 0,
     margin: -1,
     overflow: 'hidden',
