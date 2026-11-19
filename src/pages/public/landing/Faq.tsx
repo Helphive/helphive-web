@@ -13,7 +13,7 @@ const QUESTIONS = [
     },
     {
         q: 'How are providers checked?',
-        a: 'Providers apply with a profile photo, an ID document, a DBS certificate and a CV. Our team reviews each application, usually within 1 to 2 business days, and only approved providers can accept orders.',
+        a: 'Providers apply with a profile photo, an ID document, a DBS certificate and a CV. Our team reviews each application, which can take up to 3 business days, and only approved providers can accept orders.',
     },
     {
         q: 'How does a job start?',
