@@ -10,6 +10,7 @@ import {
     useCancelBookingMutation,
 } from '@/features/booking/bookingApi';
 import BookingDetailView from '@/components/common/BookingDetailView';
+import BookingChatAction from '@/features/chat/BookingChatAction';
 import { ConfirmDialog, DetailSkeleton, ErrorState, PageHeader } from '@/components/ui';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import { useBookingLoader } from '@/hooks/useBookingLoader';
@@ -85,6 +86,7 @@ export default function MyOrderDetails() {
 
     const actions = (
         <>
+            <BookingChatAction bookingId={booking._id} area="provider" />
             {status === 'accepted' && (
                 <Button
                     variant="contained"

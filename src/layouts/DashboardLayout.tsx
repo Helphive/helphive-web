@@ -24,12 +24,16 @@ import { useLogoutMutation } from '@/features/auth/authApi';
 import { isDemoEmail } from '@/features/auth/demoAccounts';
 import NotificationBell from '@/features/notifications/NotificationBell';
 import { useGetUnreadCountQuery } from '@/features/notifications/notificationsApi';
+import { signOutChat } from '@/features/chat/chatBridge';
+import { useChatUnread, useUnreadTitle } from '@/features/chat/chatUnread';
+import MessagesButton from '@/features/chat/MessagesButton';
 import { Count, ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
 import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
 import { color, font, hairline, layout, radius } from '@/theme/tokens';
 import {
     AvailableOrdersIcon,
     BookingsIcon,
+    ChatIcon,
     EarningsIcon,
     ExpandIcon,
     HomeIcon,
@@ -53,6 +57,8 @@ interface NavItem {
     Icon: AppIcon;
     path: string;
     countsUnread?: boolean;
+    /** Shows the unread chat count; on phones Messages is a top-bar button instead. */
+    chat?: boolean;
 }
 
 const userNavItems: NavItem[] = [
@@ -64,6 +70,7 @@ const userNavItems: NavItem[] = [
         path: '/user/notifications',
         countsUnread: true,
     },
+    { label: 'Messages', short: 'Messages', Icon: ChatIcon, path: '/user/messages', chat: true },
 ];
 
 const providerNavItems: NavItem[] = [
@@ -80,6 +87,13 @@ const providerNavItems: NavItem[] = [
         short: 'Earnings',
         Icon: EarningsIcon,
         path: '/provider/earnings',
+    },
+    {
+        label: 'Messages',
+        short: 'Messages',
+        Icon: ChatIcon,
+        path: '/provider/messages',
+        chat: true,
     },
     {
         label: 'Notifications',
@@ -165,6 +179,8 @@ function useAccount(userType: 'user' | 'provider') {
 
     const handleLogout = async () => {
         try {
+            // Chat signs out first (chat contract, sign-out order), then the server session.
+            await signOutChat();
             const stored = localStorage.getItem('helphive-auth');
             if (stored) {
                 const parsed = JSON.parse(stored);
@@ -309,9 +325,9 @@ function Content({ maxWidth }: { maxWidth: number }) {
 
 /* ---------- Customer: top bar with section tabs ---------- */
 
-function CustomerShell({ account }: { account: Account }) {
+function CustomerShell({ account, chatUnread }: { account: Account; chatUnread: number | null }) {
     const { pathname } = useLocation();
-    const navItems = userNavItems;
+    const navItems = userNavItems.filter((item) => !item.chat || chatUnread !== null);
     const homePath = navItems[0].path;
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -349,7 +365,8 @@ function CustomerShell({ account }: { account: Account }) {
                                     to={item.path}
                                     aria-current={active ? 'page' : undefined}
                                     sx={{
-                                        display: 'flex',
+                                        // Phones reach Messages from the top-bar button.
+                                        display: item.chat ? { xs: 'none', sm: 'flex' } : 'flex',
                                         alignItems: 'center',
                                         px: 1.5,
                                         fontSize: font.size.md,
@@ -365,10 +382,25 @@ function CustomerShell({ account }: { account: Account }) {
                                     }}
                                 >
                                     {item.label}
+                                    {item.chat && !!chatUnread && (
+                                        <Box sx={{ ml: 0.75 }}>
+                                            <Count
+                                                value={chatUnread}
+                                                label={`${chatUnread} unread`}
+                                            />
+                                        </Box>
+                                    )}
                                 </Box>
                             );
                         })}
                     </Box>
+                    {chatUnread !== null && (
+                        <MessagesButton
+                            to="/user/messages"
+                            unread={chatUnread}
+                            sx={{ display: { sm: 'none' } }}
+                        />
+                    )}
                     <NotificationBell area="user" />
                     <AccountButton account={account} />
                 </Toolbar>
@@ -389,9 +421,18 @@ function CustomerShell({ account }: { account: Account }) {
 
 /* ---------- Provider: sidebar on desktop, bottom navigation on phones ---------- */
 
-function SideNav({ account, unread }: { account: Account; unread: number }) {
+function SideNav({
+    account,
+    unread,
+    chatUnread,
+}: {
+    account: Account;
+    unread: number;
+    chatUnread: number | null;
+}) {
     const { pathname } = useLocation();
     const homePath = providerNavItems[0].path;
+    const sideItems = providerNavItems.filter((item) => !item.chat || chatUnread !== null);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     return (
         <Box
@@ -425,7 +466,7 @@ function SideNav({ account, unread }: { account: Account; unread: number }) {
                 <NotificationBell area="provider" />
             </Box>
             <Box component="nav" aria-label="Provider" sx={{ display: 'grid', gap: '2px' }}>
-                {providerNavItems.map((item) => {
+                {sideItems.map((item) => {
                     const active = isActivePath(pathname, item.path, homePath);
                     return (
                         <Box
@@ -461,6 +502,11 @@ function SideNav({ account, unread }: { account: Account; unread: number }) {
                             {item.countsUnread && unread > 0 && (
                                 <Box sx={{ ml: 'auto' }}>
                                     <Count value={unread} label={`${unread} unread`} />
+                                </Box>
+                            )}
+                            {item.chat && !!chatUnread && (
+                                <Box sx={{ ml: 'auto' }}>
+                                    <Count value={chatUnread} label={`${chatUnread} unread`} />
                                 </Box>
                             )}
                         </Box>
@@ -507,7 +553,7 @@ function SideNav({ account, unread }: { account: Account; unread: number }) {
     );
 }
 
-function ProviderShell({ account }: { account: Account }) {
+function ProviderShell({ account, chatUnread }: { account: Account; chatUnread: number | null }) {
     const theme = useTheme();
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
     const { pathname } = useLocation();
@@ -515,20 +561,22 @@ function ProviderShell({ account }: { account: Account }) {
     const { data: countData } = useGetUnreadCountQuery();
     const unread = countData?.unreadCount ?? 0;
     const homePath = providerNavItems[0].path;
-    const navIndex = providerNavItems.findIndex((item) =>
-        isActivePath(pathname, item.path, homePath)
-    );
+    const phoneNavItems = providerNavItems.filter((item) => !item.chat);
+    const navIndex = phoneNavItems.findIndex((item) => isActivePath(pathname, item.path, homePath));
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
             <SkipLink />
-            {isDesktop && <SideNav account={account} unread={unread} />}
+            {isDesktop && <SideNav account={account} unread={unread} chatUnread={chatUnread} />}
             <Box sx={{ flex: 1, minWidth: 0 }}>
                 {!isDesktop && (
                     <AppBar position="sticky" className="no-print">
                         <Toolbar disableGutters sx={{ px: 2, gap: 1 }}>
                             <Logo to={homePath} />
                             <Box sx={{ flex: 1 }} />
+                            {chatUnread !== null && (
+                                <MessagesButton to="/provider/messages" unread={chatUnread} />
+                            )}
                             <NotificationBell area="provider" />
                             <AccountButton account={account} />
                         </Toolbar>
@@ -563,7 +611,7 @@ function ProviderShell({ account }: { account: Account }) {
                     }}
                 >
                     <BottomNavigation value={navIndex} showLabels sx={{ bgcolor: 'transparent' }}>
-                        {providerNavItems.map((item, index) => {
+                        {phoneNavItems.map((item, index) => {
                             const icon = (
                                 <item.Icon weight={index === navIndex ? 'fill' : 'regular'} />
                             );
@@ -594,9 +642,12 @@ function ProviderShell({ account }: { account: Account }) {
 
 export default function DashboardLayout({ userType }: DashboardLayoutProps) {
     const account = useAccount(userType);
+    // null: chat is not configured (503), so there is no Messages entry.
+    const chatUnread = useChatUnread();
+    useUnreadTitle(chatUnread);
     return userType === 'provider' ? (
-        <ProviderShell account={account} />
+        <ProviderShell account={account} chatUnread={chatUnread} />
     ) : (
-        <CustomerShell account={account} />
+        <CustomerShell account={account} chatUnread={chatUnread} />
     );
 }

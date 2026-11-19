@@ -65,6 +65,11 @@ import {
     MapPinIcon,
     MinusIcon,
     MinusSquareIcon,
+    DotsThreeVerticalIcon,
+    FlagIcon,
+    PaperclipIcon,
+    PaperPlaneRightIcon,
+    ProhibitIcon,
     PhoneIcon as PhPhoneIcon,
     PlayCircleIcon,
     PlusIcon,
@@ -215,6 +220,11 @@ export const FolderIcon = icon(FolderOpenIcon, 'FolderIcon');
 export const ChatIcon = icon(ChatCircleIcon, 'ChatIcon');
 export const ConversationsIcon = icon(ChatsCircleIcon, 'ConversationsIcon');
 export const PhotoIcon = icon(ImageIcon, 'PhotoIcon');
+export const SendIcon = icon(PaperPlaneRightIcon, 'SendIcon');
+export const AttachIcon = icon(PaperclipIcon, 'AttachIcon');
+export const BlockIcon = icon(ProhibitIcon, 'BlockIcon');
+export const ReportIcon = icon(FlagIcon, 'ReportIcon');
+export const MoreIcon = icon(DotsThreeVerticalIcon, 'MoreIcon');
 export const AndroidIcon = icon(AndroidLogoIcon, 'AndroidIcon');
 export const AppleIcon = icon(AppleLogoIcon, 'AppleIcon');
 
