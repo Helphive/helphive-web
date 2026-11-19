@@ -127,6 +127,8 @@ export default function ConversationView({
     const [loadError, setLoadError] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [loadingOlder, setLoadingOlder] = useState(false);
+    // True while messages shown from the cache are being checked against the server.
+    const [refreshing, setRefreshing] = useState(false);
     const [hasBlockedMe, setHasBlockedMe] = useState(false);
     const [blockedInChat, setBlockedInChat] = useState(false);
     const [closedNow, setClosedNow] = useState(false);
@@ -145,6 +147,7 @@ export default function ConversationView({
     const lastMarked = useRef(0);
     const latest = useRef<ChatMessage[]>([]);
     latest.current = messages;
+    const activeUid = useRef(uid);
 
     const blocked = who.blockedByMe || blockedInChat;
     const isClosed = who.open === false || closedNow;
@@ -173,23 +176,48 @@ export default function ConversationView({
 
     /* Initial load and switching conversations. */
     const load = useCallback(async () => {
-        setLoading(true);
+        activeUid.current = uid;
+        const toList = (page: Parameters<typeof chatRuntime.rememberMessages>[1]) =>
+            page.map((m) => toChatMessage(m, me)).filter((m): m is ChatMessage => !!m);
+        // Show what was loaded last straight away, then check it against the server.
+        const cached = chatRuntime.cachedMessages(uid);
+        setLoading(!cached);
+        setRefreshing(!!cached);
         setLoadError(false);
-        setMessages([]);
+        setMessages(cached ? toList(cached) : []);
         setHasMore(true);
         lastMarked.current = 0;
         stickBottom.current = true;
-        request.current = chatRuntime.messagesRequest(uid);
+        const mine = chatRuntime.messagesRequest(uid);
+        request.current = mine;
         try {
-            const page = await request.current.fetchPrevious();
-            const list = page.map((m) => toChatMessage(m, me)).filter((m): m is ChatMessage => !!m);
-            setMessages(list);
+            const page = await mine.fetchPrevious();
+            if (activeUid.current !== uid || request.current !== mine) return;
+            chatRuntime.rememberMessages(uid, page);
+            const list = toList(page);
+            // Keep anything still being sent, and anything that arrived while the page was loading.
+            setMessages((cur) => {
+                const known = new Set(list.flatMap((m) => (m.muid ? [m.key, m.muid] : [m.key])));
+                const lastId = list.reduce((max, m) => Math.max(max, m.id ?? 0), 0);
+                return [
+                    ...list,
+                    ...cur.filter(
+                        (m) =>
+                            !known.has(m.key) &&
+                            !(m.muid && known.has(m.muid)) &&
+                            (!m.id || m.id > lastId)
+                    ),
+                ];
+            });
             setHasMore(page.length >= 30);
             markLatestRead(list);
         } catch {
-            setLoadError(true);
+            if (activeUid.current === uid && !cached) setLoadError(true);
         } finally {
-            setLoading(false);
+            if (activeUid.current === uid && request.current === mine) {
+                setLoading(false);
+                setRefreshing(false);
+            }
         }
     }, [uid, me, markLatestRead]);
 
@@ -207,7 +235,7 @@ export default function ConversationView({
 
     /* Older messages when the top comes into view. */
     const loadOlder = useCallback(async () => {
-        if (!request.current || loadingOlder || !hasMore || loading) return;
+        if (!request.current || loadingOlder || !hasMore || loading || refreshing) return;
         setLoadingOlder(true);
         try {
             const page = await request.current.fetchPrevious();
@@ -225,7 +253,7 @@ export default function ConversationView({
         } finally {
             setLoadingOlder(false);
         }
-    }, [loadingOlder, hasMore, loading, me]);
+    }, [loadingOlder, hasMore, loading, refreshing, me]);
 
     useEffect(() => {
         const el = topSentinel.current;

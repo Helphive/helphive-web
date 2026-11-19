@@ -25,6 +25,7 @@ import { isDemoEmail } from '@/features/auth/demoAccounts';
 import NotificationBell from '@/features/notifications/NotificationBell';
 import { useGetUnreadCountQuery } from '@/features/notifications/notificationsApi';
 import { signOutChat } from '@/features/chat/chatBridge';
+import '@/features/chat/chatPrewarm';
 import { useChatUnread, useUnreadTitle } from '@/features/chat/chatUnread';
 import MessagesButton from '@/features/chat/MessagesButton';
 import { Count, ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';

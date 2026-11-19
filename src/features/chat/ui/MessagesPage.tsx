@@ -28,37 +28,64 @@ interface CometPerson {
     blockedByMe: boolean;
 }
 
-/** Conversations from CometChat, kept current by the message listener. */
+type CometConversations = NonNullable<ReturnType<typeof chatRuntime.cachedConversations>>;
+
+const toPeople = (list: CometConversations, me: string) => {
+    const map = new Map<string, CometPerson>();
+    for (const c of list) {
+        const u = c.getConversationWith() as CometUser;
+        if (!u?.getUid) continue;
+        const lastRaw = c.getLastMessage();
+        map.set(u.getUid(), {
+            uid: u.getUid(),
+            name: u.getName(),
+            avatar: safeUrl(u.getAvatar()),
+            last: lastRaw ? toChatMessage(lastRaw, me) : null,
+            blockedByMe: !!u.getBlockedByMe?.(),
+        });
+    }
+    return map;
+};
+
+const notePresence = (list: CometConversations) => {
+    for (const c of list) {
+        const u = c.getConversationWith() as CometUser;
+        if (!u?.getUid) continue;
+        chatRuntimePresence(u);
+    }
+};
+
+/**
+ * Conversations from CometChat, kept current by the message listener. Opens with the list loaded last (the chat
+ * runtime loads it right after sign-in) and refreshes it in the background.
+ */
 function useCometConversations(me: string | undefined) {
-    const [people, setPeople] = useState<Map<string, CometPerson>>(new Map());
-    const [loaded, setLoaded] = useState(false);
+    const [people, setPeople] = useState<Map<string, CometPerson>>(() => {
+        const cached = me ? chatRuntime.cachedConversations() : null;
+        return cached && me ? toPeople(cached, me) : new Map();
+    });
+    const [loaded, setLoaded] = useState(() => !!me && !!chatRuntime.cachedConversations());
     const [failed, setFailed] = useState(false);
 
     useEffect(() => {
         if (!me) return;
         let alive = true;
+        const cached = chatRuntime.cachedConversations();
+        if (cached) {
+            setPeople(toPeople(cached, me));
+            setLoaded(true);
+            notePresence(cached);
+        }
         const fetchAll = async () => {
             try {
-                const list = await chatRuntime.conversationsRequest().fetchNext();
+                const list = await chatRuntime.loadConversations();
                 if (!alive) return;
-                const map = new Map<string, CometPerson>();
-                for (const c of list) {
-                    const u = c.getConversationWith() as CometUser;
-                    if (!u?.getUid) continue;
-                    const lastRaw = c.getLastMessage();
-                    map.set(u.getUid(), {
-                        uid: u.getUid(),
-                        name: u.getName(),
-                        avatar: safeUrl(u.getAvatar()),
-                        last: lastRaw ? toChatMessage(lastRaw, me) : null,
-                        blockedByMe: !!u.getBlockedByMe?.(),
-                    });
-                    chatRuntimePresence(u);
-                }
-                setPeople(map);
+                setPeople(toPeople(list, me));
+                notePresence(list);
                 setFailed(false);
             } catch {
-                if (alive) setFailed(true);
+                // A list already on screen stays; the error state is for having nothing to show.
+                if (alive && !chatRuntime.cachedConversations()) setFailed(true);
             } finally {
                 if (alive) setLoaded(true);
             }
