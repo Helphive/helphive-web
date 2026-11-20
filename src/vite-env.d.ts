@@ -8,6 +8,8 @@ interface ImportMetaEnv {
     readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
     readonly VITE_GOOGLE_MAPS_API_KEY: string;
     readonly VITE_GCLOUD_BUCKET_USERS?: string;
+    /** OneSignal app id (public). Optional: the code has the production id as its default. */
+    readonly VITE_ONESIGNAL_APP_ID?: string;
 }
 
 interface ImportMeta {

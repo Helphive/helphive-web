@@ -33,6 +33,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getErrorMessage } from '@/utils/format';
 import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
 import { PhotoCameraIcon } from '@/components/ui/icons';
+import NotificationsPanel from '@/features/push/NotificationsPanel';
 
 // Mirrors the backend validator for names (validateUpdateProfileFields).
 const NAME_REGEX = /^[a-zA-Z\xC0-￿]+([ \-']{0,1}[a-zA-Z\xC0-￿]+){0,2}[.]{0,1}$/;
@@ -397,6 +398,8 @@ export default function ProfilePage({ area }: { area: 'user' | 'provider' }) {
                         )}
                     </DataList>
                 </Panel>
+
+                <NotificationsPanel />
             </Box>
         </>
     );

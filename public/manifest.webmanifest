@@ -1,0 +1,25 @@
+{
+    "name": "HelpHive",
+    "short_name": "HelpHive",
+    "description": "Book vetted hospitality staff by the hour and follow every shift.",
+    "id": "/",
+    "start_url": "/home",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#F5F6F8",
+    "theme_color": "#F5F6F8",
+    "icons": [
+        {
+            "src": "/icon.png",
+            "sizes": "1024x1024",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/logo-mark.png",
+            "sizes": "160x160",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}
