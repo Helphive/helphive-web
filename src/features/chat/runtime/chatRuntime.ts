@@ -33,6 +33,20 @@ export interface ChatMessage {
     state: SendState;
     error?: string;
     file?: File; // kept for retry
+    /** `metadata.helphive` as received (unchecked): a booking event card marker, read in ui/bookingEvents.ts. */
+    helphive?: unknown;
+}
+
+/** `metadata.helphive` of a message (from the cache, a page or a live event alike), or undefined. */
+function readHelphiveMetadata(m: CometChat.BaseMessage): unknown {
+    try {
+        const metadata = (m as { getMetadata?: () => unknown }).getMetadata?.();
+        return metadata && typeof metadata === 'object'
+            ? (metadata as { helphive?: unknown }).helphive
+            : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 const ms = (seconds?: number) => (seconds ? seconds * 1000 : undefined);
@@ -62,6 +76,7 @@ export function toChatMessage(m: CometChat.BaseMessage, me: string): ChatMessage
             ...base,
             kind: 'text',
             text: String((m as CometChat.TextMessage).getText() ?? ''),
+            helphive: readHelphiveMetadata(m),
         };
     }
     if (type === CometChat.MESSAGE_TYPE.IMAGE || type === CometChat.MESSAGE_TYPE.FILE) {

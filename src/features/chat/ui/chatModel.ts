@@ -5,6 +5,7 @@ import { useGetMyOrdersQuery } from '@/features/provider/providerApi';
 import type { Booking, User } from '@/types';
 import { formatDay } from '@/utils/format';
 import { chatRuntime, type ChatMessage, type Presence } from '../runtime/chatRuntime';
+import { eventPreview, readEventRef } from './bookingEvents';
 
 export type Area = 'user' | 'provider';
 
@@ -25,9 +26,13 @@ export const messagesPath = (area: Area, uid?: string) =>
 
 /** Bookings shared with each counterparty that a provider accepted, newest first. */
 export function useBookingsByPerson(area: Area) {
-    const user = useGetUserBookingsQuery(undefined, { skip: area !== 'user' });
-    const provider = useGetMyOrdersQuery(undefined, { skip: area !== 'provider' });
-    return useMemo(() => {
+    // Refreshed when a conversation opens and when the tab regains focus (booking cards show live data).
+    const options = { refetchOnMountOrArgChange: 30, refetchOnFocus: true };
+    const user = useGetUserBookingsQuery(undefined, { skip: area !== 'user', ...options });
+    const provider = useGetMyOrdersQuery(undefined, { skip: area !== 'provider', ...options });
+    const loaded =
+        area === 'user' ? !user.isLoading && !!user.data : !provider.isLoading && !!provider.data;
+    const byPerson = useMemo(() => {
         const list: Booking[] =
             area === 'user'
                 ? [
@@ -48,6 +53,7 @@ export function useBookingsByPerson(area: Area) {
         );
         return map;
     }, [area, user.data, provider.data]);
+    return { byPerson, loaded };
 }
 
 export const dayLabel = (ms: number) => {
@@ -71,8 +77,19 @@ export const presenceText = (p?: Presence) => {
     return p.lastActiveAt ? `Last seen ${dayjs(p.lastActiveAt).fromNow()}` : 'Offline';
 };
 
-export const preview = (m?: ChatMessage | null) => {
+/** Conversation list text of the last message; a booking event reads "Booking accepted · Public Area Attendant". */
+export const preview = (m?: ChatMessage | null, bookings: Booking[] = []) => {
     if (!m) return '';
+    const ref = readEventRef(m, bookings);
+    if (ref) {
+        const booking =
+            ref.type === 'booking' ? bookings.find((b) => b._id === ref.bookingId) : undefined;
+        return eventPreview(
+            ref.type === 'booking' ? ref.event : null,
+            booking?.service?.name,
+            m.text
+        );
+    }
     const who = m.mine ? 'You: ' : '';
     if (m.kind === 'deleted') return 'Message deleted';
     if (m.kind === 'image') return `${who}${m.text || 'Photo'}`;

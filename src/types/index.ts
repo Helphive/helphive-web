@@ -93,6 +93,8 @@ export interface Booking {
     clientSecret?: string;
     paymentStatus?: 'pending' | 'completed' | 'refunded';
     userApprovalRequested?: boolean;
+    /** When a provider accepted (absent on bookings accepted before it was recorded). */
+    acceptedAt?: string;
     startedAt?: string;
     completedAt?: string;
     completedBy?: string;

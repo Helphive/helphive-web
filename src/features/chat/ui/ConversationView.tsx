@@ -1,6 +1,12 @@
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import dayjs from 'dayjs';
+import {
+    Fragment,
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import {
     Alert,
     Box,
@@ -13,9 +19,10 @@ import {
     Typography,
 } from '@mui/material';
 import type { Booking } from '@/types';
-import { formatDay, getDisplayStatus } from '@/utils/format';
-import { color, font, hairline, radius } from '@/theme/tokens';
-import { BookingStatusPill, ErrorState, ServiceIcon } from '@/components/ui';
+import { apiSlice } from '@/store/api/apiSlice';
+import { formatDay } from '@/utils/format';
+import { color, font, hairline } from '@/theme/tokens';
+import { ErrorState } from '@/components/ui';
 import { BackIcon, BlockIcon, ChevronDownIcon, MoreIcon, ReportIcon } from '@/components/ui/icons';
 import { chatApi } from '../chatApi';
 import { store } from '@/store';
@@ -31,7 +38,11 @@ import Composer, { type Pending } from './Composer';
 import MessageBubble, { ImageViewer } from './MessageBubble';
 import { BlockDialog, ReportDialog } from './SafetyDialogs';
 import { PersonAvatar } from './ConversationList';
-import { bookingPath, dayLabel, presenceText, type Area, srText } from './chatModel';
+import { dayLabel, presenceText, type Area, srText } from './chatModel';
+import BookingsHeader from './BookingsHeader';
+import { BookingEventItem, SystemLine } from './BookingCards';
+import { BookingCardsContext } from './bookingCardsContext';
+import { buildStream, isEventMessage } from './bookingEvents';
 
 export interface Counterparty {
     uid: string;
@@ -43,68 +54,11 @@ export interface Counterparty {
     until: string | null;
     blockedByMe: boolean;
     bookings: Booking[];
+    /** False while the bookings are still loading (cards show a skeleton, not "not found"). */
+    bookingsLoaded?: boolean;
 }
 
 const NEAR_BOTTOM_PX = 120;
-
-function BookingTickets({ bookings, area }: { bookings: Booking[]; area: Area }) {
-    if (!bookings.length) return null;
-    return (
-        <Box
-            component="ul"
-            aria-label="Bookings with this person"
-            sx={{
-                listStyle: 'none',
-                m: 0,
-                px: { xs: 1.5, sm: 2 },
-                py: 1,
-                display: 'flex',
-                gap: 1,
-                overflowX: 'auto',
-                scrollbarWidth: 'thin',
-                borderBottom: hairline,
-                bgcolor: color.subtle,
-            }}
-        >
-            {bookings.slice(0, 6).map((b) => (
-                <Box component="li" key={b._id} sx={{ flexShrink: 0 }}>
-                    <Box
-                        component={RouterLink}
-                        to={bookingPath(area, b._id)}
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            pl: 0.75,
-                            pr: 1,
-                            py: 0.5,
-                            border: hairline,
-                            borderLeft: `3px solid ${color.coral500}`,
-                            borderRadius: `${radius.sm}px`,
-                            bgcolor: color.surface,
-                            color: color.ink900,
-                            textDecoration: 'none',
-                            whiteSpace: 'nowrap',
-                            '&:hover': {
-                                borderColor: color.ink300,
-                                borderLeftColor: color.coral500,
-                            },
-                        }}
-                    >
-                        <ServiceIcon serviceId={b.service?.id} size={18} />
-                        <Box component="span" sx={{ fontSize: font.size.sm, fontWeight: 700 }}>
-                            {b.service?.name}
-                        </Box>
-                        <Box component="span" sx={{ fontSize: font.size.sm, color: color.ink600 }}>
-                            {formatDay(b.startDate)}, {dayjs(b.startDate).format('HH:mm')}
-                        </Box>
-                        <BookingStatusPill status={getDisplayStatus(b)} size="sm" />
-                    </Box>
-                </Box>
-            ))}
-        </Box>
-    );
-}
 
 export default function ConversationView({
     who,
@@ -309,7 +263,11 @@ export default function ConversationView({
                     return [...cur, m];
                 });
                 if (!m.mine) markLatestRead([m]);
-                if (!m.mine && m.kind !== 'deleted') {
+                if (isEventMessage(m)) {
+                    // A booking just changed: the cards show it as it is now.
+                    store.dispatch(apiSlice.util.invalidateTags(['Booking']));
+                    if (!m.mine) setAnnounce(`Booking update: ${m.text}`);
+                } else if (!m.mine && m.kind !== 'deleted') {
                     setAnnounce(
                         `${who.firstName}: ${m.kind === 'text' ? m.text : m.kind === 'image' ? 'sent a photo' : 'sent a file'}`
                     );
@@ -486,6 +444,16 @@ export default function ConversationView({
     const canWrite = !blocked && !hasBlockedMe && !isClosed;
     const Heading = headingLevel;
 
+    const bookingsLoaded = who.bookingsLoaded ?? true;
+    const cardsContext = useMemo(
+        () => ({ area, bookings: new Map(who.bookings.map((b) => [b._id, b])) }),
+        [area, who.bookings]
+    );
+    const stream = useMemo(
+        () => buildStream(messages, who.bookings, bookingsLoaded),
+        [messages, who.bookings, bookingsLoaded]
+    );
+
     let lastDay = '';
     return (
         <Box
@@ -573,7 +541,12 @@ export default function ConversationView({
                     </MenuItem>
                 </Menu>
             </Box>
-            <BookingTickets bookings={who.bookings} area={area} />
+            <BookingsHeader
+                bookings={who.bookings}
+                area={area}
+                firstName={who.firstName}
+                loading={who.bookingsLoaded === false}
+            />
             {chat.connection !== 'connected' && (
                 <Alert severity="warning" sx={{ borderRadius: 0 }} role="status">
                     Connection lost. Reconnecting…
@@ -640,65 +613,82 @@ export default function ConversationView({
                         </Typography>
                     </Box>
                 ) : (
-                    <Box
-                        component="ol"
-                        sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 0.75 }}
-                    >
-                        {!hasMore && (
-                            <Box
-                                component="li"
-                                sx={{
-                                    textAlign: 'center',
-                                    fontSize: font.size.xs,
-                                    color: color.ink500,
-                                    fontWeight: 600,
-                                    pb: 1,
-                                }}
-                            >
-                                Start of your conversation with {who.firstName}
-                            </Box>
-                        )}
-                        {messages.map((m) => {
-                            const day = dayLabel(m.sentAt);
-                            const header = day !== lastDay;
-                            lastDay = day;
-                            return (
-                                <Fragment key={m.key}>
-                                    {header && (
-                                        <Box
-                                            component="li"
-                                            sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 1.5,
-                                                my: 1,
-                                                fontSize: font.size.xs,
-                                                fontWeight: 700,
-                                                color: color.ink500,
-                                                '&::before, &::after': {
-                                                    content: '""',
-                                                    flex: 1,
-                                                    borderTop: hairline,
-                                                },
-                                            }}
-                                        >
-                                            <Box component="span">{day}</Box>
-                                        </Box>
-                                    )}
-                                    <MessageBubble
-                                        m={m}
-                                        onOpenImage={setImage}
-                                        onRetry={retry}
-                                        onDiscard={discard}
-                                        onReport={(msg) => {
-                                            setReportMessage(msg.id);
-                                            setDialog('report');
-                                        }}
-                                    />
-                                </Fragment>
-                            );
-                        })}
-                    </Box>
+                    <BookingCardsContext.Provider value={cardsContext}>
+                        <Box
+                            component="ol"
+                            sx={{
+                                listStyle: 'none',
+                                m: 0,
+                                p: 0,
+                                display: 'grid',
+                                // minmax(0, 1fr): a card never makes the column wider than the stream.
+                                gridTemplateColumns: 'minmax(0, 1fr)',
+                                gap: 0.75,
+                            }}
+                        >
+                            {!hasMore && (
+                                <Box
+                                    component="li"
+                                    sx={{
+                                        textAlign: 'center',
+                                        fontSize: font.size.xs,
+                                        color: color.ink500,
+                                        fontWeight: 600,
+                                        pb: 1,
+                                    }}
+                                >
+                                    Start of your conversation with {who.firstName}
+                                </Box>
+                            )}
+                            {stream.map((item) => {
+                                const m = item.type === 'event' ? item.first : item.m;
+                                const day = dayLabel(m.sentAt);
+                                const header = day !== lastDay;
+                                lastDay = day;
+                                return (
+                                    <Fragment key={item.key}>
+                                        {header && (
+                                            <Box
+                                                component="li"
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1.5,
+                                                    my: 1,
+                                                    fontSize: font.size.xs,
+                                                    fontWeight: 700,
+                                                    color: color.ink500,
+                                                    '&::before, &::after': {
+                                                        content: '""',
+                                                        flex: 1,
+                                                        borderTop: hairline,
+                                                    },
+                                                }}
+                                            >
+                                                <Box component="span">{day}</Box>
+                                            </Box>
+                                        )}
+                                        {item.type === 'event' ? (
+                                            <BookingEventItem item={item} />
+                                        ) : item.type === 'line' ? (
+                                            <SystemLine item={item} />
+                                        ) : (
+                                            <MessageBubble
+                                                m={item.m}
+                                                onOpenImage={setImage}
+                                                onRetry={retry}
+                                                onDiscard={discard}
+                                                onReport={(msg) => {
+                                                    setReportMessage(msg.id);
+                                                    setDialog('report');
+                                                }}
+                                            />
+                                        )}
+                                    </Fragment>
+                                );
+                            })}
+                        </Box>
+                    </BookingCardsContext.Provider>
                 )}
                 {typing && (
                     <Box

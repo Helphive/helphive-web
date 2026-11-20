@@ -186,7 +186,7 @@ export default function MessagesPage({ area }: { area: Area }) {
         refetchOnFocus: true,
     });
     const blocksQ = useGetChatBlocksQuery(undefined, { skip: !ready });
-    const bookingsByPerson = useBookingsByPerson(area);
+    const { byPerson: bookingsByPerson, loaded: bookingsLoaded } = useBookingsByPerson(area);
     const { people, loaded, failed } = useCometConversations(ready ? chat.me : undefined);
 
     const contacts = useMemo(() => {
@@ -210,7 +210,7 @@ export default function MessagesPage({ area }: { area: Area }) {
                 name,
                 firstName: c?.firstName || name.split(' ')[0],
                 avatar: safeUrl(c?.avatar) ?? p?.avatar,
-                lastText: preview(p?.last),
+                lastText: preview(p?.last, bookingsByPerson.get(uid)),
                 lastAt: p?.last?.sentAt,
                 unread: chat.unread[uid] ?? 0,
                 open: contactsQ.data ? contacts.has(uid) : null,
@@ -247,6 +247,7 @@ export default function MessagesPage({ area }: { area: Area }) {
               until: contacts.get(selected)?.until ?? null,
               blockedByMe: blockedSet.has(selected),
               bookings: bookingsByPerson.get(selected) ?? [],
+              bookingsLoaded,
           }
         : null;
 
