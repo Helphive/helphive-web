@@ -22,11 +22,13 @@ import NotificationItem from './NotificationItem';
 import { useNotificationActions } from './useNotificationActions';
 import type { UserArea } from './notificationMeta';
 import { NotificationsIcon } from '@/components/ui/icons';
+import PushPrompt from '@/features/push/PushPrompt';
 
 const POLL_INTERVAL_MS = 60_000;
 
 export default function NotificationBell({ area }: { area: UserArea }) {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [bellEl, setBellEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
 
     // Poll every minute and refresh when the window regains focus.
@@ -50,6 +52,7 @@ export default function NotificationBell({ area }: { area: UserArea }) {
         <>
             <Tooltip title="Notifications">
                 <IconButton
+                    ref={setBellEl}
                     onClick={(e) => setAnchorEl(e.currentTarget)}
                     // Name the count the way the badge shows it ("99+"), so speech matches sight.
                     aria-label={`Notifications${unreadCount ? `, ${unreadCount > 99 ? '99+' : unreadCount} unread` : ''}`}
@@ -61,6 +64,7 @@ export default function NotificationBell({ area }: { area: UserArea }) {
                     </Badge>
                 </IconButton>
             </Tooltip>
+            <PushPrompt anchorEl={bellEl} />
             <Popover
                 open={open}
                 anchorEl={anchorEl}
