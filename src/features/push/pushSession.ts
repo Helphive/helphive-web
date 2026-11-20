@@ -10,8 +10,10 @@ import { apiSlice } from '@/store/api/apiSlice';
 import { notificationsApi } from '@/features/notifications/notificationsApi';
 import { chatUnreadApi } from '@/features/chat/chatUnread';
 import {
+    SDK_BLOCKED,
     isOneSignalLoaded,
     loadOneSignal,
+    waitUntil,
     withTimeout,
     type ClickEvent,
     type ForegroundEvent,
@@ -23,8 +25,11 @@ import { detectSupport, permissionDecided, pushStore, refreshPermission } from '
 
 const BOUND_KEY = 'hh-push-bound'; // user id this browser's subscription was last attached to
 const OFF_PREFIX = 'hh-push-off:'; // this person turned notifications off in this browser
-const LOAD_MS = 8000;
-const CALL_MS = 5000;
+// Generous on purpose: the SDK's first start and its calls each talk to OneSignal, and on a slow connection a start
+// alone took about ten seconds. Giving up early showed "Off" and a failed "Turn on" to someone who was nearly on.
+const LOAD_MS = 45000;
+const CALL_MS = 30000;
+const OPT_IN_MS = 20000;
 
 const log = (what: string, error?: unknown) => {
     // Never the payload, an id or a message: only what failed and a status code or name.
@@ -196,12 +201,27 @@ async function bindSession(userId: string) {
     try {
         const sdk = await attach(userId);
         if (sdk && signedInUserId() === userId) {
+            bindRetries = 0;
             pushStore.set({ optedIn: !!sdk.User.PushSubscription.optedIn });
         }
     } catch (error) {
         log('could not attach to push', error);
-        pushStore.set({ optedIn: false });
+        retryBind(userId);
     }
+}
+
+/* A start that failed (slow, offline, blocked) is tried again a few times; the row says "Checking" meanwhile. */
+let bindRetries = 0;
+function retryBind(userId: string) {
+    if (bindRetries >= 3) {
+        pushStore.set({ optedIn: false });
+        return;
+    }
+    bindRetries += 1;
+    setTimeout(() => {
+        if (signedInUserId() !== userId) return;
+        void enqueue(() => bindSession(userId)).catch((error) => log('retry failed', error));
+    }, 5000 * bindRetries);
 }
 
 function refreshedPermission(): NotificationPermission {
@@ -216,7 +236,9 @@ async function onUserChanged(previous: string | null, next: string | null) {
 }
 
 /** Turn notifications on for this browser. Call it from the button's click handler. */
-export async function enablePush(): Promise<'on' | 'blocked' | 'dismissed' | 'error'> {
+export async function enablePush(): Promise<
+    'on' | 'blocked' | 'dismissed' | 'unreachable' | 'error'
+> {
     const userId = signedInUserId();
     if (!userId || detectSupport() !== 'ok') return 'error';
     pushStore.set({ busy: true });
@@ -236,12 +258,15 @@ export async function enablePush(): Promise<'on' | 'blocked' | 'dismissed' | 'er
             if (!sdk) return 'error' as const;
             if (!sdk.User.PushSubscription.optedIn)
                 await withTimeout(sdk.User.PushSubscription.optIn(), CALL_MS);
-            pushStore.set({ optedIn: !!sdk.User.PushSubscription.optedIn });
-            return sdk.User.PushSubscription.optedIn ? ('on' as const) : ('error' as const);
+            // The browser subscription is confirmed a moment after optIn() returns.
+            const on = await waitUntil(() => !!sdk.User.PushSubscription.optedIn, OPT_IN_MS);
+            bindRetries = 0;
+            pushStore.set({ optedIn: on });
+            return on ? ('on' as const) : ('error' as const);
         });
     } catch (error) {
         log('could not turn on', error);
-        return 'error';
+        return error instanceof Error && error.message === SDK_BLOCKED ? 'unreachable' : 'error';
     } finally {
         pushStore.set({ busy: false });
     }

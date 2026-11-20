@@ -18,6 +18,10 @@ export function usePushActions() {
                 'Notifications are still off. You can turn them on any time in your profile.',
                 'info'
             );
+        } else if (result === 'unreachable') {
+            snackbar.error(
+                "Couldn't reach the notification service. If you use an ad or tracker blocker, allow it for this site, then try again."
+            );
         } else snackbar.error("Couldn't turn on notifications. Please try again in a moment.");
         return result;
     }, [snackbar]);

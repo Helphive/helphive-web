@@ -58,15 +58,23 @@ declare global {
     }
 }
 
-let loading: Promise<OneSignalApi> | null = null;
+/** The SDK file did not download (offline, or blocked by an extension or the network). */
+export const SDK_BLOCKED = 'sdk-blocked';
+
+let starting: Promise<OneSignalApi> | null = null;
+let download: Promise<never> | null = null;
 let ready: OneSignalApi | null = null;
 
 /** True once the SDK has been loaded in this page (sign-out then talks to it without a download). */
 export const isOneSignalLoaded = () => ready !== null;
 
+/**
+ * Resolves once the SDK has downloaded AND finished starting, which can take well over ten seconds on a slow
+ * connection (it registers the browser with OneSignal first). The SDK is started exactly once per page: a download
+ * that failed can be tried again, a start that failed cannot (reload the page).
+ */
 export function loadOneSignal(): Promise<OneSignalApi> {
-    if (loading) return loading;
-    loading = new Promise<OneSignalApi>((resolve, reject) => {
+    starting ??= new Promise<OneSignalApi>((resolve, reject) => {
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         window.OneSignalDeferred.push(async (sdk) => {
             try {
@@ -92,17 +100,32 @@ export function loadOneSignal(): Promise<OneSignalApi> {
                 reject(error);
             }
         });
+    });
+    starting.catch(() => undefined);
+    download ??= new Promise<never>((_, reject) => {
         const script = document.createElement('script');
         script.src = SDK_URL;
         script.async = true;
-        script.onerror = () => reject(new Error('OneSignal SDK did not load'));
+        script.onerror = () => {
+            script.remove();
+            download = null; // the next call downloads it again
+            reject(new Error(SDK_BLOCKED));
+        };
         document.head.appendChild(script);
-    }).catch((error) => {
-        loading = null; // a later attempt may succeed (offline, blocked, wrong origin)
-        throw error;
     });
-    return loading;
+    download.catch(() => undefined);
+    return Promise.race([starting, download]);
 }
+
+/** Waits until `check` is true, looking every 250 ms; false when `ms` passes first. */
+export const waitUntil = async (check: () => boolean, ms: number): Promise<boolean> => {
+    const end = Date.now() + ms;
+    while (!check()) {
+        if (Date.now() >= end) return false;
+        await new Promise((r) => setTimeout(r, 250));
+    }
+    return true;
+};
 
 export const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
     Promise.race([
