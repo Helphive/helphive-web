@@ -15,7 +15,7 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import { color, font, hairline, radius } from '@/theme/tokens';
+import { color, font, hairline, inDark, radius } from '@/theme/tokens';
 import {
     CheckMarkIcon,
     CloseIcon,
@@ -42,7 +42,7 @@ function Ticks({ m }: { m: ChatMessage }) {
         return (
             <MarkAllReadIcon
                 weight="bold"
-                sx={{ ...sx, color: color.blue200 }}
+                sx={{ ...sx, color: color.blue200, ...inDark({ color: color.blue700 }) }}
                 titleAccess="Read"
             />
         );
@@ -74,7 +74,9 @@ export function ImageViewer({
                             p: 0,
                             display: 'grid',
                             placeItems: 'center',
-                            bgcolor: color.ink900,
+                            bgcolor: color.inkFill,
+                            // A photo sits on the deepest layer on dark, not on a light slab.
+                            ...inDark({ bgcolor: color.canvas }),
                             minHeight: 240,
                         }}
                     >
@@ -255,8 +257,10 @@ export default function MessageBubble({
                         borderRadius: `${radius.md}px`,
                         [m.mine ? 'borderBottomRightRadius' : 'borderBottomLeftRadius']:
                             `${radius.sm / 2}px`,
-                        bgcolor: m.mine ? color.ink900 : color.surface,
-                        color: m.mine ? color.surface : color.ink900,
+                        bgcolor: m.mine ? color.inkFill : color.surface,
+                        color: m.mine ? color.onInk : color.ink900,
+                        // Own messages on dark: a quiet lifted tone, not a column of near-white slabs.
+                        ...(m.mine && inDark({ bgcolor: color.ink200, color: color.ink900 })),
                         border: m.mine ? 'none' : hairline,
                         opacity: m.state === 'sending' ? 0.75 : 1,
                         display: 'grid',
@@ -306,6 +310,7 @@ export default function MessageBubble({
                             fontSize: font.size.xs,
                             fontWeight: 600,
                             color: m.mine ? color.ink300 : color.ink500,
+                            ...(m.mine && inDark({ color: color.ink600 })),
                             mt: -0.25,
                         }}
                     >

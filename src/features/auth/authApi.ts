@@ -32,6 +32,8 @@ export interface UserInfoResponse {
     profile?: string;
     status?: User['providerStatus'];
     rejectReason?: string;
+    /** Services the provider is approved for, keyed publicAreaAttendant / roomAttendant / linenPorter. */
+    jobTypes?: Record<string, boolean>;
 }
 
 export const authApi = apiSlice.injectEndpoints({

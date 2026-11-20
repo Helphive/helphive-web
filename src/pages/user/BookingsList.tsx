@@ -10,10 +10,11 @@ import {
     ListSkeleton,
     Money,
     Panel,
+    TONE_BAR_DARK,
     TONE_STYLES,
 } from '@/components/ui';
 import type { Booking } from '@/types';
-import { color, font, hairline } from '@/theme/tokens';
+import { color, font, hairline, hoverRow, inDark } from '@/theme/tokens';
 import { getDisplayStatus, pluralHours, formatDay } from '@/utils/format';
 import { CalendarIcon, LocationIcon, TimeIcon, TodayIcon } from '@/components/ui/icons';
 
@@ -81,7 +82,7 @@ function BookingRow({ booking, first }: { booking: Booking; first: boolean }) {
                 borderTop: first ? 0 : hairline,
                 color: 'inherit',
                 textDecoration: 'none',
-                '&:hover': { bgcolor: color.subtle },
+                '&:hover': hoverRow,
             }}
         >
             <Box
@@ -90,6 +91,8 @@ function BookingRow({ booking, first }: { booking: Booking; first: boolean }) {
                     alignSelf: 'stretch',
                     borderRadius: '2px',
                     bgcolor: TONE_STYLES[BOOKING_STATUS[status].tone].fg,
+                    // Bars are status marks: the 500s on dark (the 700s there are light text colours).
+                    ...inDark({ bgcolor: TONE_BAR_DARK[BOOKING_STATUS[status].tone] }),
                 }}
             />
             <Box sx={{ minWidth: 0 }}>

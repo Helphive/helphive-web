@@ -2,12 +2,12 @@ import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Link, Typography } from '@mui/material';
 import { demoLoginPath } from '@/features/auth/demoAccounts';
-import { color, font, hairline, radius } from '@/theme/tokens';
+import { color, font, hairline, inDark, radius } from '@/theme/tokens';
 import { HoneycombBackdrop, InkBackdrop } from './Backdrops';
 import { revealChild } from './motion';
 import PhoneImage from './PhoneImage';
 import { Section, SectionHead } from './Section';
-import { toneMuted, type SectionTone } from './tones';
+import { toneMutedSx, type SectionTone } from './tones';
 import { CheckMarkIcon, ForwardIcon } from '@/components/ui/icons';
 
 interface Point {
@@ -40,6 +40,7 @@ function Points({ points, tone }: { points: Point[]; tone: SectionTone }) {
                             borderRadius: `${radius.sm}px`,
                             bgcolor: dark ? color.ink700 : color.coral50,
                             color: dark ? color.coral100 : color.coral700,
+                            ...(dark && inDark({ bgcolor: color.coral50, color: color.coral600 })),
                         }}
                     >
                         <CheckMarkIcon sx={{ fontSize: 18 }} />
@@ -48,7 +49,7 @@ function Points({ points, tone }: { points: Point[]; tone: SectionTone }) {
                         <Typography sx={{ fontWeight: 700, color: 'inherit' }}>
                             {point.title}
                         </Typography>
-                        <Typography sx={{ mt: 0.25, color: toneMuted(tone) }}>
+                        <Typography sx={{ mt: 0.25, ...toneMutedSx(tone) }}>
                             {point.text}
                         </Typography>
                     </Box>
@@ -83,6 +84,7 @@ const demoLink = (dark: boolean) => ({
     fontWeight: 700,
     fontSize: font.size.md,
     color: dark ? color.coral100 : color.coral700,
+    ...(dark && inDark({ color: color.coral600 })),
 });
 
 /** For operations teams: the booking-details phone on a framed honeycomb stage, copy on the right. */

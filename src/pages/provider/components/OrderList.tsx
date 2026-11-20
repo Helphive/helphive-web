@@ -17,7 +17,7 @@ import {
 import dayjs from 'dayjs';
 import type { Booking } from '@/types';
 import { formatMoney, getDisplayStatus, pluralHours, formatDay } from '@/utils/format';
-import { color, font, hairline } from '@/theme/tokens';
+import { color, font, hairline, hoverRow } from '@/theme/tokens';
 import { BookingStatusPill, ServiceIcon, srOnly } from '@/components/ui';
 import { orderEarnings } from '../orderUtils';
 import { CalendarIcon, LocationIcon, TimeIcon } from '@/components/ui/icons';
@@ -75,7 +75,7 @@ function StackedRows({ orders, getLink, showStatus, label }: OrderListProps) {
                                 py: 2,
                                 color: 'inherit',
                                 textDecoration: 'none',
-                                '&:hover': { bgcolor: color.subtle },
+                                '&:hover': hoverRow,
                             }}
                         >
                             <ServiceIcon serviceId={order.service?.id} variant="tile" size={36} />

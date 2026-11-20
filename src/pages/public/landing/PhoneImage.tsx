@@ -1,5 +1,6 @@
 import { Box, type SxProps, type Theme } from '@mui/material';
-import { contactShadow, phoneLift } from './backgrounds';
+import { inDark } from '@/theme/tokens';
+import { contactShadow, contactShadowDark, phoneLift, phoneLiftDark } from './backgrounds';
 
 export type PhoneScreen = 'book-service' | 'booking-details' | 'chat' | 'provider-home';
 
@@ -57,6 +58,7 @@ export default function PhoneImage({
                         zIndex: 0,
                         pointerEvents: 'none',
                     },
+                    ...inDark({ '&::after': { backgroundImage: contactShadowDark } }),
                 },
                 ...(Array.isArray(sx) ? sx : [sx]),
             ]}
@@ -78,6 +80,7 @@ export default function PhoneImage({
                     // Reserve the space before a lazy image loads, so nothing shifts while scrolling.
                     aspectRatio: '608 / 1249',
                     filter: phoneLift,
+                    ...inDark({ filter: phoneLiftDark }),
                 }}
             />
         </Box>

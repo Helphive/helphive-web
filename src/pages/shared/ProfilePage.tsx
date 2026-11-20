@@ -20,6 +20,7 @@ import { updateUser } from '@/features/auth/authSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { useSnackbar } from '@/components/feedback/snackbarContext';
 import {
+    ColorSchemeSwitch,
     DataList,
     DataRow,
     DetailSkeleton,
@@ -371,32 +372,43 @@ export default function ProfilePage({ area }: { area: 'user' | 'provider' }) {
                     </Panel>
                 </Box>
 
-                <Panel title="Account">
-                    <DataList variant="stacked">
-                        <DataRow label="Email" value={user.email} />
-                        <DataRow
-                            label="Account type"
-                            value={area === 'provider' ? 'Provider' : 'Customer'}
-                        />
-                        {area === 'provider' && providerStatus && (
+                <Box sx={{ display: 'grid', gap: { xs: 2.5, md: 3 }, minWidth: 0 }}>
+                    <Panel title="Account">
+                        <DataList variant="stacked">
+                            <DataRow label="Email" value={user.email} />
                             <DataRow
-                                label="Provider status"
-                                value={
-                                    <StatusPill tone={providerStatus.tone}>
-                                        {providerStatus.label}
-                                    </StatusPill>
-                                }
+                                label="Account type"
+                                value={area === 'provider' ? 'Provider' : 'Customer'}
                             />
-                        )}
-                        {!!user.rating && <DataRow label="Rating" value={user.rating.toFixed(1)} />}
-                        {user.createdAt && (
-                            <DataRow
-                                label="Member since"
-                                value={dayjs(user.createdAt).format('MMMM YYYY')}
-                            />
-                        )}
-                    </DataList>
-                </Panel>
+                            {area === 'provider' && providerStatus && (
+                                <DataRow
+                                    label="Provider status"
+                                    value={
+                                        <StatusPill tone={providerStatus.tone}>
+                                            {providerStatus.label}
+                                        </StatusPill>
+                                    }
+                                />
+                            )}
+                            {!!user.rating && (
+                                <DataRow label="Rating" value={user.rating.toFixed(1)} />
+                            )}
+                            {user.createdAt && (
+                                <DataRow
+                                    label="Member since"
+                                    value={dayjs(user.createdAt).format('MMMM YYYY')}
+                                />
+                            )}
+                        </DataList>
+                    </Panel>
+                    <Panel title="Appearance" titleComponent="h2">
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            System follows your device's light or dark setting. Saved on this
+                            device.
+                        </Typography>
+                        <ColorSchemeSwitch aria-label="Appearance" />
+                    </Panel>
+                </Box>
             </Box>
         </>
     );

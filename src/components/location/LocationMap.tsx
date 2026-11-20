@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
-import { color, hairline, radius, shadow } from '@/theme/tokens';
+import { color, hairline, palettes, radius, shadow, type Scheme } from '@/theme/tokens';
+import { useColorScheme } from '@/theme/colorScheme';
 import type { LatLng } from '@/features/places/placesApi';
 
 export interface LocationMapProps {
@@ -15,7 +16,9 @@ export interface LocationMapProps {
     onLoadFailed: () => void;
 }
 
-const PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46"><path d="M18 1C8.6 1 1 8.5 1 17.8 1 30.4 18 45 18 45s17-14.6 17-27.2C35 8.5 27.4 1 18 1z" fill="${color.coral600}" stroke="${color.surface}" stroke-width="2"/><circle cx="18" cy="17.5" r="6.5" fill="${color.surface}"/></svg>`;
+// The pin is a data-URL image, so it needs real colours (CSS variables do not reach inside it).
+const pinSvg = (scheme: Scheme) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46"><path d="M18 1C8.6 1 1 8.5 1 17.8 1 30.4 18 45 18 45s17-14.6 17-27.2C35 8.5 27.4 1 18 1z" fill="${palettes[scheme].brandFill}" stroke="${palettes[scheme].onBrand}" stroke-width="2"/><circle cx="18" cy="17.5" r="6.5" fill="${palettes[scheme].onBrand}"/></svg>`;
 
 const toLiteral = (p: LatLng) => ({ lat: p.latitude, lng: p.longitude });
 
@@ -32,6 +35,7 @@ export default function LocationMap({
     });
     const [authFailed, setAuthFailed] = useState(false);
     const mapRef = useRef<google.maps.Map | null>(null);
+    const { scheme } = useColorScheme();
 
     // Google calls this global when the key is refused (wrong referrer, API not enabled); loadError stays empty.
     useEffect(() => {
@@ -59,12 +63,12 @@ export default function LocationMap({
         () =>
             isLoaded
                 ? {
-                      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(PIN_SVG)}`,
+                      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pinSvg(scheme))}`,
                       scaledSize: new google.maps.Size(36, 46),
                       anchor: new google.maps.Point(18, 45),
                   }
                 : undefined,
-        [isLoaded]
+        [isLoaded, scheme]
     );
     // The map opens once at the pin (or the default centre); later moves go through panTo above.
     const [initialCenter] = useState(() => toLiteral(pin ?? center));
@@ -101,12 +105,16 @@ export default function LocationMap({
 
     return (
         <Box sx={{ position: 'relative', height: '100%' }}>
+            {/* Google's colour scheme is fixed when a map is created, so a scheme switch makes a new map. */}
             <GoogleMap
+                key={scheme}
                 mapContainerStyle={{ width: '100%', height: '100%' }}
                 center={initialCenter}
                 zoom={initialZoom}
                 onLoad={(map) => {
                     mapRef.current = map;
+                    // After a scheme switch the new map opens at the current pin.
+                    if (pin) map.setCenter(toLiteral(pin));
                 }}
                 onUnmount={() => {
                     mapRef.current = null;
@@ -118,6 +126,7 @@ export default function LocationMap({
                     clickableIcons: false,
                     gestureHandling: 'cooperative',
                     keyboardShortcuts: true,
+                    ...(scheme === 'dark' && { colorScheme: 'DARK' }),
                 }}
             >
                 {pin && (
@@ -143,7 +152,7 @@ export default function LocationMap({
                         gap: 1,
                         px: 1.5,
                         py: 0.75,
-                        bgcolor: color.surface,
+                        bgcolor: color.raised,
                         border: hairline,
                         borderRadius: `${radius.md}px`,
                         boxShadow: shadow.float,

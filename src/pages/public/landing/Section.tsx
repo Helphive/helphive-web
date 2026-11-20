@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Box, Typography, type SxProps, type Theme } from '@mui/material';
-import { font, hairline, layout } from '@/theme/tokens';
+import { color, font, hairline, inDark, layout } from '@/theme/tokens';
 import { HEADER_HEIGHT, sectionGutter } from './constants';
-import { TONES, type SectionTone } from './tones';
+import { TONES, toneMutedSx, type SectionTone } from './tones';
 
 /** Full-width band with a centred 1200px column. */
 export function Section({
@@ -24,6 +24,7 @@ export function Section({
     'aria-labelledby'?: string;
 }) {
     const t = TONES[tone];
+    const deep = tone === 'ink';
     return (
         <Box
             component="section"
@@ -34,7 +35,20 @@ export function Section({
             sx={{
                 bgcolor: t.bg,
                 color: t.fg,
-                borderTop: bordered && tone !== 'ink' ? hairline : 0,
+                borderTop: bordered && !deep ? hairline : 0,
+                ...(deep &&
+                    inDark({
+                        bgcolor: color.canvas,
+                        color: color.ink900,
+                        borderTop: hairline,
+                        borderBottom: hairline,
+                    })),
+                // The coral band on dark: a warm glow on the surface rather than a large brown area.
+                ...(tone === 'coral' &&
+                    inDark({
+                        bgcolor: color.surface,
+                        backgroundImage: `radial-gradient(ellipse 75% 100% at 75% 50%, ${color.coral50} 0%, transparent 80%)`,
+                    })),
                 scrollMarginTop: `${HEADER_HEIGHT}px`,
                 position: 'relative',
                 overflow: 'hidden',
@@ -111,7 +125,7 @@ export function SectionHead({
                         mt: 2,
                         maxWidth: '54ch',
                         mx: align === 'center' ? 'auto' : 0,
-                        color: TONES[tone].muted,
+                        ...toneMutedSx(tone),
                         fontSize: { xs: font.size.lg, md: font.size.xl },
                         lineHeight: 1.55,
                     }}

@@ -1,6 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Link, Typography } from '@mui/material';
-import { Logo } from '@/components/ui';
+import { ColorSchemeSwitch, Logo } from '@/components/ui';
 import { demoLoginPath } from '@/features/auth/demoAccounts';
 import { color, font, hairline, layout } from '@/theme/tokens';
 import { sectionGutter } from './constants';
@@ -129,9 +129,16 @@ export default function LandingFooter({
                         borderTop: hairline,
                         fontSize: font.size.sm,
                         color: color.ink500,
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 2,
                     }}
                 >
-                    © {new Date().getFullYear()} HelpHive. All rights reserved.
+                    <span>© {new Date().getFullYear()} HelpHive. All rights reserved.</span>
+                    {/* Negative margins keep the row as tall as the text line. */}
+                    <ColorSchemeSwitch variant="compact" sx={{ my: '-6px' }} />
                 </Box>
             </Box>
         </Box>

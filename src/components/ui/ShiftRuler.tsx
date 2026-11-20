@@ -33,9 +33,9 @@ export interface ShiftRulerProps {
 }
 
 const TONES = {
-    // coral600: white labels need the text-bearing coral to reach 4.5:1 (coral500 is 3.2:1).
-    coral: { bg: color.coral600, fg: color.surface, ring: 'none' },
-    ink: { bg: color.ink900, fg: color.surface, ring: 'none' },
+    // brandFill: white labels need the deeper coral to reach 4.5:1 (coral500 is 3.2:1).
+    coral: { bg: color.brandFill, fg: color.onBrand, ring: 'none' },
+    ink: { bg: color.inkFill, fg: color.onInk, ring: 'none' },
     soft: { bg: color.coral50, fg: color.coral700, ring: `inset 0 0 0 1px ${color.coral100}` },
 } as const;
 

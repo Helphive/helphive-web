@@ -18,7 +18,7 @@ export default function BookingTicket() {
             component="article"
             aria-label="Example booking"
             sx={{
-                bgcolor: color.surface,
+                bgcolor: color.raised,
                 border: hairlineStrong,
                 borderRadius: `${radius.md}px`,
                 boxShadow: shadow.float,

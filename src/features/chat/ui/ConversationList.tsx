@@ -3,7 +3,7 @@ import { Avatar, Badge, Box, Typography } from '@mui/material';
 import type { Booking } from '@/types';
 import { getInitials } from '@/utils/profileImage';
 import { formatDay } from '@/utils/format';
-import { color, font, hairline } from '@/theme/tokens';
+import { color, font, hairline, hoverItem, inDark, wash } from '@/theme/tokens';
 import type { Presence } from '../runtime/chatRuntime';
 import { listTime, messagesPath, type Area, srText } from './chatModel';
 
@@ -99,6 +99,9 @@ export default function ConversationList({
                                 color: 'inherit',
                                 position: 'relative',
                                 bgcolor: active ? color.canvas : 'transparent',
+                                ...inDark({
+                                    bgcolor: active ? wash(color.ink900, 0.06) : 'transparent',
+                                }),
                                 '&::before': active
                                     ? {
                                           content: '""',
@@ -110,7 +113,7 @@ export default function ConversationList({
                                           bgcolor: color.ink900,
                                       }
                                     : undefined,
-                                '&:hover': { bgcolor: color.canvas },
+                                '&:hover': hoverItem,
                                 '&:focus-visible': { outlineOffset: -2 },
                             }}
                         >
@@ -173,8 +176,8 @@ export default function ConversationList({
                                             height: 20,
                                             px: '6px',
                                             borderRadius: 999,
-                                            bgcolor: color.coral600,
-                                            color: color.surface,
+                                            bgcolor: color.brandFill,
+                                            color: color.onBrand,
                                             fontSize: 11,
                                             fontWeight: 700,
                                             display: 'grid',

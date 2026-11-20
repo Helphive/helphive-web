@@ -236,9 +236,11 @@ export default function Composer({
                             onClick={send}
                             disabled={!canSend}
                             sx={{
-                                bgcolor: canSend ? color.coral600 : 'transparent',
-                                color: canSend ? color.surface : color.ink300,
-                                '&:hover': { bgcolor: canSend ? color.coral700 : 'transparent' },
+                                bgcolor: canSend ? color.brandFill : 'transparent',
+                                color: canSend ? color.onBrand : color.ink300,
+                                '&:hover': {
+                                    bgcolor: canSend ? color.brandFillHover : 'transparent',
+                                },
                                 '&.Mui-disabled': { color: color.ink300 },
                             }}
                         >

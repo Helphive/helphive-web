@@ -29,6 +29,10 @@ export const contactShadow = `radial-gradient(closest-side, rgba(16, 24, 40, 0.2
 /** Lift shadow that follows a phone's transparent silhouette. */
 export const phoneLift = 'drop-shadow(0 18px 28px rgba(16, 24, 40, 0.16))';
 
+// On dark an ink shadow disappears into the page; a deeper black one keeps the phones grounded.
+export const contactShadowDark = `radial-gradient(closest-side, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.2) 55%, transparent)`;
+export const phoneLiftDark = 'drop-shadow(0 18px 28px rgba(0, 0, 0, 0.45))';
+
 /** Ink section glow: a faint coral light from one corner. */
 export const inkGlow = (position: string) =>
     `radial-gradient(ellipse 55% 70% at ${position}, rgba(255, 87, 64, 0.16) 0%, transparent 70%)`;

@@ -12,6 +12,15 @@ export const TONE_STYLES: Record<Tone, { fg: string; bg: string; border: string 
     red: { fg: color.red700, bg: color.red50, border: color.red200 },
 };
 
+/** Status bars and marks on dark: the 500s (grey: a quiet ink). */
+export const TONE_BAR_DARK: Record<Tone, string> = {
+    green: color.green500,
+    blue: color.blue500,
+    amber: color.amber500,
+    grey: color.ink300,
+    red: color.red500,
+};
+
 export const BOOKING_STATUS: Record<DisplayStatus, { label: string; tone: Tone }> = {
     scheduled: { label: 'Scheduled', tone: 'grey' },
     accepted: { label: 'Accepted', tone: 'blue' },

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Box, IconButton, ListItem, ListItemButton, Tooltip } from '@mui/material';
 import type { Notification } from '@/types';
 import { formatTimeAgo } from '@/utils/format';
-import { color, font, hairline, radius } from '@/theme/tokens';
+import { color, font, hairline, hoverItem, inDark, radius, wash } from '@/theme/tokens';
 import { srOnly } from '@/components/ui/status';
 import { getNotificationMeta } from './notificationMeta';
 import { DeleteIcon } from '@/components/ui/icons';
@@ -14,29 +14,66 @@ interface NotificationItemProps {
     onDelete?: (notification: Notification) => void;
 }
 
+// Row geometry. The type chip is top-aligned with the title's first line; the trailing cluster (unread
+// dot, delete button) is one flex row centred on that same first line, so dot and bin share a centre.
+const ROW_PAD_Y = 12;
+const EDGE = 12; // the cluster's distance from the row's right edge
+const TITLE_LINE = `calc(${font.size.md} * ${font.lineHeight.body})`; // the title's line box height
+const DOT = 8;
+const GAP = 8;
+const DELETE = 32; // IconButton size="small"
+const TEXT_GAP = 12; // space between the text and the cluster
+
 function NotificationItem({ notification, onOpen, onDelete }: NotificationItemProps) {
     const meta = getNotificationMeta(notification.type);
     const unread = !notification.read;
+    // Space reserved for the cluster, the same for read and unread rows so text wraps identically.
+    const reserve = EDGE + TEXT_GAP + (onDelete ? DELETE + GAP + DOT : DOT);
     return (
         <ListItem
             disablePadding
             secondaryAction={
-                onDelete && (
-                    <Tooltip title="Delete">
-                        <IconButton
-                            size="small"
-                            aria-label={`Delete notification: ${notification.title}`}
-                            onClick={() => onDelete(notification)}
-                        >
-                            <DeleteIcon fontSize="small" />
-                        </IconButton>
-                    </Tooltip>
+                (unread || onDelete) && (
+                    <>
+                        {unread && (
+                            <Box
+                                aria-hidden="true"
+                                sx={{
+                                    width: DOT,
+                                    height: DOT,
+                                    borderRadius: '50%',
+                                    bgcolor: color.coral500,
+                                    flexShrink: 0,
+                                }}
+                            />
+                        )}
+                        {onDelete && (
+                            <Tooltip title="Delete">
+                                <IconButton
+                                    size="small"
+                                    aria-label={`Delete notification: ${notification.title}`}
+                                    onClick={() => onDelete(notification)}
+                                >
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    </>
                 )
             }
             sx={{
                 borderTop: hairline,
                 '&:first-of-type': { borderTop: 0 },
-                '& .MuiListItemSecondaryAction-root': { top: 12, right: 12, transform: 'none' },
+                '& .MuiListItemSecondaryAction-root': {
+                    top: ROW_PAD_Y,
+                    right: EDGE,
+                    transform: 'none',
+                    height: TITLE_LINE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: `${GAP}px`,
+                },
+                '& > .MuiListItemButton-root': { pr: `${reserve}px` },
             }}
         >
             <ListItemButton
@@ -44,12 +81,13 @@ function NotificationItem({ notification, onOpen, onDelete }: NotificationItemPr
                 alignItems="flex-start"
                 sx={{
                     gap: 1.5,
-                    py: 1.5,
+                    py: `${ROW_PAD_Y}px`,
                     pl: { xs: 2, sm: 2.5 },
-                    pr: onDelete ? 7 : 2.5,
                     borderRadius: 0,
                     bgcolor: unread ? color.subtle : 'transparent',
-                    '&:hover': { bgcolor: color.canvas },
+                    // Unread rows lift a little on dark (subtle is darker than the panel or popover there).
+                    ...(unread && inDark({ bgcolor: wash(color.ink900, 0.035) })),
+                    '&:hover': hoverItem,
                 }}
             >
                 <Box
@@ -70,8 +108,10 @@ function NotificationItem({ notification, onOpen, onDelete }: NotificationItemPr
                 </Box>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Box
+                        className="notification-title"
                         sx={{
                             fontSize: font.size.md,
+                            lineHeight: font.lineHeight.body,
                             fontWeight: unread ? 700 : 600,
                             color: color.ink900,
                             overflowWrap: 'anywhere',
@@ -108,19 +148,6 @@ function NotificationItem({ notification, onOpen, onDelete }: NotificationItemPr
                         {formatTimeAgo(notification.createdAt)}
                     </Box>
                 </Box>
-                {unread && (
-                    <Box
-                        aria-hidden="true"
-                        sx={{
-                            width: 8,
-                            height: 8,
-                            mt: 0.75,
-                            borderRadius: '50%',
-                            bgcolor: color.coral500,
-                            flexShrink: 0,
-                        }}
-                    />
-                )}
             </ListItemButton>
         </ListItem>
     );

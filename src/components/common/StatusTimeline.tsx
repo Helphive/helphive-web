@@ -51,10 +51,10 @@ function buildTimeline(booking: Booking): Step[] {
 }
 
 const stateColor: Record<StepState, string> = {
-    done: color.ink900,
-    current: color.coral600,
+    done: color.inkFill,
+    current: color.brandFill,
     pending: color.lineStrong,
-    error: color.red700,
+    error: color.redFill,
 };
 
 export default function StatusTimeline({ booking }: { booking: Booking }) {
@@ -74,7 +74,7 @@ export default function StatusTimeline({ booking }: { booking: Booking }) {
                                     height: 20,
                                     borderRadius: '50%',
                                     bgcolor: stateColor[step.state],
-                                    color: 'common.white',
+                                    color: step.state === 'done' ? color.onInk : color.onBrand,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',

@@ -68,6 +68,8 @@ import {
     MapTrifoldIcon,
     MinusIcon,
     MinusSquareIcon,
+    MonitorIcon,
+    MoonIcon,
     PencilSimpleIcon,
     DotsThreeVerticalIcon,
     FlagIcon,
@@ -84,6 +86,7 @@ import {
     SealWarningIcon,
     SignOutIcon,
     SquareIcon,
+    SunIcon,
     StarIcon as PhStarIcon,
     ShirtFoldedIcon,
     TrashIcon,
@@ -235,6 +238,11 @@ export const ReportIcon = icon(FlagIcon, 'ReportIcon');
 export const MoreIcon = icon(DotsThreeVerticalIcon, 'MoreIcon');
 export const AndroidIcon = icon(AndroidLogoIcon, 'AndroidIcon');
 export const AppleIcon = icon(AppleLogoIcon, 'AppleIcon');
+
+/* Appearance (colour scheme) */
+export const SchemeSystemIcon = icon(MonitorIcon, 'SchemeSystemIcon');
+export const SchemeLightIcon = icon(SunIcon, 'SchemeLightIcon');
+export const SchemeDarkIcon = icon(MoonIcon, 'SchemeDarkIcon');
 
 /* Status and feedback */
 export const InfoIcon = icon(PhInfoIcon, 'InfoIcon');

@@ -72,8 +72,8 @@ function SectionMark({ done, index }: { done: boolean; index: number }) {
                 flexShrink: 0,
                 fontSize: font.size.xs,
                 fontWeight: 700,
-                bgcolor: done ? color.ink900 : 'transparent',
-                color: done ? color.surface : color.ink500,
+                bgcolor: done ? color.inkFill : 'transparent',
+                color: done ? color.onInk : color.ink500,
                 border: done ? 0 : `1.5px solid ${color.lineStrong}`,
             }}
         >
@@ -345,8 +345,8 @@ export default function BookingFlow() {
                                                     py: 1,
                                                     lineHeight: 1.25,
                                                     '&.Mui-selected, &.Mui-selected:hover': {
-                                                        bgcolor: color.ink900,
-                                                        color: color.surface,
+                                                        bgcolor: color.inkFill,
+                                                        color: color.onInk,
                                                     },
                                                 }}
                                             >
@@ -375,8 +375,8 @@ export default function BookingFlow() {
                                         sx={{
                                             gridColumn: { xs: 'span 1', sm: 'auto' },
                                             '&.Mui-selected, &.Mui-selected:hover': {
-                                                bgcolor: color.ink900,
-                                                color: color.surface,
+                                                bgcolor: color.inkFill,
+                                                color: color.onInk,
                                             },
                                         }}
                                     >

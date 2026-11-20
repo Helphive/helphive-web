@@ -3,7 +3,7 @@ export { default as Logo, LogoMark } from './Logo';
 export { default as Panel, type PanelProps } from './Panel';
 export { default as PageHeader, type PageHeaderProps } from './PageHeader';
 export { StatusPill, BookingStatusPill, Count } from './StatusPill';
-export { BOOKING_STATUS, TONE_STYLES, srOnly, type Tone } from './status';
+export { BOOKING_STATUS, TONE_BAR_DARK, TONE_STYLES, srOnly, type Tone } from './status';
 export { DataList, DataRow } from './DataList';
 export { StatTile, StatGroup } from './StatTile';
 export { ShiftRuler, type ShiftBlock, type ShiftRulerProps } from './ShiftRuler';
@@ -24,3 +24,4 @@ export { PageSkeleton, ListSkeleton, DetailSkeleton, AppSkeleton } from './Skele
 export { default as PasswordField, type PasswordFieldProps } from './PasswordField';
 export { default as ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { default as ErrorBoundary } from './ErrorBoundary';
+export { default as ColorSchemeSwitch, type ColorSchemeSwitchProps } from './ColorSchemeSwitch';

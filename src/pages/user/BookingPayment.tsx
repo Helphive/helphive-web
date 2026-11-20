@@ -20,43 +20,60 @@ import {
     resetBookingForm,
 } from '@/features/booking/bookingSlice';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { color, font, layout, shadow } from '@/theme/tokens';
+import { color, effectValues, font, layout, palettes, type Scheme } from '@/theme/tokens';
+import { useColorScheme } from '@/theme/colorScheme';
 import { SecureIcon, SuccessIcon } from '@/components/ui/icons';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
-// Stripe renders inside an iframe, so it gets the design tokens through its appearance API.
-const appearance: Appearance = {
-    theme: 'flat',
-    variables: {
-        colorPrimary: color.coral600,
-        colorText: color.ink900,
-        colorTextSecondary: color.ink600,
-        colorTextPlaceholder: color.ink500,
-        colorBackground: color.surface,
-        colorDanger: color.red700,
-        fontFamily:
-            '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        fontSizeBase: '14px',
-        borderRadius: '6px',
-        spacingUnit: '4px',
-    },
-    rules: {
-        '.Input': {
-            border: `1px solid ${color.lineStrong}`,
-            boxShadow: 'none',
-            padding: '12px',
+// Stripe renders inside an iframe, so it gets the design tokens (as real colours for the scheme on
+// screen) through its appearance API. Elements re-applies it when the scheme changes.
+const stripeAppearance = (scheme: Scheme): Appearance => {
+    const p = palettes[scheme];
+    return {
+        theme: 'flat',
+        variables: {
+            colorPrimary: p.coral600,
+            colorText: p.ink900,
+            colorTextSecondary: p.ink600,
+            colorTextPlaceholder: p.ink500,
+            colorBackground: p.surface,
+            colorDanger: p.red700,
+            fontFamily:
+                '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontSizeBase: '14px',
+            borderRadius: '6px',
+            spacingUnit: '4px',
         },
-        '.Input:focus': {
-            border: `1px solid ${color.ink900}`,
-            boxShadow: shadow.focusField,
+        rules: {
+            '.Input': {
+                border: `1px solid ${p.lineStrong}`,
+                boxShadow: 'none',
+                padding: '12px',
+            },
+            '.Input:focus': {
+                border: `1px solid ${p.ink900}`,
+                boxShadow: effectValues[scheme].shadowFocusField,
+            },
+            '.Input--invalid': { border: `1px solid ${p.red700}`, boxShadow: 'none' },
+            '.Label': { fontWeight: '600', color: p.ink700 },
+            '.Tab, .Block': { border: `1px solid ${p.line}`, boxShadow: 'none' },
+            '.Tab--selected': { border: `1px solid ${p.ink900}`, boxShadow: 'none' },
+            // Stripe fills the selected tab with colorPrimary. On light that is the brand fill already; on
+            // dark colorPrimary is the light coral for text, so the fill is set to the brand fill here.
+            ...(scheme === 'dark' && {
+                '.Tab--selected, .Tab--selected:hover, .Tab--selected:focus': {
+                    backgroundColor: p.brandFill,
+                    border: `1px solid ${p.brandFill}`,
+                    color: p.onBrand,
+                    boxShadow: 'none',
+                },
+                '.TabIcon--selected, .TabLabel--selected': { color: p.onBrand, fill: p.onBrand },
+                '.Block': { backgroundColor: p.subtle, border: `1px solid ${p.line}` },
+            }),
         },
-        '.Input--invalid': { border: `1px solid ${color.red700}`, boxShadow: 'none' },
-        '.Label': { fontWeight: '600', color: color.ink700 },
-        '.Tab, .Block': { border: `1px solid ${color.line}`, boxShadow: 'none' },
-        '.Tab--selected': { border: `1px solid ${color.ink900}`, boxShadow: 'none' },
-    },
+    };
 };
 
 const fonts = [
@@ -158,6 +175,7 @@ export default function BookingPayment() {
     useDocumentTitle('Payment');
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const { scheme } = useColorScheme();
     const formData = useAppSelector(selectBookingFormData);
     const paymentInfo = useAppSelector(selectPaymentInfo);
     const [paid, setPaid] = useState<{ serviceName: string; total: number } | null>(null);
@@ -266,7 +284,7 @@ export default function BookingPayment() {
                         stripe={stripePromise}
                         options={{
                             clientSecret: paymentInfo.clientSecret,
-                            appearance,
+                            appearance: stripeAppearance(scheme),
                             fonts,
                         }}
                     >

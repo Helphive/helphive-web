@@ -30,11 +30,14 @@ import { useChatUnread, useUnreadTitle } from '@/features/chat/chatUnread';
 import MessagesButton from '@/features/chat/MessagesButton';
 import { Count, ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
 import { getInitials, getProfileImageUrl } from '@/utils/profileImage';
-import { color, font, hairline, layout, radius } from '@/theme/tokens';
+import { color, font, hairline, hoverItem, inDark, layout, radius, wash } from '@/theme/tokens';
+import { useColorScheme } from '@/theme/colorScheme';
+import type { SchemePreference } from '@/theme/scheme';
 import {
     AvailableOrdersIcon,
     BookingsIcon,
     ChatIcon,
+    CheckMarkIcon,
     EarningsIcon,
     ExpandIcon,
     HomeIcon,
@@ -43,6 +46,9 @@ import {
     NotificationsIcon,
     OrdersIcon,
     ProfileIcon,
+    SchemeDarkIcon,
+    SchemeLightIcon,
+    SchemeSystemIcon,
     type AppIcon,
 } from '@/components/ui/icons';
 
@@ -127,8 +133,8 @@ function SkipLink() {
                 px: 2,
                 py: 1,
                 borderRadius: `${radius.sm}px`,
-                bgcolor: color.ink900,
-                color: color.surface,
+                bgcolor: color.inkFill,
+                color: color.onInk,
                 fontWeight: 700,
                 fontSize: font.size.md,
                 textDecoration: 'none',
@@ -208,6 +214,54 @@ function useAccount(userType: 'user' | 'provider') {
 
 type Account = ReturnType<typeof useAccount>;
 
+const APPEARANCE: { value: SchemePreference; label: string; Icon: AppIcon }[] = [
+    { value: 'system', label: 'System', Icon: SchemeSystemIcon },
+    { value: 'light', label: 'Light', Icon: SchemeLightIcon },
+    { value: 'dark', label: 'Dark', Icon: SchemeDarkIcon },
+];
+
+// Quick switch in the account menu: a caption and three radio menu items, as direct children of the
+// menu so arrow keys reach them. Picking one keeps the menu open so the change can be seen.
+function useAppearanceItems() {
+    const { preference, setPreference } = useColorScheme();
+    return [
+        <Typography
+            key="appearance-label"
+            component="li"
+            role="presentation"
+            variant="caption"
+            sx={{ display: 'block', px: 1.5, pt: 0.5, pb: 0.5 }}
+        >
+            Appearance
+        </Typography>,
+        ...APPEARANCE.map(({ value, label, Icon }) => {
+            const checked = preference === value;
+            return (
+                <MenuItem
+                    key={value}
+                    role="menuitemradio"
+                    aria-checked={checked}
+                    aria-label={`${label} appearance`}
+                    selected={checked}
+                    onClick={() => setPreference(value)}
+                    sx={{ minHeight: 36 }}
+                >
+                    <ListItemIcon>
+                        <Icon />
+                    </ListItemIcon>
+                    {label}
+                    {checked && (
+                        <CheckMarkIcon
+                            weight="bold"
+                            sx={{ ml: 'auto', fontSize: 16, color: color.ink900 }}
+                        />
+                    )}
+                </MenuItem>
+            );
+        }),
+    ];
+}
+
 function AccountMenu({
     account,
     anchorEl,
@@ -220,6 +274,7 @@ function AccountMenu({
     placement?: 'below' | 'above';
 }) {
     const navigate = useNavigate();
+    const appearanceItems = useAppearanceItems();
     const above = placement === 'above';
     return (
         <Menu
@@ -264,6 +319,9 @@ function AccountMenu({
                 </ListItemIcon>
                 Profile
             </MenuItem>
+            <Divider sx={{ my: 0.5 }} />
+            {appearanceItems}
+            <Divider sx={{ my: 0.5 }} />
             <MenuItem
                 onClick={() => {
                     onClose();
@@ -494,6 +552,9 @@ function SideNav({
                                 },
                                 '&:hover': {
                                     bgcolor: active ? color.surface : color.canvas,
+                                    ...inDark({
+                                        bgcolor: active ? color.surface : wash(color.ink900, 0.06),
+                                    }),
                                     color: color.ink900,
                                 },
                             }}
@@ -528,7 +589,7 @@ function SideNav({
                     borderRadius: `${radius.sm}px`,
                     textAlign: 'left',
                     justifyContent: 'flex-start',
-                    '&:hover': { bgcolor: color.canvas },
+                    '&:hover': hoverItem,
                 }}
             >
                 <Avatar src={account.avatarSrc} alt="" aria-hidden sx={{ width: 32, height: 32 }}>
@@ -608,7 +669,7 @@ function ProviderShell({ account, chatUnread }: { account: Account; chatUnread: 
                         borderTop: hairline,
                         backdropFilter: 'blur(8px)',
                         pb: 'env(safe-area-inset-bottom)',
-                        bgcolor: 'rgba(255, 255, 255, 0.96)',
+                        bgcolor: wash(color.surface, 0.96),
                     }}
                 >
                     <BottomNavigation value={navIndex} showLabels sx={{ bgcolor: 'transparent' }}>

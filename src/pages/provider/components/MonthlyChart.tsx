@@ -11,7 +11,8 @@ import {
 } from 'chart.js';
 import { EmptyState } from '@/components/ui';
 import { formatMoney } from '@/utils/format';
-import { color, font } from '@/theme/tokens';
+import { font, palettes } from '@/theme/tokens';
+import { useColorScheme } from '@/theme/colorScheme';
 import { currentMonthIndex } from '../orderUtils';
 import { ChartIcon } from '@/components/ui/icons';
 
@@ -25,6 +26,10 @@ interface MonthlyChartProps {
 /** Monthly earnings as ink bars with the current month in coral. */
 export default function MonthlyChart({ data, height = 240 }: MonthlyChartProps) {
     const current = currentMonthIndex(data);
+    // The chart draws on a canvas, which needs real colours; it redraws when the scheme changes.
+    const { scheme } = useColorScheme();
+    const p = palettes[scheme];
+    const dark = scheme === 'dark';
 
     const chartData = useMemo(
         () => ({
@@ -34,14 +39,14 @@ export default function MonthlyChart({ data, height = 240 }: MonthlyChartProps) 
                     label: 'Earnings',
                     data: data.map((d) => d.amount),
                     backgroundColor: data.map((_, i) =>
-                        i === current ? color.coral500 : color.ink900
+                        i === current ? p.coral500 : dark ? p.ink500 : p.ink900
                     ),
                     borderRadius: 4,
                     maxBarThickness: 40,
                 },
             ],
         }),
-        [data, current]
+        [data, current, p, dark]
     );
 
     const options = useMemo<ChartOptions<'bar'>>(
@@ -51,7 +56,11 @@ export default function MonthlyChart({ data, height = 240 }: MonthlyChartProps) 
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: color.ink900,
+                    backgroundColor: dark ? p.raised : p.inkFill,
+                    titleColor: dark ? p.ink900 : p.onInk,
+                    bodyColor: dark ? p.ink900 : p.onInk,
+                    borderColor: dark ? p.lineStrong : 'transparent',
+                    borderWidth: dark ? 1 : 0,
                     titleFont: { family: font.family, weight: 700 },
                     bodyFont: { family: font.family, weight: 600 },
                     displayColors: false,
@@ -63,7 +72,7 @@ export default function MonthlyChart({ data, height = 240 }: MonthlyChartProps) 
                     grid: { display: false },
                     border: { display: false },
                     ticks: {
-                        color: color.ink500,
+                        color: p.ink500,
                         font: { family: font.family, size: 12, weight: 600 },
                     },
                 },
@@ -71,9 +80,9 @@ export default function MonthlyChart({ data, height = 240 }: MonthlyChartProps) 
                     beginAtZero: true,
                     suggestedMax: 100,
                     border: { display: false },
-                    grid: { color: color.line },
+                    grid: { color: p.line },
                     ticks: {
-                        color: color.ink500,
+                        color: p.ink500,
                         font: { family: font.family, size: 12, weight: 600 },
                         maxTicksLimit: 5,
                         callback: (value) => `$${value}`,
@@ -81,7 +90,7 @@ export default function MonthlyChart({ data, height = 240 }: MonthlyChartProps) 
                 },
             },
         }),
-        []
+        [p, dark]
     );
 
     const hasData = data.some((d) => d.amount > 0);

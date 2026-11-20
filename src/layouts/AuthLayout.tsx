@@ -3,7 +3,7 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Box, Stack, Typography } from '@mui/material';
 import { useAppSelector } from '@/store/hooks';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
-import { ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
+import { ColorSchemeSwitch, ErrorBoundary, Logo, PageSkeleton } from '@/components/ui';
 import { HoneycombBackdrop } from '@/pages/public/landing/Backdrops';
 import { color, font, hairline } from '@/theme/tokens';
 import { CheckMarkIcon } from '@/components/ui/icons';
@@ -111,12 +111,23 @@ export default function AuthLayout() {
             <Box
                 component="main"
                 sx={{
+                    position: 'relative',
                     display: 'flex',
                     flexDirection: 'column',
                     px: { xs: 2, sm: 4 },
                     py: { xs: 2, sm: 4 },
                 }}
             >
+                {/* Appearance, reachable before signing in; placed so it moves nothing else. */}
+                <ColorSchemeSwitch
+                    variant="compact"
+                    sx={{
+                        position: 'absolute',
+                        zIndex: 1,
+                        top: { xs: 22, sm: 32 },
+                        right: { xs: 16, sm: 32 },
+                    }}
+                />
                 <Box sx={{ display: { xs: 'flex', md: 'none' }, height: 44, alignItems: 'center' }}>
                     <Logo to="/" size={32} />
                 </Box>

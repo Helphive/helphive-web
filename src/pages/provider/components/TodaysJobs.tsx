@@ -3,7 +3,7 @@ import { Box, Button, Link, Stack } from '@mui/material';
 import dayjs from 'dayjs';
 import type { Booking, DisplayStatus } from '@/types';
 import { formatMoney, getDisplayStatus, getErrorMessage, pluralHours } from '@/utils/format';
-import { color, font, hairline } from '@/theme/tokens';
+import { color, font, hairline, hoverRow } from '@/theme/tokens';
 import {
     BookingStatusPill,
     EmptyState,
@@ -125,7 +125,7 @@ function JobRow({ job }: { job: Booking }) {
                 py: 2,
                 color: 'inherit',
                 textDecoration: 'none',
-                '&:hover': { bgcolor: color.subtle },
+                '&:hover': hoverRow,
             }}
         >
             <Box
