@@ -50,9 +50,13 @@ export default function PushPrompt({ anchorEl }: { anchorEl: HTMLElement | null 
             open
             anchorEl={anchorEl}
             placement="bottom-end"
-            disablePortal
-            modifiers={[{ name: 'offset', options: { offset: [0, 10] } }]}
-            sx={(theme) => ({ zIndex: theme.zIndex.appBar + 1 })}
+            // In a portal on purpose: inside the sidebar or top bar it is trapped in their layer and the page paints
+            // over it. Above the bars, below menus and dialogs. Kept inside the window with a 12px margin.
+            modifiers={[
+                { name: 'offset', options: { offset: [0, 10] } },
+                { name: 'preventOverflow', options: { padding: 12, altAxis: true } },
+            ]}
+            sx={(theme) => ({ zIndex: theme.zIndex.modal - 1 })}
         >
             <Box
                 role="region"
@@ -63,7 +67,7 @@ export default function PushPrompt({ anchorEl }: { anchorEl: HTMLElement | null 
                 sx={{
                     width: 'min(320px, calc(100vw - 24px))',
                     p: 2,
-                    bgcolor: color.surface,
+                    bgcolor: color.raised,
                     border: hairline,
                     borderRadius: `${radius.md}px`,
                     boxShadow: shadow.float,
