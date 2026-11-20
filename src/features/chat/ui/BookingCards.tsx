@@ -16,6 +16,7 @@ import { BookingCardsContext } from './bookingCardsContext';
 import {
     displayStatusOf,
     EVENT_TITLE,
+    LEGACY_ACCEPTED_TEXT,
     stagesOf,
     type EventLine,
     type StreamItem,
@@ -339,7 +340,7 @@ export const SystemLine = memo(function SystemLine({ item }: { item: LineItem })
                 overflowWrap: 'anywhere',
             }}
         >
-            {item.m.text} · {timeOf(item.m.sentAt)}
+            {LEGACY_ACCEPTED_TEXT} · {timeOf(item.m.sentAt)}
         </Box>
     );
 });

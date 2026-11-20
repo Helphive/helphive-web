@@ -412,7 +412,6 @@ function CustomerShell({ account, chatUnread }: { account: Account; chatUnread: 
                             flex: 1,
                             alignSelf: 'stretch',
                             overflowX: 'auto',
-                            scrollbarWidth: 'none',
                         }}
                     >
                         {navItems.map((item) => {
@@ -424,8 +423,11 @@ function CustomerShell({ account, chatUnread }: { account: Account; chatUnread: 
                                     to={item.path}
                                     aria-current={active ? 'page' : undefined}
                                     sx={{
-                                        // Phones reach Messages from the top-bar button.
-                                        display: item.chat ? { xs: 'none', sm: 'flex' } : 'flex',
+                                        // Phones reach Messages and Notifications from the top-bar buttons (so the strip never overflows).
+                                        display:
+                                            item.chat || item.countsUnread
+                                                ? { xs: 'none', sm: 'flex' }
+                                                : 'flex',
                                         alignItems: 'center',
                                         px: 1.5,
                                         fontSize: font.size.md,

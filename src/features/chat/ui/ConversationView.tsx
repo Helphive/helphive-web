@@ -42,7 +42,7 @@ import { dayLabel, presenceText, type Area, srText } from './chatModel';
 import BookingsHeader from './BookingsHeader';
 import { BookingEventItem, SystemLine } from './BookingCards';
 import { BookingCardsContext } from './bookingCardsContext';
-import { buildStream, isEventMessage } from './bookingEvents';
+import { buildStream, claimOf } from './bookingEvents';
 
 export interface Counterparty {
     uid: string;
@@ -263,11 +263,9 @@ export default function ConversationView({
                     return [...cur, m];
                 });
                 if (!m.mine) markLatestRead([m]);
-                if (isEventMessage(m)) {
-                    // A booking just changed: the cards show it as it is now.
-                    store.dispatch(apiSlice.util.invalidateTags(['Booking']));
-                    if (!m.mine) setAnnounce(`Booking update: ${m.text}`);
-                } else if (!m.mine && m.kind !== 'deleted') {
+                // A message that may be a booking event: the booking may just have changed, so reload the bookings.
+                if (claimOf(m)) store.dispatch(apiSlice.util.invalidateTags(['Booking']));
+                if (!m.mine && m.kind !== 'deleted') {
                     setAnnounce(
                         `${who.firstName}: ${m.kind === 'text' ? m.text : m.kind === 'image' ? 'sent a photo' : 'sent a file'}`
                     );

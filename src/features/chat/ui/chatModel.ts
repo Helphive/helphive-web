@@ -5,7 +5,7 @@ import { useGetMyOrdersQuery } from '@/features/provider/providerApi';
 import type { Booking, User } from '@/types';
 import { formatDay } from '@/utils/format';
 import { chatRuntime, type ChatMessage, type Presence } from '../runtime/chatRuntime';
-import { eventPreview, readEventRef } from './bookingEvents';
+import { confirmedEvent, eventPreview } from './bookingEvents';
 
 export type Area = 'user' | 'provider';
 
@@ -77,18 +77,16 @@ export const presenceText = (p?: Presence) => {
     return p.lastActiveAt ? `Last seen ${dayjs(p.lastActiveAt).fromNow()}` : 'Offline';
 };
 
-/** Conversation list text of the last message; a booking event reads "Booking accepted · Public Area Attendant". */
+/**
+ * Conversation list text of the last message. A booking event reads "Booking accepted · Public Area Attendant" only
+ * when the viewer's bookings confirm it (same rule as the thread); otherwise it is shown as any other text message.
+ */
 export const preview = (m?: ChatMessage | null, bookings: Booking[] = []) => {
     if (!m) return '';
-    const ref = readEventRef(m, bookings);
-    if (ref) {
-        const booking =
-            ref.type === 'booking' ? bookings.find((b) => b._id === ref.bookingId) : undefined;
-        return eventPreview(
-            ref.type === 'booking' ? ref.event : null,
-            booking?.service?.name,
-            m.text
-        );
+    const confirmed = confirmedEvent(m, bookings);
+    if (confirmed) {
+        const booking = bookings.find((b) => b._id === confirmed.booking._id);
+        return eventPreview(confirmed.event, booking?.service?.name);
     }
     const who = m.mine ? 'You: ' : '';
     if (m.kind === 'deleted') return 'Message deleted';

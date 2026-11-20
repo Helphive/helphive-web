@@ -1,16 +1,28 @@
 // Booking events in the conversation: the pure rules (no React, no SDK, no dates library), so they can be run on their
-// own. Contract: scratch/chat-cards/contract.md. A booking event is a text message whose metadata
-// `helphive = { v: 1, kind: "booking_event", event, bookingId }` marks it for a card.
+// own. Contract (normative, with the truth table): scratch/chat-cards/contract.md.
+//
+// A booking event message is text with metadata `helphive = { v: 1, kind: "booking_event", event, bookingId }`. Anyone
+// can send such a message, so the message alone proves nothing: it is rendered as an event only when the booking's own
+// data (loaded through the API for this viewer) confirms the event. Everything shown comes from the booking or from
+// constants here; no text of the message is ever shown with system styling.
 import type { Booking, DisplayStatus } from '@/types';
 
 export const BOOKING_EVENTS = ['accepted', 'started', 'completed', 'cancelled'] as const;
 export type BookingEvent = (typeof BOOKING_EVENTS)[number];
 
-/** The only version this client can read; a newer one is shown as the neutral line with the fallback text. */
+/** The only version this client can read. */
 export const KNOWN_VERSION = 1;
 
-/** What the server sent as text for "accepted" before the metadata existed (people's history still has it). */
-export const LEGACY_ACCEPTED_TEXT = 'A booking was accepted.';
+/** The fixed sentence of each event (the server's text, and what an old app shows). A message must carry exactly it. */
+export const EVENT_TEXT: Record<BookingEvent, string> = {
+    accepted: 'A booking was accepted.',
+    started: 'The job has started.',
+    completed: 'The job was completed.',
+    cancelled: 'The booking was cancelled.',
+};
+
+/** What the server sent before the metadata existed (people's history still has it). */
+export const LEGACY_ACCEPTED_TEXT = EVENT_TEXT.accepted;
 export const LEGACY_MATCH_WINDOW_MS = 5 * 60 * 1000;
 
 const OBJECT_ID = /^[a-f\d]{24}$/i;
@@ -25,20 +37,48 @@ export interface EventMessage {
     helphive?: unknown;
 }
 
-/** What an event message points at, once its metadata (or legacy text) is understood. */
-export type EventRef =
-    | { type: 'booking'; event: BookingEvent; bookingId: string; legacy: boolean }
-    | { type: 'neutral' };
+/** The fields of a booking the rules read (the pair's bookings come from the viewer's own booking lists). */
+export type BookingFacts = Pick<
+    Booking,
+    | '_id'
+    | 'status'
+    | 'displayStatus'
+    | 'providerId'
+    | 'acceptedAt'
+    | 'startedAt'
+    | 'completedAt'
+    | 'cancelledAt'
+>;
 
 const isEvent = (v: unknown): v is BookingEvent =>
     (BOOKING_EVENTS as readonly unknown[]).includes(v);
 
-/** Whether the message is a booking event message (any version), or the legacy accepted text. */
-export const isEventMessage = (m: EventMessage): boolean =>
-    (m.helphive as { kind?: unknown } | undefined)?.kind === 'booking_event' ||
-    (m.kind === 'text' && !m.helphive && m.text === LEGACY_ACCEPTED_TEXT);
+/** What a message claims to be, from its own content only (rule 1, the parts that need no booking). */
+export type Claim = { type: 'event'; event: BookingEvent; bookingId: string } | { type: 'legacy' };
 
-/** The booking whose acceptance time is closest to the message, within the window; null when none is. */
+/**
+ * The claim of a text message: metadata exactly `{v: 1, kind: "booking_event", event, bookingId: 24 hex}` with the
+ * event's exact fixed sentence; or no metadata and exactly the legacy sentence. Anything else is no claim (a bubble).
+ */
+export const claimOf = (m: EventMessage): Claim | null => {
+    if (m.kind !== 'text') return null;
+    const h = m.helphive as
+        | { v?: unknown; kind?: unknown; event?: unknown; bookingId?: unknown }
+        | undefined
+        | null;
+    if (h === undefined || h === null) {
+        return m.text === LEGACY_ACCEPTED_TEXT ? { type: 'legacy' } : null;
+    }
+    if (typeof h !== 'object' || h.kind !== 'booking_event' || h.v !== KNOWN_VERSION) return null;
+    if (!isEvent(h.event) || typeof h.bookingId !== 'string' || !OBJECT_ID.test(h.bookingId)) {
+        return null;
+    }
+    return m.text === EVENT_TEXT[h.event]
+        ? { type: 'event', event: h.event, bookingId: h.bookingId }
+        : null;
+};
+
+/** The booking this legacy message belongs to: closest `acceptedAt` to the message time, within 5 minutes; or null. */
 export const matchLegacyAccepted = (
     sentAt: number,
     bookings: readonly Pick<Booking, '_id' | 'acceptedAt'>[]
@@ -54,34 +94,49 @@ export const matchLegacyAccepted = (
 };
 
 /**
- * Reads one message. `null` means it is not a booking event message at all (an ordinary bubble). An unknown event or a
- * newer version, or a legacy text with no matching booking, is `neutral`.
+ * Whether the booking's own state shows the event really happened (rule 1).
+ * accepted: it has a provider. started: it has `startedAt`, or is or was in progress (`status` in progress or
+ * completed). completed: `status` completed. cancelled: `status` cancelled (or displayStatus cancelled) with a provider.
  */
-export const readEventRef = (
+export const bookingConfirms = (event: BookingEvent, b: BookingFacts): boolean => {
+    if (!b.providerId) return false;
+    switch (event) {
+        case 'accepted':
+            return true;
+        case 'started':
+            return !!b.startedAt || b.status === 'in progress' || b.status === 'completed';
+        case 'completed':
+            return b.status === 'completed' || b.displayStatus === 'completed';
+        case 'cancelled':
+            return b.status === 'cancelled' || b.displayStatus === 'cancelled';
+    }
+};
+
+/** The booking's own time of that stage, or null when the API has none (then the message's sent time is used). */
+export const stageTime = (event: BookingEvent, b: BookingFacts): number | null => {
+    const iso = {
+        accepted: b.acceptedAt,
+        started: b.startedAt,
+        completed: b.completedAt,
+        cancelled: b.cancelledAt,
+    }[event];
+    const t = iso ? Date.parse(iso) : NaN;
+    return Number.isFinite(t) ? t : null;
+};
+
+/** The booking and event a message is confirmed as (rules 1 and 5), or null. The list preview uses it too. */
+export const confirmedEvent = (
     m: EventMessage,
-    bookings: readonly Pick<Booking, '_id' | 'acceptedAt'>[]
-): EventRef | null => {
-    const h = m.helphive as
-        | { v?: unknown; kind?: unknown; event?: unknown; bookingId?: unknown }
-        | undefined;
-    if (h && typeof h === 'object' && h.kind === 'booking_event') {
-        if (
-            h.v === KNOWN_VERSION &&
-            isEvent(h.event) &&
-            typeof h.bookingId === 'string' &&
-            OBJECT_ID.test(h.bookingId)
-        ) {
-            return { type: 'booking', event: h.event, bookingId: h.bookingId, legacy: false };
-        }
-        return { type: 'neutral' };
-    }
-    if (m.kind === 'text' && !h && m.text === LEGACY_ACCEPTED_TEXT) {
-        const id = matchLegacyAccepted(m.sentAt, bookings);
-        return id
-            ? { type: 'booking', event: 'accepted', bookingId: id, legacy: true }
-            : { type: 'neutral' };
-    }
-    return null;
+    bookings: readonly BookingFacts[]
+): { event: BookingEvent; booking: BookingFacts; legacy: boolean } | null => {
+    const claim = claimOf(m);
+    if (!claim) return null;
+    const id = claim.type === 'event' ? claim.bookingId : matchLegacyAccepted(m.sentAt, bookings);
+    const booking = id ? bookings.find((b) => b._id === id) : undefined;
+    const event = claim.type === 'event' ? claim.event : 'accepted';
+    return booking && bookingConfirms(event, booking)
+        ? { event, booking, legacy: claim.type === 'legacy' }
+        : null;
 };
 
 /* ---------- The stream: what the message list renders ---------- */
@@ -93,8 +148,9 @@ export interface EventLine {
 }
 
 export type StreamItem<M extends EventMessage> =
+    /** An ordinary message bubble from its sender (also everything that fails the rule). */
     | { type: 'message'; key: string; m: M }
-    /** A neutral system line: unknown event or version, unmatched legacy text, or a booking that cannot be loaded. */
+    /** A legacy "A booking was accepted." that matches no booking: the fixed sentence as a neutral line. */
     | { type: 'line'; key: string; m: M }
     | {
           type: 'event';
@@ -109,31 +165,29 @@ export type StreamItem<M extends EventMessage> =
       };
 
 /**
- * Turns the loaded messages into render items. Consecutive event messages of one booking (nothing else between them)
- * become one item with one line per event; only the first item of a booking in the loaded history is a full card,
- * later ones are compact rows. `known` is the ids of the pair's bookings, or null while they are loading (cards show a
- * skeleton, legacy texts wait); a booking that is not in it once loaded becomes a neutral line.
+ * Turns the loaded messages into render items. A message that claims to be an event shows as one only once the pair's
+ * bookings are loaded and confirm it (skeleton until then); otherwise it is an ordinary bubble. Consecutive confirmed
+ * events of one booking become one item with a line each; only the first item of a booking is a full card, later ones
+ * are compact rows; a second message for the same (booking, event) renders nothing.
  */
 export const buildStream = <M extends EventMessage>(
     messages: readonly M[],
-    bookings: readonly Pick<Booking, '_id' | 'acceptedAt'>[],
+    bookings: readonly BookingFacts[],
     loaded: boolean
 ): StreamItem<M>[] => {
-    const known = new Set(bookings.map((b) => b._id));
     const out: StreamItem<M>[] = [];
     const carded = new Set<string>();
+    const seen = new Set<string>();
     let open: Extract<StreamItem<M>, { type: 'event' }> | null = null;
     for (const m of messages) {
-        const legacyWaiting =
-            !loaded && m.kind === 'text' && !m.helphive && m.text === LEGACY_ACCEPTED_TEXT;
-        const ref = legacyWaiting ? null : readEventRef(m, bookings);
-        if (!ref && !legacyWaiting) {
+        const claim = claimOf(m);
+        if (!claim) {
             open = null;
             out.push({ type: 'message', key: m.key, m });
             continue;
         }
-        if (legacyWaiting) {
-            // Which booking it belongs to is not known until the bookings are: a skeleton card of its own.
+        if (!loaded) {
+            // Whether it is an event depends on the booking: a skeleton of the card's size until it is known.
             open = null;
             out.push({
                 type: 'event',
@@ -146,26 +200,39 @@ export const buildStream = <M extends EventMessage>(
             });
             continue;
         }
-        if (!ref || ref.type === 'neutral' || (loaded && !known.has(ref.bookingId))) {
+        const confirmed = confirmedEvent(m, bookings);
+        if (!confirmed) {
             open = null;
-            out.push({ type: 'line', key: m.key, m });
+            out.push(
+                claim.type === 'legacy'
+                    ? { type: 'line', key: m.key, m }
+                    : { type: 'message', key: m.key, m }
+            );
             continue;
         }
-        const line: EventLine = { key: m.key, event: ref.event, at: m.sentAt };
-        if (open && open.bookingId === ref.bookingId) {
+        const bookingId = confirmed.booking._id;
+        const once = `${bookingId}:${confirmed.event}`;
+        if (seen.has(once)) continue; // a replay: nothing
+        seen.add(once);
+        const line: EventLine = {
+            key: m.key,
+            event: confirmed.event,
+            at: stageTime(confirmed.event, confirmed.booking) ?? m.sentAt,
+        };
+        if (open && open.bookingId === bookingId) {
             open.lines.push(line);
             continue;
         }
         open = {
             type: 'event',
             key: m.key,
-            bookingId: ref.bookingId,
-            variant: carded.has(ref.bookingId) ? 'compact' : 'full',
+            bookingId,
+            variant: carded.has(bookingId) ? 'compact' : 'full',
             lines: [line],
             first: m,
-            loading: !loaded,
+            loading: false,
         };
-        carded.add(ref.bookingId);
+        carded.add(bookingId);
         out.push(open);
     }
     return out;
