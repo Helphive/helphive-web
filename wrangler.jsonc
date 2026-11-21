@@ -1,0 +1,14 @@
+// Website on Cloudflare Workers static assets (free; asset requests don't count against the Worker quota).
+// Deploy from this folder, with CLOUDFLARE_API_TOKEN set (secret store `cloudflare-api-token`, VPN only) and the
+// production VITE_ values in .env.production.local (see .env.example): npm run deploy:cf
+// Security headers (CSP and others) are in public/_headers.
+{
+	"name": "helphive-web",
+	"compatibility_date": "2026-11-01",
+	"account_id": "803b01a6e3e53ef41f175e2a54e51372",
+	"workers_dev": false,
+	"preview_urls": false,
+	"assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
+	"routes": [{ "pattern": "helphive.himaiz.com", "custom_domain": true }],
+	"observability": { "enabled": true },
+}
