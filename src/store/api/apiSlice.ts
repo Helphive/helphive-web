@@ -1,29 +1,12 @@
 import { createApi, fetchBaseQuery, BaseQueryFn } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../index';
 import { setCredentials, logout } from '@/features/auth/authSlice';
-
-const API_URL =
-    import.meta.env.VITE_API_URL ||
-    (import.meta.env.DEV ? 'http://localhost:8080' : 'https://api.helphive.himaiz.com');
-
-// A random id made once and kept in localStorage, sent as X-Device-Id. Undefined when storage is unavailable.
-const getDeviceId = (): string | undefined => {
-    try {
-        let id = localStorage.getItem('deviceId');
-        if (!id) {
-            id = crypto.randomUUID();
-            localStorage.setItem('deviceId', id);
-        }
-        return id;
-    } catch {
-        return undefined;
-    }
-};
+import { API_URL, getDeviceId, getClientPass, forceReattest } from './clientPass';
 
 const baseQuery = fetchBaseQuery({
     baseUrl: API_URL,
     credentials: 'include',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: async (headers, { getState }) => {
         const token = (getState() as RootState).auth.accessToken;
         if (token) {
             headers.set('Authorization', `Bearer ${token}`);
@@ -37,9 +20,23 @@ const baseQuery = fetchBaseQuery({
         }
         const deviceId = getDeviceId();
         if (deviceId) headers.set('X-Device-Id', deviceId);
+        const pass = await getClientPass();
+        if (pass) headers.set('X-Client-Pass', pass);
         return headers;
     },
 });
+
+// The API answers 428 CLIENT_PASS_REQUIRED when the client pass is missing or stale: attest again and retry
+// once. 428 is not an auth failure, so it never reaches the token refresh below.
+const sendWithPass: typeof baseQuery = async (args, api, extraOptions) => {
+    const result = await baseQuery(args, api, extraOptions);
+    const error = result.error;
+    const passRequired =
+        error?.status === 428 &&
+        (error.data as { code?: string } | undefined)?.code === 'CLIENT_PASS_REQUIRED';
+    if (!passRequired || !(await forceReattest())) return result;
+    return baseQuery(args, api, extraOptions);
+};
 
 // Only one refresh at a time: when the access token expires, parallel requests all get a 401, and refreshing
 // once per request replayed the same single-use refresh token and signed the user out.
@@ -55,7 +52,7 @@ const refreshSession = async (
         return false;
     }
 
-    const refreshResult = await baseQuery(
+    const refreshResult = await sendWithPass(
         { url: '/auth/refresh', method: 'POST', body: { refreshToken } },
         api,
         extraOptions
@@ -84,7 +81,7 @@ const refreshSession = async (
 };
 
 const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
-    let result = await baseQuery(args, api, extraOptions);
+    let result = await sendWithPass(args, api, extraOptions);
 
     if (result?.error?.status === 403 || result?.error?.status === 401) {
         if (!refreshInFlight) {
@@ -93,7 +90,7 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
             });
         }
         if (await refreshInFlight) {
-            result = await baseQuery(args, api, extraOptions);
+            result = await sendWithPass(args, api, extraOptions);
         }
     }
 
