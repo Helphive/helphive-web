@@ -1,6 +1,6 @@
 // Website on Cloudflare Workers static assets (free; asset requests don't count against the Worker quota).
-// Deploy from this folder, with CLOUDFLARE_API_TOKEN set (secret store `cloudflare-api-token`, VPN only) and the
-// production VITE_ values in .env.production.local (see .env.example): npm run deploy:cf
+// Deployed by Cloudflare Workers Builds on every push to main (npm run build, then npx wrangler deploy); the
+// production VITE_ values are build variables on the Worker (see .env.example).
 // Security headers (CSP and others) are in public/_headers.
 {
 	"name": "helphive-web",

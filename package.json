@@ -6,7 +6,6 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
-        "deploy:cf": "npm run build && npx wrangler@4 deploy",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
