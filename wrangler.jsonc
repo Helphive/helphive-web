@@ -3,12 +3,17 @@
 // production VITE_ values are build variables on the Worker (see .env.example).
 // Security headers (CSP and others) are in public/_headers.
 {
-	"name": "helphive-web",
-	"compatibility_date": "2026-11-01",
-	"account_id": "803b01a6e3e53ef41f175e2a54e51372",
-	"workers_dev": false,
-	"preview_urls": false,
-	"assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
-	"routes": [{ "pattern": "helphive.himaiz.com", "custom_domain": true }],
-	"observability": { "enabled": true },
+    "name": "helphive-web",
+    "compatibility_date": "2026-11-01",
+    "account_id": "803b01a6e3e53ef41f175e2a54e51372",
+    "workers_dev": false,
+    "preview_urls": false,
+    "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
+    "routes": [{ "pattern": "helphive.himaiz.com", "custom_domain": true }],
+    // Workers Logs: no Cloudflare invocation logs and no query strings, so full URLs are never stored.
+    "observability": {
+        "enabled": true,
+        "redact_query_string": true,
+        "logs": { "invocation_logs": false },
+    },
 }
